@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Login</title>
+</head>
+<body>
+
+<h1>Login</h1>
+
+<button onclick="onNaverLogin()">Naver Login</button><br><br>
+
+<button onclick="onKakaoLogin()">Kakao Login</button><br><br>
+
+<button onclick="onGoogleLogin()">Google Login</button>
+
+<script>
+    function onNaverLogin() {
+        window.location.href = "http://localhost:8080/oauth2/authorization/naver";
+    }
+
+    function onKakaoLogin() {
+        window.location.href = "http://localhost:8080/oauth2/authorization/kakao";
+    }
+
+    function onGoogleLogin() {
+        window.location.href = "http://localhost:8080/oauth2/authorization/google";
+    }
+</script>
+
+</body>
+</html>

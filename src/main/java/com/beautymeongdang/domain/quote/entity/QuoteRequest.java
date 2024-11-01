@@ -7,6 +7,8 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Getter
@@ -31,4 +33,7 @@ public class QuoteRequest extends DeletableBaseTimeEntity {
     private String requestType;
 
     private String status;
+
+    @OneToMany(mappedBy = "quoteRequest", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Quote> quotes = new ArrayList<>();
 }
