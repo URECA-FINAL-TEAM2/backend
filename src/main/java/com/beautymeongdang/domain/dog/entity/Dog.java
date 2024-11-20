@@ -14,25 +14,19 @@ public class Dog extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "dog_id")
-    private Long id;
+    private Long dogId;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "customer_id", nullable = false)
     private Customer customerId;
-
-    @Column(name = "dog_name", nullable = false)
+    
     private String dogName;
 
     private String breed;
 
-    @Column(name = "dog_weight")
     private String dogWeight;
 
-    @Column(name = "dog_age")
     private Integer dogAge;
 
-    @Column(name = "dog_gender")
     @Enumerated(EnumType.STRING)
     private DogGender dogGender;
 
@@ -41,10 +35,9 @@ public class Dog extends BaseTimeEntity {
     @Column(columnDefinition = "TEXT")
     private String significant;
 
-    @Column(name = "profile_image")
     private String profileImage;
 
     public enum DogGender {
-        남, 여
+        male, female
     }
 }

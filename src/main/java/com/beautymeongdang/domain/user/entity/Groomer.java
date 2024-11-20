@@ -13,11 +13,9 @@ public class Groomer extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "groomer_id")
-    private Long id;
+    private Long groomerId;
 
     @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
     private User userId;
 
     private String skill;
