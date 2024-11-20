@@ -14,8 +14,7 @@ public class User extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "user_id")
-    private Long id;
+    private Long userId;
 
     @Column(nullable = false)
     private String username;
@@ -28,7 +27,6 @@ public class User extends BaseTimeEntity {
     private CommonCode role;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "social_provider")
     private CommonCode socialProvider;
 
     private String profileImage;
