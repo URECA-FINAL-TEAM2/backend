@@ -25,7 +25,6 @@ public class User extends BaseTimeEntity {
     private String nickname;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "role")
     private CommonCode role;
 
     @ManyToOne(fetch = FetchType.LAZY)

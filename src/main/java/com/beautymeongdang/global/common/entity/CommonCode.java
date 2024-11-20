@@ -2,25 +2,26 @@ package com.beautymeongdang.global.common.entity;
 
 import jakarta.persistence.*;
 import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor
 public class CommonCode {
 
-    @Id
-    @Column(name = "common_code", length = 5)
-    private String commonCode;
+    @EmbeddedId
+    private CommonCodeId id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "group_code", referencedColumnName = "group_code")
-    private GroupCode groupCode;
+    @ManyToOne
+    @MapsId("groupId")
+    @JoinColumn(name = "group_id", nullable = false)
+    private GroupCode groupId;
 
-    @Column(name = "code_name", length = 50)
-    private String codeName;
+    private String commonName;
 
-    @Column(name = "order_no")
-    private Long orderNo;
+    private boolean useYn;
+
 }

@@ -19,23 +19,22 @@ public class Dog extends BaseTimeEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "customer_id", nullable = false)
-    private Customer customer;
+    private Customer customerId;
 
     @Column(name = "dog_name", nullable = false)
-    private String name;
+    private String dogName;
 
-    @Column(name = "breed")
     private String breed;
 
     @Column(name = "dog_weight")
-    private String weight;
+    private String dogWeight;
 
     @Column(name = "dog_age")
-    private Integer age;
+    private Integer dogAge;
 
     @Column(name = "dog_gender")
     @Enumerated(EnumType.STRING)
-    private DogGender gender;
+    private DogGender dogGender;
 
     private Boolean neutering;
 

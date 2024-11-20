@@ -1,6 +1,7 @@
 package com.beautymeongdang.domain.user.entity;
 
 import com.beautymeongdang.global.common.entity.BaseTimeEntity;
+import com.beautymeongdang.global.region.entity.Sigungu;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -18,7 +19,11 @@ public class Customer extends BaseTimeEntity {
 
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
-    private User user;
+    private User userId;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "sigungu_id")
+    private Sigungu sigunguId;
 
     private String address;
 

@@ -14,11 +14,13 @@ public class GroupCode {
 
     @Id
     @Column(name = "group_code", length = 3)
-    private String groupCode;
+    private String groupId;
 
-    @Column(name = "group_code_name", length = 20)
-    private String groupCodeName;
+    @Column(name = "group_name", length = 20)
+    private String groupName;
 
-    @Column(name = "group_code_desc", length = 500)
-    private String groupCodeDesc;
+    public GroupCode(String groupId, String groupName) {
+        this.groupId = groupId;
+        this.groupName = groupName;
+    }
 }
