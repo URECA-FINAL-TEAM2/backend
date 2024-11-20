@@ -1,6 +1,7 @@
 package com.beautymeongdang.domain.user.entity;
 
 import com.beautymeongdang.global.common.entity.BaseTimeEntity;
+import com.beautymeongdang.global.common.entity.DeletableBaseTimeEntity;
 import com.beautymeongdang.global.region.entity.Sigungu;
 import jakarta.persistence.*;
 import lombok.*;
@@ -10,7 +11,7 @@ import lombok.*;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
-public class Customer extends BaseTimeEntity {
+public class Customer extends DeletableBaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

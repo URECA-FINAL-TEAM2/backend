@@ -1,5 +1,6 @@
 package com.beautymeongdang.global.region.entity;
 
+import com.beautymeongdang.global.common.entity.BaseTimeEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -11,7 +12,7 @@ import java.util.List;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
-public class Sido {
+public class Sido extends BaseTimeEntity{
     @Id
     @Column(name = "sido_id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)

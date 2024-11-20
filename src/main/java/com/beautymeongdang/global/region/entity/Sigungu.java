@@ -1,6 +1,7 @@
 package com.beautymeongdang.global.region.entity;
 
 import com.beautymeongdang.domain.user.entity.Customer;
+import com.beautymeongdang.global.common.entity.BaseTimeEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -12,7 +13,7 @@ import java.util.List;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
-public class Sigungu {
+public class Sigungu extends BaseTimeEntity {
     @Id
     @Column(name = "sigungu_id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)

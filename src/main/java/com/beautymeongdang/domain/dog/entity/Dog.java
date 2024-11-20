@@ -2,6 +2,7 @@ package com.beautymeongdang.domain.dog.entity;
 
 import com.beautymeongdang.domain.user.entity.Customer;
 import com.beautymeongdang.global.common.entity.BaseTimeEntity;
+import com.beautymeongdang.global.common.entity.DeletableBaseTimeEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -10,7 +11,7 @@ import lombok.*;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
-public class Dog extends BaseTimeEntity {
+public class Dog extends DeletableBaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
