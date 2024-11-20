@@ -30,7 +30,6 @@ public class Payment extends DeletableBaseTimeEntity {
     private String method;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "status")
     private CommonCode status;
 
     private String impUid;

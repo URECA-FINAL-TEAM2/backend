@@ -14,8 +14,7 @@ import lombok.*;
 public class SelectedQuote extends DeletableBaseTimeEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "selected_quote_id")
-    private Long id;
+    private Long selectedQuoteId;
 
     @Column(nullable = false)
     private Long quoteId;
@@ -24,6 +23,6 @@ public class SelectedQuote extends DeletableBaseTimeEntity {
     private Long customerId;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "status", referencedColumnName = "common_id")
+    @JoinColumn(referencedColumnName = "common_id")
     private CommonCode status;
 }
