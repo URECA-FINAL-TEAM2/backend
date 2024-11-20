@@ -13,10 +13,10 @@ import lombok.NoArgsConstructor;
 public class GroupCode {
 
     @Id
-    @Column(name = "group_code", length = 3)
+    @Column(name = "group_code", length = 3, nullable = false)
     private String groupId;
 
-    @Column(name = "group_name", length = 20)
+    @Column(name = "group_name", length = 20, nullable = false)
     private String groupName;
 
     public GroupCode(String groupId, String groupName) {

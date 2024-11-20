@@ -18,9 +18,11 @@ public class Customer extends DeletableBaseTimeEntity {
     private Long id;
 
     @OneToOne(fetch = FetchType.LAZY)
+    @Column(nullable = false)
     private User userId;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @Column(nullable = false)
     private Sigungu sigunguId;
 
     private String address;

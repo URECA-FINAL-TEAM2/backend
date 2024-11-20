@@ -20,8 +20,10 @@ public class User extends DeletableBaseTimeEntity {
     @Column(nullable = false)
     private String username;
 
+    @Column(nullable = false)
     private String email;
 
+    @Column(nullable = false)
     private String nickname;
 
     @ManyToOne(fetch = FetchType.LAZY)

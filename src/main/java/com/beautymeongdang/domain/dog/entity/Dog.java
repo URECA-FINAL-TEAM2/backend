@@ -18,6 +18,7 @@ public class Dog extends DeletableBaseTimeEntity {
     private Long dogId;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @Column(nullable = false)
     private Customer customerId;
     
     private String dogName;

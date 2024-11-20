@@ -16,10 +16,10 @@ public class CommonCodeId implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    @Column(columnDefinition = "char(3)")
+    @Column(columnDefinition = "char(3)", nullable = false)
     private String codeId;
 
-    @Column(name = "group_id")
+    @Column(name = "group_id", nullable = false)
     private String groupId;
 
     public CommonCodeId(String codeId, String groupId) {

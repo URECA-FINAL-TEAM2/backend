@@ -18,7 +18,8 @@ public class GroomerPortfolioImage extends BaseTimeEntity{
     private Long portfolioImageId;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "groomer_id")
+    @JoinColumn(name = "groomer_id",nullable = false)
+
     private Groomer groomer;
 
     private String imageUrl;
