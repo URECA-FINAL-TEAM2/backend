@@ -2,6 +2,7 @@ package com.beautymeongdang.domain.payment.entity;
 
 import com.beautymeongdang.global.common.entity.BaseTimeEntity;
 import com.beautymeongdang.global.common.entity.CommonCode;
+import com.beautymeongdang.global.common.entity.DeletableBaseTimeEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -12,12 +13,18 @@ import java.time.LocalDateTime;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
-public class Payment extends BaseTimeEntity {
+public class Payment extends DeletableBaseTimeEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long paymentId;
+
+    @Column(nullable = false)
     private Long selectedQuoteId;
+
+    @Column(nullable = false)
     private Long paymentsKey;
+
+    @Column(nullable = false)
     private Long orderId;
     private String amount;
     private String method;
