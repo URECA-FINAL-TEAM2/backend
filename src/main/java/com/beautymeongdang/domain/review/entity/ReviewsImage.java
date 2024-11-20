@@ -1,7 +1,7 @@
 package com.beautymeongdang.domain.review.entity;
 
 import com.beautymeongdang.global.common.entity.BaseTimeEntity;
-import jakarta.persistence.Entity;
+import jakarta.persistence.*;
 import lombok.*;
 
 @Entity
@@ -10,4 +10,14 @@ import lombok.*;
 @AllArgsConstructor
 @Builder
 public class ReviewsImage extends BaseTimeEntity {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long reviesImageId;
+
+    private String imageUrl;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "review_id")
+    private Review review;
 }
