@@ -1,9 +1,7 @@
 package com.beautymeongdang.domain.chat.entity;
 
 import com.beautymeongdang.global.common.entity.DeletableBaseTimeEntity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
+import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -12,6 +10,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class ChatMessage extends DeletableBaseTimeEntity {
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long messageId;
 
     @ManyToOne(fetch = FetchType.LAZY)
