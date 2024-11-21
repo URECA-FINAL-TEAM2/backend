@@ -20,7 +20,7 @@ public class CustomerNotify extends BaseTimeEntity {
     private Long notifyId;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(nullable = false)
+    @JoinColumn(name = "customer_id",nullable = false)
     private Customer customerId;
 
     private String notifyType;

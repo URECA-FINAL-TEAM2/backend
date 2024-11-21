@@ -16,11 +16,11 @@ public class DirectQuoteRequestId {
 
 
     @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(nullable = false)
+    @JoinColumn(name = "request_id",nullable = false)
     private QuoteRequest requestId;
 
     @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(nullable = false)
+    @JoinColumn(name = "groomer_id",nullable = false)
     private Groomer groomerId;
 
 }

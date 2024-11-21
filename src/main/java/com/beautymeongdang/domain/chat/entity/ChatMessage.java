@@ -15,7 +15,7 @@ public class ChatMessage extends DeletableBaseTimeEntity {
     private Long messageId;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(nullable = false)
+    @JoinColumn(name = "chat_id",nullable = false)
     private Long chatId;
     private String content;
     private Boolean customerYn;

@@ -20,11 +20,11 @@ public class Shop extends DeletableBaseTimeEntity {
     private Long shopId;
 
     @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(nullable = false)
+    @JoinColumn(name = "groomer_id",nullable = false)
     private Groomer groomerId;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(nullable = false)
+    @JoinColumn(name = "sigungu_id",nullable = false)
     private Sigungu sigunguId;
 
     private String shopName;

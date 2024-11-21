@@ -19,15 +19,15 @@ public class Quote extends DeletableBaseTimeEntity {
     private Long quoteId;
 
     @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(nullable = false)
+    @JoinColumn(name = "quoteRequest_id",nullable = false)
     private QuoteRequest quoteRequestId;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(nullable = false)
+    @JoinColumn(name = "customer_id",nullable = false)
     private Customer customerId;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(nullable = false)
+    @JoinColumn(name = "dog_id",nullable = false)
     private Dog dogId;
 
     @Column(columnDefinition = "TEXT")

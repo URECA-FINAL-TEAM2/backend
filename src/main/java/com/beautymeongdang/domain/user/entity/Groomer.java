@@ -16,7 +16,7 @@ public class Groomer extends DeletableBaseTimeEntity {
     private Long groomerId;
 
     @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(nullable = false)
+    @JoinColumn(name = "user_id",nullable = false)
     private User userId;
 
     private String skill;

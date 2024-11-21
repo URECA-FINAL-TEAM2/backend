@@ -12,10 +12,10 @@ import lombok.*;
 public class FavoriteId {
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(nullable = false)
+    @JoinColumn(name = "customer_id",nullable = false)
     private Customer customerId;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(nullable = false)
+    @JoinColumn(name = "shop_id",nullable = false)
     private Shop shopId;
 }

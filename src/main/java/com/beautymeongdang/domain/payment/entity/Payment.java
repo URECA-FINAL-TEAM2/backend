@@ -20,7 +20,7 @@ public class Payment extends DeletableBaseTimeEntity {
     private Long paymentId;
 
     @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(nullable = false)
+    @JoinColumn(name = "selectedQuote_id",nullable = false)
     private SelectedQuote selectedQuoteId;
 
     @Column(nullable = false)

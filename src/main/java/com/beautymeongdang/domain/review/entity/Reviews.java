@@ -26,11 +26,11 @@ public class Reviews extends DeletableBaseTimeEntity {
     private BigDecimal starRating;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(nullable = false)
+    @JoinColumn(name = "groomer_id",nullable = false)
     private Groomer groomerId;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(nullable = false)
+    @JoinColumn(name = "customer_id",nullable = false)
     private Customer customerId;
 
     @ManyToOne(fetch = FetchType.LAZY)

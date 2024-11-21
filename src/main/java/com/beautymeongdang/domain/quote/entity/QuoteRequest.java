@@ -20,6 +20,7 @@ public class QuoteRequest extends DeletableBaseTimeEntity {
     private Long requestId;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "dog_id",nullable = false)
     private Dog dogId;
 
     @Column(columnDefinition = "TEXT")

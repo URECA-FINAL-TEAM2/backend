@@ -20,7 +20,7 @@ public class GroomerNotify extends BaseTimeEntity {
     private Long notifyId;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(nullable = false)
+    @JoinColumn(name = "groomer_id",nullable = false)
     private Groomer groomerId;
 
     private String notifyType;
