@@ -20,7 +20,7 @@ public class Shop extends DeletableBaseTimeEntity {
     @Column(name = "shop_id")
     private Long shopId;
 
-    @Column(name = "shop_id")
+    @Column(name = "groomer_id")
     private Long groomerId;
 
     private String shopName;
