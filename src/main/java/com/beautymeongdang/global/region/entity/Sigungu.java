@@ -15,7 +15,7 @@ public class Sigungu extends BaseTimeEntity {
     private Long sigunguId;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(nullable = false)
+    @JoinColumn(name = "sido_id", nullable = false)
     private Sido sidoId;
 
     private String sigunguName;

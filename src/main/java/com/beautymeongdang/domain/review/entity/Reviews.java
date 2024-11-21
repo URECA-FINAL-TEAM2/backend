@@ -34,7 +34,7 @@ public class Reviews extends DeletableBaseTimeEntity {
     private Customer customerId;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(nullable = false)
+    @JoinColumn(name ="selected_quote_id",nullable = false)
     private SelectedQuote selectedQuoteId;
 
 }
