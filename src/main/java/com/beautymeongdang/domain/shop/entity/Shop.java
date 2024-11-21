@@ -1,6 +1,7 @@
 package com.beautymeongdang.domain.shop.entity;
 
 import com.beautymeongdang.global.common.entity.BaseTimeEntity;
+import com.beautymeongdang.global.common.entity.DeletableBaseTimeEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -12,14 +13,14 @@ import java.time.LocalDateTime;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
-public class Shop extends BaseTimeEntity {
+public class Shop extends DeletableBaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "shop_id")
     private Long shopId;
 
-    @Column(name = "shop_id")
+    @Column(name = "groomer_id")
     private Long groomerId;
 
     private String shopName;
@@ -35,10 +36,4 @@ public class Shop extends BaseTimeEntity {
     private String businessTime;
 
     private String imageUrl;
-
-    private LocalDateTime createdAt;
-
-    private LocalDateTime updatedAt;
-
-    private boolean isDeleted;
 }
