@@ -1,23 +1,21 @@
 package com.beautymeongdang.domain.review.entity;
 
-import com.beautymeongdang.global.common.entity.BaseTimeEntity;
+import com.beautymeongdang.domain.user.entity.Customer;
 import jakarta.persistence.*;
 import lombok.*;
 
-@Entity
+@Embeddable
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
-@Builder
-public class ReviewsImage extends BaseTimeEntity {
+public class RecommendId {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long reviesImageId;
-
-    private String imageUrl;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "customer_id")
+    private Customer customer;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "review_id")
     private Review review;
+
 }

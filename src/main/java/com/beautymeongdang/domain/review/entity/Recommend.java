@@ -1,7 +1,8 @@
 package com.beautymeongdang.domain.review.entity;
 
+
 import com.beautymeongdang.global.common.entity.BaseTimeEntity;
-import jakarta.persistence.Entity;
+import jakarta.persistence.*;
 import lombok.*;
 
 @Entity
@@ -10,4 +11,11 @@ import lombok.*;
 @AllArgsConstructor
 @Builder
 public class Recommend extends BaseTimeEntity {
+
+    @EmbeddedId
+    private RecommendId recommendId;
+
+
 }
+
+
