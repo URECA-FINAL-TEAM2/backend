@@ -1,8 +1,6 @@
 package com.beautymeongdang.domain.shop.entity;
 
-import com.beautymeongdang.domain.quote.entity.QuoteRequest;
 import com.beautymeongdang.domain.user.entity.Customer;
-import com.beautymeongdang.domain.user.entity.Groomer;
 import com.beautymeongdang.global.common.entity.BaseTimeEntity;
 import jakarta.persistence.*;
 import lombok.*;

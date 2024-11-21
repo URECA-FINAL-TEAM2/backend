@@ -1,12 +1,10 @@
 package com.beautymeongdang.domain.shop.entity;
 
-import com.beautymeongdang.global.common.entity.BaseTimeEntity;
 import com.beautymeongdang.global.common.entity.DeletableBaseTimeEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 
 @Entity
 @Getter
