@@ -1,6 +1,8 @@
 package com.beautymeongdang.domain.shop.entity;
 
+import com.beautymeongdang.domain.user.entity.Groomer;
 import com.beautymeongdang.global.common.entity.DeletableBaseTimeEntity;
+import com.beautymeongdang.global.region.entity.Sigungu;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -15,14 +17,19 @@ public class Shop extends DeletableBaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "shop_id")
     private Long shopId;
 
-    @Column(name = "groomer_id")
-    private Long groomerId;
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(nullable = false)
+    private Groomer groomerId;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(nullable = false)
+    private Sigungu sigunguId;
 
     private String shopName;
 
+    @Column(columnDefinition = "TEXT")
     private String description;
 
     private String address;

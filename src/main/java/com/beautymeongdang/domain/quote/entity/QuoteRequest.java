@@ -1,9 +1,12 @@
 package com.beautymeongdang.domain.quote.entity;
 
+import com.beautymeongdang.domain.dog.entity.Dog;
 import com.beautymeongdang.domain.user.entity.Customer;
 import com.beautymeongdang.global.common.entity.DeletableBaseTimeEntity;
 import jakarta.persistence.*;
 import lombok.*;
+
+import java.time.LocalDateTime;
 
 @Entity
 @Getter
@@ -14,19 +17,17 @@ public class QuoteRequest extends DeletableBaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long quoteRequestId;
+    private Long requestId;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "customer_id")
-    private Customer customer;
+    private Dog dogId;
 
-    @Column(columnDefinition = "TEXT", nullable = false)
+    @Column(columnDefinition = "TEXT")
     private String content;
 
-    @Column(nullable = false)
-    private String beautyDate;
+    private LocalDateTime beautyDate;
 
-    //공통 코드
     private String requestType;
+
     private String status;
 }

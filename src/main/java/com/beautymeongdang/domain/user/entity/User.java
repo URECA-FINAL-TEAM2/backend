@@ -18,7 +18,7 @@ public class User extends DeletableBaseTimeEntity {
     private Long userId;
 
     @Column(nullable = false)
-    private String username;
+    private String userName;
 
     @Column(nullable = false)
     private String email;
@@ -26,11 +26,9 @@ public class User extends DeletableBaseTimeEntity {
     @Column(nullable = false)
     private String nickname;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    private CommonCode role;
+    private String role;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    private CommonCode socialProvider;
+    private String socialProvider;
 
     private String profileImage;
 

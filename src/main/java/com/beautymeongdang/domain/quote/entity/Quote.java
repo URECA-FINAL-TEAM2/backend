@@ -6,6 +6,8 @@ import com.beautymeongdang.global.common.entity.DeletableBaseTimeEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDateTime;
+
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -17,27 +19,24 @@ public class Quote extends DeletableBaseTimeEntity {
     private Long quoteId;
 
     @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "quote_request_id")
-    private QuoteRequest quoteRequest;
+    @JoinColumn(nullable = false)
+    private QuoteRequest quoteRequestId;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "customer_id")
-    private Customer customer;
+    @JoinColumn(nullable = false)
+    private Customer customerId;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "dog_id")
-    private Dog dog;
+    @JoinColumn(nullable = false)
+    private Dog dogId;
 
-    @Column(columnDefinition = "TEXT", nullable = false)
+    @Column(columnDefinition = "TEXT")
     private String content;
 
-    @Column(nullable = false)
     private Integer cost;
 
-    @Column(nullable = false)
-    private String beautyDate;
+    private LocalDateTime beautyDate;
 
-    //공통코드
     private String status;
 
 }

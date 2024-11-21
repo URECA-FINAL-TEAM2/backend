@@ -1,6 +1,5 @@
 package com.beautymeongdang.domain.user.entity;
 
-import com.beautymeongdang.global.common.entity.BaseTimeEntity;
 import com.beautymeongdang.global.common.entity.DeletableBaseTimeEntity;
 import jakarta.persistence.*;
 import lombok.*;
@@ -17,7 +16,7 @@ public class Groomer extends DeletableBaseTimeEntity {
     private Long groomerId;
 
     @OneToOne(fetch = FetchType.LAZY)
-    @Column(nullable = false)
+    @JoinColumn(nullable = false)
     private User userId;
 
     private String skill;

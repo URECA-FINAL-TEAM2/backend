@@ -1,5 +1,6 @@
 package com.beautymeongdang.domain.quote.entity;
 
+import com.beautymeongdang.domain.user.entity.Customer;
 import com.beautymeongdang.global.common.entity.DeletableBaseTimeEntity;
 import jakarta.persistence.*;
 import lombok.*;
@@ -14,11 +15,13 @@ public class SelectedQuote extends DeletableBaseTimeEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long selectedQuoteId;
 
-    @Column(nullable = false)
-    private Long quoteId;
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(nullable = false)
+    private Quote quoteId;
 
-    @Column(nullable = false)
-    private Long customerId;
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(nullable = false)
+    private Customer customerId;
 
     private String status;
 }

@@ -1,11 +1,11 @@
 package com.beautymeongdang.global.region.entity;
 
 import com.beautymeongdang.global.common.entity.BaseTimeEntity;
-import jakarta.persistence.*;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
 import lombok.*;
-
-import java.util.ArrayList;
-import java.util.List;
 
 @Entity
 @Getter
@@ -14,12 +14,8 @@ import java.util.List;
 @Builder
 public class Sido extends BaseTimeEntity{
     @Id
-    @Column(name = "sido_id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Long sidoId;
 
-    private String cityName;
-
-    @OneToMany(mappedBy = "sido")
-    private List<Sigungu> sigungus = new ArrayList<>();
+    private String sidoName;
 }

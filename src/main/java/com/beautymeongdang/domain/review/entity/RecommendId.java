@@ -11,11 +11,11 @@ import lombok.*;
 public class RecommendId {
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "customer_id")
-    private Customer customer;
+    @JoinColumn(nullable = false)
+    private Customer customerId;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "review_id")
-    private Review review;
+    @JoinColumn(nullable = false)
+    private Reviews reviewId;
 
 }

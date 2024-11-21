@@ -14,10 +14,10 @@ public class TotalQuoteRequest{
 
     @Id
     @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "request_id")
-    private QuoteRequest request;
+    @JoinColumn(nullable = false)
+    private QuoteRequest requestId;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "sigungu_id")
-    private Sigungu sigungu;
+    @JoinColumn(nullable = false)
+    private Sigungu sigunguId;
 }

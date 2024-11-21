@@ -1,5 +1,6 @@
 package com.beautymeongdang.domain.notification.entity;
 
+import com.beautymeongdang.domain.user.entity.Groomer;
 import com.beautymeongdang.global.common.entity.BaseTimeEntity;
 import com.beautymeongdang.global.common.entity.CommonCode;
 import jakarta.persistence.*;
@@ -18,15 +19,16 @@ public class GroomerNotify extends BaseTimeEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long notifyId;
 
-    private Long groomerId;
-
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "notify_type", referencedColumnName = "common_code")
-    private CommonCode notifyType;
+    @JoinColumn(nullable = false)
+    private Groomer groomerId;
+
+    private String notifyType;
 
     private String notifyContent;
+
     private String link;
+
     private Boolean readCheckYn;
-    private LocalDateTime createdAt;
 }
 

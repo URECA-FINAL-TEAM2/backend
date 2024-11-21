@@ -15,10 +15,9 @@ public class QuoteRequestImage{
     private Long quoteRequestImageId;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "quote_request_id")
-    private QuoteRequest quoteRequest;
+    @JoinColumn(nullable = false)
+    private QuoteRequest requestId;
 
     private String imageUrl;
-
 }
 

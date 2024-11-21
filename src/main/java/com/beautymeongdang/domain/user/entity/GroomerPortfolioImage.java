@@ -15,12 +15,11 @@ public class GroomerPortfolioImage extends BaseTimeEntity{
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long portfolioImageId;
+    private Long groomerPortfolioImageId;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "groomer_id",nullable = false)
-
-    private Groomer groomer;
+    @JoinColumn(nullable = false)
+    private Groomer groomerId;
 
     private String imageUrl;
     

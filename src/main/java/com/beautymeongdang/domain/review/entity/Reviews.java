@@ -14,11 +14,11 @@ import java.math.BigDecimal;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
-public class Review extends DeletableBaseTimeEntity {
+public class Reviews extends DeletableBaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long reviewId;
+    private Long reviewId;
 
     private String content;
 
@@ -26,15 +26,15 @@ public class Review extends DeletableBaseTimeEntity {
     private BigDecimal starRating;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "groomer_id")
-    private Groomer groomer;
+    @JoinColumn(nullable = false)
+    private Groomer groomerId;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "customer_id")
-    private Customer customer;
+    @JoinColumn(nullable = false)
+    private Customer customerId;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "selected_quote_id")
-    private SelectedQuote selectedQuote;
+    @JoinColumn(nullable = false)
+    private SelectedQuote selectedQuoteId;
 
 }

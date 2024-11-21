@@ -10,9 +10,9 @@ import java.util.Optional;
 
 @Repository
 public interface CommonCodeRepository extends JpaRepository<CommonCode, String> {
-    @Query("SELECT c FROM CommonCode c " +
-            "WHERE c.groupCode.groupCode = :groupCode " +
-            "AND c.commonCode = :commonCode")
-    Optional<CommonCode> findByGroupCodeAndCommonCode(
-            @Param("groupCode") String groupCode, @Param("commonCode") String commonCode);
+//    @Query("SELECT c FROM CommonCode c " +
+//            "WHERE c.groupCode.groupCode = :groupCode " +
+//            "AND c.commonCode = :commonCode")
+//    Optional<CommonCode> findByGroupCodeAndCommonCode(
+//            @Param("groupCode") String groupCode, @Param("commonCode") String commonCode);
 }

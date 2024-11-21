@@ -1,15 +1,21 @@
 package com.beautymeongdang.domain.chat.entity;
 
-import com.beautymeongdang.global.common.entity.BaseTimeEntity;
+import com.beautymeongdang.global.common.entity.DeletableBaseTimeEntity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Getter
 @NoArgsConstructor
-public class ChatMessage extends BaseTimeEntity {
+public class ChatMessage extends DeletableBaseTimeEntity {
 
     private Long messageId;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(nullable = false)
     private Long chatId;
     private String content;
     private Boolean customerYn;

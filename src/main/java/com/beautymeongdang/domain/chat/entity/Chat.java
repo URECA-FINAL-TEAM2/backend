@@ -2,7 +2,7 @@ package com.beautymeongdang.domain.chat.entity;
 
 import com.beautymeongdang.domain.user.entity.Customer;
 import com.beautymeongdang.domain.user.entity.Groomer;
-import com.beautymeongdang.global.common.entity.BaseTimeEntity;
+import com.beautymeongdang.global.common.entity.DeletableBaseTimeEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -11,18 +11,17 @@ import lombok.*;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
-public class Chat extends BaseTimeEntity {
+public class Chat extends DeletableBaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "chat_id")
-    private Long id;
+    private Long chatId;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "customer_id", nullable = false)
-    private Customer customer;
+    @JoinColumn(nullable = false)
+    private Customer customerId;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "groomer_id", nullable = false)
-    private Groomer groomer;
+    @JoinColumn(nullable = false)
+    private Groomer groomerId;
 }

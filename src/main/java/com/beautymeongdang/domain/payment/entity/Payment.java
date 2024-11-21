@@ -1,5 +1,6 @@
 package com.beautymeongdang.domain.payment.entity;
 
+import com.beautymeongdang.domain.quote.entity.SelectedQuote;
 import com.beautymeongdang.global.common.entity.BaseTimeEntity;
 import com.beautymeongdang.global.common.entity.CommonCode;
 import com.beautymeongdang.global.common.entity.DeletableBaseTimeEntity;
@@ -18,20 +19,27 @@ public class Payment extends DeletableBaseTimeEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long paymentId;
 
-    @Column(nullable = false)
-    private Long selectedQuoteId;
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(nullable = false)
+    private SelectedQuote selectedQuoteId;
 
     @Column(nullable = false)
     private Long paymentsKey;
 
     @Column(nullable = false)
     private Long orderId;
-    private String amount;
+
+    @Column(columnDefinition = "TEXT")
+    private String cancelReason;
+
+    private Integer amount;
+
     private String method;
 
     @ManyToOne(fetch = FetchType.LAZY)
     private CommonCode status;
 
     private String impUid;
+
     private LocalDateTime approvedAt;
 }
