@@ -1,7 +1,5 @@
 package com.beautymeongdang.domain.quote.entity;
 
-import com.beautymeongdang.global.common.entity.BaseTimeEntity;
-import com.beautymeongdang.global.common.entity.CommonCode;
 import com.beautymeongdang.global.common.entity.DeletableBaseTimeEntity;
 import jakarta.persistence.*;
 import lombok.*;
@@ -22,7 +20,5 @@ public class SelectedQuote extends DeletableBaseTimeEntity {
     @Column(nullable = false)
     private Long customerId;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(referencedColumnName = "common_id")
-    private CommonCode status;
+    private String status;
 }

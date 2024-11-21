@@ -3,7 +3,7 @@ package com.beautymeongdang.domain.review.entity;
 import com.beautymeongdang.domain.quote.entity.SelectedQuote;
 import com.beautymeongdang.domain.user.entity.Customer;
 import com.beautymeongdang.domain.user.entity.Groomer;
-import com.beautymeongdang.global.common.entity.BaseTimeEntity;
+import com.beautymeongdang.global.common.entity.DeletableBaseTimeEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -14,7 +14,7 @@ import java.math.BigDecimal;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
-public class Review extends BaseTimeEntity {
+public class Review extends DeletableBaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

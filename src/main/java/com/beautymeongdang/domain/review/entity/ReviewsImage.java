@@ -1,6 +1,5 @@
 package com.beautymeongdang.domain.review.entity;
 
-import com.beautymeongdang.global.common.entity.BaseTimeEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -9,7 +8,7 @@ import lombok.*;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
-public class ReviewsImage extends BaseTimeEntity {
+public class ReviewsImage {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

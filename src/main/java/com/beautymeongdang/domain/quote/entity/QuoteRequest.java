@@ -1,8 +1,7 @@
 package com.beautymeongdang.domain.quote.entity;
 
 import com.beautymeongdang.domain.user.entity.Customer;
-import com.beautymeongdang.global.common.entity.BaseTimeEntity;
-import com.beautymeongdang.global.common.entity.CommonCode;
+import com.beautymeongdang.global.common.entity.DeletableBaseTimeEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -11,7 +10,7 @@ import lombok.*;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
-public class QuoteRequest extends BaseTimeEntity {
+public class QuoteRequest extends DeletableBaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

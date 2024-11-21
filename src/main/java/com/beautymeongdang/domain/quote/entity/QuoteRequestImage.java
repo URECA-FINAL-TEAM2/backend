@@ -1,6 +1,5 @@
 package com.beautymeongdang.domain.quote.entity;
 
-import com.beautymeongdang.global.common.entity.BaseTimeEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -9,7 +8,7 @@ import lombok.*;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
-public class QuoteRequestImage extends BaseTimeEntity {
+public class QuoteRequestImage{
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
