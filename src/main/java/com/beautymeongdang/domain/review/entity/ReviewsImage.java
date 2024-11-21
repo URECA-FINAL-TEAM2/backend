@@ -13,11 +13,11 @@ public class ReviewsImage extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long reviesImageId;
-
-    private String imageUrl;
+    private Long reviewsImageId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "review_id")
     private Review review;
+
+    private String imageUrl;
 }

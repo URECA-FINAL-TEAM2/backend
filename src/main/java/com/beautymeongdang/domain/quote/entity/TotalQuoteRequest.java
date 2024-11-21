@@ -1,7 +1,8 @@
 package com.beautymeongdang.domain.quote.entity;
 
-import com.beautymeongdang.global.common.entity.BaseTimeEntity;
-import jakarta.persistence.Entity;
+
+import com.beautymeongdang.global.region.entity.Sigungu;
+import jakarta.persistence.*;
 import lombok.*;
 
 @Entity
@@ -9,5 +10,14 @@ import lombok.*;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
-public class TotalQuoteRequest extends BaseTimeEntity {
+public class TotalQuoteRequest{
+
+    @Id
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "request_id")
+    private QuoteRequest request;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "sigungu_id")
+    private Sigungu sigungu;
 }
