@@ -138,6 +138,17 @@ public class CodeInitializer implements CommandLineRunner {
         em.persist(new CommonCode(new CommonCodeId("030", "800"), groomerNotiGroup, "채팅 알림", true));
         em.persist(new CommonCode(new CommonCodeId("040", "800"), groomerNotiGroup, "리뷰 알림", true));
 
+
+        // 전체 요청인지 1:1 요청인지
+        GroupCode AllorGroomerGroup = new GroupCode("900", "요청 타입 구분");
+        em.persist(AllorGroomerGroup);
+
+        // 고객 알림 구분
+        em.persist(new CommonCode(new CommonCodeId("010", "900"), AllorGroomerGroup, "전체요청", true));
+        em.persist(new CommonCode(new CommonCodeId("020", "900"), AllorGroomerGroup, "1:1요청", true));
+
+
+
         em.flush();
     }
 }
