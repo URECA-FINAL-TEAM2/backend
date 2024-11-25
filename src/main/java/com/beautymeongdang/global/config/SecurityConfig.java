@@ -1,7 +1,11 @@
 package com.beautymeongdang.global.config;
 
 import com.beautymeongdang.domain.login.service.CustomOAuth2UserService;
+import com.beautymeongdang.global.jwt.JWTFilter;
+import com.beautymeongdang.global.jwt.JWTUtil;
+import com.beautymeongdang.global.oauth2.CustomSuccessHandler;
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.Customizer;
@@ -9,69 +13,75 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import java.util.Arrays;
 import java.util.Collections;
 
 @Configuration
 @EnableWebSecurity
+@RequiredArgsConstructor
 public class SecurityConfig {
 
     private final CustomOAuth2UserService customOAuth2UserService;
-
-    public SecurityConfig(CustomOAuth2UserService customOAuth2UserService) {
-        this.customOAuth2UserService = customOAuth2UserService;
-    }
+    private final CustomSuccessHandler customSuccessHandler;
+    private final JWTUtil jwtUtil;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+        http.cors(corsCustomizer -> corsCustomizer.configurationSource(corsConfigurationSource()))
 
-        http.cors(corsCustomizer -> corsCustomizer.configurationSource(new CorsConfigurationSource() {
-            @Override
-            public CorsConfiguration getCorsConfiguration(HttpServletRequest request) {
-                CorsConfiguration configuration = new CorsConfiguration();
+                //csrf disable
+                .csrf((auth) -> auth.disable())
 
-                configuration.setAllowedOrigins(Collections.singletonList("http://localhost:8080"));
-                configuration.setAllowedMethods(Collections.singletonList("*"));
-                configuration.setAllowCredentials(true);
-                configuration.setAllowedHeaders(Collections.singletonList("*"));
-                configuration.setMaxAge(3600L);
+                //Form 로그인 방식 disable
+                .formLogin((auth) -> auth.disable())
 
-                configuration.setExposedHeaders(Collections.singletonList("Set-Cookie"));
-                configuration.setExposedHeaders(Collections.singletonList("Authorization"));
+                //HTTP Basic 인증 방식 disable
+                .httpBasic((auth) -> auth.disable())
 
-                return configuration;
-            }
-        }));
+                //oauth2 설정 수정
+                .oauth2Login(oauth2 -> oauth2
+                        .userInfoEndpoint(userInfo -> userInfo
+                                .userService(customOAuth2UserService))
+                        .successHandler(customSuccessHandler) // OAuth 성공 핸들러 추가
+                )
 
-        //csrf disable
-        http.csrf((auth) -> auth.disable());
+                //경로별 인가 작업
+                .authorizeHttpRequests((auth) -> auth
+                        .requestMatchers("/").permitAll()
+                        .requestMatchers("/api/auth/**").permitAll() // 토큰 관련 API는 모두 허용
+                        .anyRequest().authenticated())
 
-        //Form 로그인 방식 disable
-        http.formLogin((auth) -> auth.disable());
+                //세션 설정 : STATELESS
+                .sessionManagement((session) -> session
+                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 
-        //HTTP Basic 인증 방식 disable
-        http.httpBasic((auth) -> auth.disable());
-
-        //oauth2 설정 수정
-        http.oauth2Login(oauth2 -> oauth2
-                .userInfoEndpoint(userInfo -> userInfo
-                        .userService(customOAuth2UserService))
-                .defaultSuccessUrl("/")
-                .authorizationEndpoint(authorization -> authorization
-                        .baseUri("/oauth2/authorization"))
-        );
-
-        //경로별 인가 작업
-        http.authorizeHttpRequests((auth) -> auth
-                .requestMatchers("/").permitAll()
-                .anyRequest().authenticated());
-
-        //세션 설정 : STATELESS
-        http.sessionManagement((session) -> session
-                .sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+                // JWT 필터 추가
+                .addFilterBefore(new JWTFilter(jwtUtil),
+                        UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
+    }
+
+    // CORS(Cross-Origin Resource Sharing) 설정을 위한 Bean
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+
+        configuration.setAllowedOrigins(Collections.singletonList("http://localhost:8080"));
+        configuration.setAllowedMethods(Collections.singletonList("*"));
+        configuration.setAllowCredentials(true);
+        configuration.setAllowedHeaders(Collections.singletonList("*"));
+        configuration.setMaxAge(3600L);
+
+        configuration.setExposedHeaders(Arrays.asList("Authorization", "Set-Cookie"));
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+        return source;
     }
 }

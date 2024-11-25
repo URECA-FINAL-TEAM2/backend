@@ -14,6 +14,8 @@ import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
+
 @Service
 @AllArgsConstructor
 public class CustomOAuth2UserService extends DefaultOAuth2UserService {
@@ -22,75 +24,47 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
     @Override
     public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
-
         OAuth2User oAuth2User = super.loadUser(userRequest);
-
-        System.out.println(oAuth2User);
-
-        String registrationId = userRequest.getClientRegistration().getRegistrationId();        // 카카오인지 구글인지 구분하기 위함
+        String registrationId = userRequest.getClientRegistration().getRegistrationId();
         OAuth2Response oAuth2Response = null;
         if (registrationId.equals("kakao")) {
-
             oAuth2Response = new KakaoResponse(oAuth2User.getAttributes());
         } else if (registrationId.equals("google")) {
-
             oAuth2Response = new GoogleResponse(oAuth2User.getAttributes());
         } else {
-
-            return null;
+            return null; // 지원하지 않는 제공자 처리
         }
 
-        //리소스 서버에서 발급 받은 정보로 사용자를 특정할 아이디값을 만듬, 카카오인지 구글인지 , 해당 소셜에서 제공해주는 ID 값 받기
-        // OAuth2Service 부분
         String provider = oAuth2Response.getProvider();
         String providerId = oAuth2Response.getProviderId();
         String username = provider + " " + providerId;
 
-        User existData = userRepository.findByUserName(username);
+        Optional<User> existingUser = userRepository.findByUserName(username);
 
-        if (existData == null) {
+        User user;
+        if (existingUser.isEmpty()) {
             // 새 사용자 생성
-            User newUser = User.builder()
+            user = User.builder()
                     .userName(username)
                     .email(oAuth2Response.getEmail())
-                    .nickname(oAuth2Response.getName()) // name 대신 nickname 사용
-                    .role("ROLE_USER")
+                    .nickname(oAuth2Response.getName())
                     .socialProvider(provider)
                     .profileImage(oAuth2Response.getProfileImage())
+                    .role("ROLE_USER") // 새로운 사용자의 역할 설정
                     .build();
-
-            userRepository.save(newUser);
-
-            UserDTO userDTO = UserDTO.builder()
-                    .username(username)
-                    .nickname(oAuth2Response.getName())
-                    .role("ROLE_USER")
-                    .build();
-
-            return new CustomOAuth2User(userDTO);
+            userRepository.save(user);
         } else {
-            // 기존 사용자 정보 업데이트
-            User updatedUser = User.builder()
-                    .userId(existData.getUserId())
-                    .userName(existData.getUserName())
-                    .email(oAuth2Response.getEmail())
-                    .nickname(oAuth2Response.getName())
-                    .role(existData.getRole())
-                    .socialProvider(existData.getSocialProvider())
-                    .profileImage(oAuth2Response.getProfileImage())
-                    .phone(existData.getPhone())
-                    .build();
-
-            userRepository.save(updatedUser);
-
-            UserDTO userDTO = UserDTO.builder()
-                    .username(existData.getUserName())
-                    .nickname(oAuth2Response.getName())
-                    .role(existData.getRole())
-                    .profileImage(oAuth2Response.getProfileImage())
-                    .build();
-
-            return new CustomOAuth2User(userDTO);
+            user = existingUser.get(); // 기존 사용자 가져오기
+            // 필요하다면 OAuth 응답에서 가져온 정보로 기존 사용자 정보를 업데이트합니다.  기존 데이터를 덮어쓰는 것은 주의해야 합니다.
         }
+
+        UserDTO userDTO = UserDTO.builder()
+                .username(user.getUserName())
+                .nickname(user.getNickname())
+                .role(user.getRole())
+                .profileImage(user.getProfileImage())
+                .build();
+
+        return new CustomOAuth2User(userDTO);
     }
 }

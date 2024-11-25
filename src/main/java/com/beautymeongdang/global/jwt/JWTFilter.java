@@ -8,6 +8,7 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -16,59 +17,68 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 
 @AllArgsConstructor
+@Slf4j
 public class JWTFilter extends OncePerRequestFilter {
 
     private final JWTUtil jwtUtil;
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+            throws ServletException, IOException {
 
-        //cookie들을 불러온 뒤 Authorization Key에 담긴 쿠키를 찾음
-        String authorization = null;
-        Cookie[] cookies = request.getCookies();
-        for (Cookie cookie : cookies) {
-
-            System.out.println(cookie.getName());
-            if (cookie.getName().equals("Authorization")) {
-                authorization = cookie.getValue();
+        // Authorization 헤더에서 Access Token 확인
+        String accessToken = request.getHeader("Authorization");
+        if (accessToken != null && accessToken.startsWith("Bearer ")) {
+            accessToken = accessToken.substring(7);
+            processToken(accessToken);
+        } else {
+            // Refresh Token으로부터 새로운 Access Token 발급 시도
+            Cookie[] cookies = request.getCookies();
+            if (cookies != null) {
+                String refreshToken = findRefreshToken(cookies);
+                if (refreshToken != null && !jwtUtil.isExpired(refreshToken)) {
+                    String username = jwtUtil.getUsername(refreshToken);
+                    // 새로운 Access Token 생성
+                    String newAccessToken = jwtUtil.createAccessToken(username, "ROLE_USER", 1000 * 60 * 30L);
+                    response.setHeader("Authorization", "Bearer " + newAccessToken);
+                    processToken(newAccessToken);
+                }
             }
         }
 
-        //Authorization 헤더 검증
-        if (authorization == null) {
-            System.out.println("token null");
-            filterChain.doFilter(request, response);
-            return;
-        }
-
-        //토큰
-        String token = authorization;
-
-        //토큰 소멸 시간 검증
-        if (jwtUtil.isExpired(token)) {
-            System.out.println("token expired");
-            filterChain.doFilter(request, response);
-            return;
-        }
-
-        //토큰에서 username과 role 획득
-        String username = jwtUtil.getUsername(token);
-        String role = jwtUtil.getRole(token);
-
-        //UserDTO Builder 패턴으로 생성
-        UserDTO userDTO = UserDTO.builder()
-                .username(username)
-                .role(role)
-                .build();
-
-        //UserDetails에 회원 정보 객체 담기
-        CustomOAuth2User customOAuth2User = new CustomOAuth2User(userDTO);
-
-        //스프링 시큐리티 인증 토큰 생성
-        Authentication authToken = new UsernamePasswordAuthenticationToken(customOAuth2User, null, customOAuth2User.getAuthorities());
-        //세션에 사용자 등록
-        SecurityContextHolder.getContext().setAuthentication(authToken);
-
         filterChain.doFilter(request, response);
+    }
+
+    private String findRefreshToken(Cookie[] cookies) {
+        for (Cookie cookie : cookies) {
+            if (cookie.getName().equals("refresh_token")) {
+                return cookie.getValue();
+            }
+        }
+        return null;
+    }
+
+    private void processToken(String token) {
+        try {
+            if (!jwtUtil.isExpired(token)) {
+                String username = jwtUtil.getUsername(token);
+                String role = jwtUtil.getRole(token);
+
+                UserDTO userDTO = UserDTO.builder()
+                        .username(username)
+                        .role(role)
+                        .build();
+
+                CustomOAuth2User customOAuth2User = new CustomOAuth2User(userDTO);
+                Authentication authToken = new UsernamePasswordAuthenticationToken(
+                        customOAuth2User,
+                        null,
+                        customOAuth2User.getAuthorities()
+                );
+                SecurityContextHolder.getContext().setAuthentication(authToken);
+            }
+        } catch (Exception e) {
+            System.out.println("Token processing failed: " + e.getMessage());
+        }
     }
 }
