@@ -1,8 +1,6 @@
 package com.beautymeongdang.domain.payment.entity;
 
 import com.beautymeongdang.domain.quote.entity.SelectedQuote;
-import com.beautymeongdang.global.common.entity.BaseTimeEntity;
-import com.beautymeongdang.global.common.entity.CommonCode;
 import com.beautymeongdang.global.common.entity.DeletableBaseTimeEntity;
 import jakarta.persistence.*;
 import lombok.*;
@@ -13,21 +11,21 @@ import java.time.LocalDateTime;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
-@Builder
+@Builder(toBuilder = true)
 public class Payment extends DeletableBaseTimeEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long paymentId;
 
     @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "selectedQuote_id",nullable = false)
+    @JoinColumn(name = "selected_quote_id",nullable = false)
     private SelectedQuote selectedQuoteId;
 
     @Column(nullable = false)
-    private Long paymentsKey;
+    private String paymentKey;
 
     @Column(nullable = false)
-    private Long orderId;
+    private String orderId;
 
     @Column(columnDefinition = "TEXT")
     private String cancelReason;
@@ -36,8 +34,7 @@ public class Payment extends DeletableBaseTimeEntity {
 
     private String method;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    private CommonCode status;
+    private String status;
 
     private String impUid;
 
