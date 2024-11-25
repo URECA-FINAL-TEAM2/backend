@@ -56,6 +56,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
                     .nickname(oAuth2Response.getName()) // name 대신 nickname 사용
                     .role("ROLE_USER")
                     .socialProvider(provider)
+                    .profileImage(oAuth2Response.getProfileImage())
                     .build();
 
             userRepository.save(newUser);
@@ -76,7 +77,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
                     .nickname(oAuth2Response.getName())
                     .role(existData.getRole())
                     .socialProvider(existData.getSocialProvider())
-                    .profileImage(existData.getProfileImage())
+                    .profileImage(oAuth2Response.getProfileImage())
                     .phone(existData.getPhone())
                     .build();
 
@@ -86,6 +87,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
                     .username(existData.getUserName())
                     .nickname(oAuth2Response.getName())
                     .role(existData.getRole())
+                    .profileImage(oAuth2Response.getProfileImage())
                     .build();
 
             return new CustomOAuth2User(userDTO);
