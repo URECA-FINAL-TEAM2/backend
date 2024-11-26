@@ -4,6 +4,7 @@ import com.beautymeongdang.domain.login.dto.CustomOAuth2User;
 import com.beautymeongdang.domain.shop.dto.ShopDTO;
 import com.beautymeongdang.domain.user.dto.CustomerDTO;
 import com.beautymeongdang.domain.user.dto.GroomerDTO;
+import com.beautymeongdang.domain.user.dto.GroomerRegistrationDTO;
 import com.beautymeongdang.domain.user.dto.UserDTO;
 import com.beautymeongdang.domain.user.entity.User;
 import com.beautymeongdang.domain.user.service.UserService;
@@ -32,12 +33,12 @@ public class UserController {
     @PostMapping("/register/groomer")
     public ResponseEntity<?> registerGroomer(
             @AuthenticationPrincipal CustomOAuth2User oauth2User,
-            @RequestBody GroomerDTO groomerDTO,
-            @RequestBody ShopDTO shopDTO) {
+            @RequestBody GroomerRegistrationDTO registrationDTO) {
 
-        User user = userService.registerGroomer(oauth2User.getUsername(), groomerDTO, shopDTO);
+        User user = userService.registerGroomer(oauth2User.getUsername(), registrationDTO);
         return ResponseEntity.ok("미용사 등록이 완료되었습니다.");
     }
+
     @GetMapping("/user/additional-info")
     public String showAdditionalInfoForm(@AuthenticationPrincipal CustomOAuth2User oauth2User, Model model) {
         UserDTO userDTO = oauth2User.getUserDTO();
