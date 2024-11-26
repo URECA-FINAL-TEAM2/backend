@@ -2,6 +2,7 @@ package com.beautymeongdang.domain.quote.entity;
 
 import com.beautymeongdang.domain.dog.entity.Dog;
 import com.beautymeongdang.domain.user.entity.Customer;
+import com.beautymeongdang.domain.user.entity.Groomer;
 import com.beautymeongdang.global.common.entity.DeletableBaseTimeEntity;
 import jakarta.persistence.*;
 import lombok.*;
@@ -19,12 +20,12 @@ public class Quote extends DeletableBaseTimeEntity {
     private Long quoteId;
 
     @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "quoteRequest_id",nullable = false)
+    @JoinColumn(name = "quote_ request_id",nullable = false)
     private QuoteRequest quoteRequestId;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "customer_id",nullable = false)
-    private Customer customerId;
+    @JoinColumn(name = "groomer_id",nullable = false)
+    private Groomer groomerId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "dog_id",nullable = false)
