@@ -68,7 +68,7 @@ public class PaymentServiceImpl implements PaymentService {
                 SelectedQuote selectedQuote = selectedQuoteRepository.findById(request.getSelectedQuoteId())
                         .orElseThrow(() -> new IllegalArgumentException("선택된 견적서를 찾을 수 없습니다."));
 
-                Long groomerId = selectedQuote.getQuoteId().getGroomer().getGroomerId(); // GroomerId 조회
+                Long groomerId = selectedQuote.getQuoteId().getGroomerId().getGroomerId(); // GroomerId 조회
 
                 String shopName = shopRepository.findByGroomerId(groomerId)
                         .orElseThrow(() -> new IllegalArgumentException("샵 정보를 찾을 수 없습니다."))
