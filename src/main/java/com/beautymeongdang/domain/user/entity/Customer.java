@@ -30,9 +30,9 @@ public class Customer extends DeletableBaseTimeEntity {
 
     private String address;
 
-    @Column(precision = 10, scale = 8)
+    @Column(precision = 17, scale = 14)
     private BigDecimal latitude;
 
-    @Column(precision = 10, scale = 8)
+    @Column(precision = 17, scale = 14)
     private BigDecimal longitude;
 }
