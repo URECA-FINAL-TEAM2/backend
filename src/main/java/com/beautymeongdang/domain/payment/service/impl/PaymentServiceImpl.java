@@ -9,6 +9,9 @@ import com.beautymeongdang.domain.payment.repository.PaymentRepository;
 import com.beautymeongdang.domain.payment.service.PaymentService;
 import com.beautymeongdang.domain.quote.entity.SelectedQuote;
 import com.beautymeongdang.domain.quote.repository.SelectedQuoteRepository;
+import com.beautymeongdang.domain.shop.repository.ShopRepository;
+import com.beautymeongdang.domain.user.entity.Groomer;
+import com.beautymeongdang.domain.user.repository.GroomerRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
@@ -29,6 +32,8 @@ public class PaymentServiceImpl implements PaymentService {
 
     private final PaymentRepository paymentRepository;
     private final SelectedQuoteRepository selectedQuoteRepository;
+    private final ShopRepository shopRepository;
+    private final GroomerRepository groomerRepository;
 
     private static final String TOSS_PAYMENTS_CONFIRM_URL = "https://api.tosspayments.com/v1/payments/confirm";
 
@@ -54,18 +59,21 @@ public class PaymentServiceImpl implements PaymentService {
             if (response.getStatusCode() == HttpStatus.OK) {
                 Map<String, Object> responseBody = response.getBody();
 
-                // OffsetDateTime -> LocalDateTime 변환
                 OffsetDateTime approvedAtOffset = OffsetDateTime.parse(responseBody.get("approvedAt").toString());
                 LocalDateTime approvedAt = approvedAtOffset.toLocalDateTime();
 
-                // 결제 수단 추출
                 String method = responseBody.get("method").toString();
 
                 // 선택된 견적서 조회
                 SelectedQuote selectedQuote = selectedQuoteRepository.findById(request.getSelectedQuoteId())
                         .orElseThrow(() -> new IllegalArgumentException("선택된 견적서를 찾을 수 없습니다."));
 
-                // Payment 엔티티 생성 및 저장
+                Long groomerId = selectedQuote.getQuoteId().getGroomer().getGroomerId(); // GroomerId 조회
+
+                String shopName = shopRepository.findByGroomerId(groomerId)
+                        .orElseThrow(() -> new IllegalArgumentException("샵 정보를 찾을 수 없습니다."))
+                        .getShopName();
+
                 Payment payment = Payment.builder()
                         .paymentKey(request.getPaymentKey())
                         .orderId(request.getOrderId())
@@ -73,18 +81,21 @@ public class PaymentServiceImpl implements PaymentService {
                         .method(method)
                         .status("결제 완료")
                         .approvedAt(approvedAt)
-                        .selectedQuoteId(selectedQuote) // 필드 이름 유지
+                        .selectedQuoteId(selectedQuote)
+                        .paymentTitle(shopName)
                         .build();
                 paymentRepository.save(payment);
 
                 return PaymentResponseDto.builder()
                         .paymentKey(request.getPaymentKey())
+                        .orderId(request.getOrderId())
                         .status("결제 완료")
                         .method(method)
                         .approvedAt(approvedAtOffset)
                         .amount(request.getAmount())
                         .selectedQuoteId(request.getSelectedQuoteId())
                         .message("결제 승인 성공")
+                        .paymentTitle(shopName)
                         .build();
             } else {
                 return PaymentResponseDto.builder()
@@ -110,7 +121,6 @@ public class PaymentServiceImpl implements PaymentService {
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.setBasicAuth(secretKey, ""); // 토스 API 인증
 
-        // 취소 이유만 전달
         Map<String, Object> body = Map.of(
                 "cancelReason", request.getCancelReason()
         );
@@ -124,7 +134,6 @@ public class PaymentServiceImpl implements PaymentService {
             if (response.getStatusCode() == HttpStatus.OK) {
                 Map<String, Object> responseBody = response.getBody();
 
-                // Payment 데이터 업데이트
                 Payment payment = paymentRepository.findByPaymentKey(request.getPaymentKey())
                         .orElseThrow(() -> new IllegalArgumentException("결제 정보를 찾을 수 없습니다."));
 
@@ -161,12 +170,21 @@ public class PaymentServiceImpl implements PaymentService {
 
 
     @Override
-    public List<PaymentResponseDto> getPaymentList() {
-        return List.of();
+    public PaymentResponseDto getPaymentDetail(String paymentKey) {
+        Payment payment = paymentRepository.findByPaymentKey(paymentKey)
+                .orElseThrow(() -> new IllegalArgumentException("결제 정보를 찾을 수 없습니다."));
+
+        return PaymentResponseDto.builder()
+                .paymentKey(payment.getPaymentKey())
+                .orderId(payment.getOrderId())
+                .amount(payment.getAmount())
+                .status(payment.getStatus())
+                .method(payment.getMethod())
+                .approvedAt(payment.getApprovedAt().atOffset(OffsetDateTime.now().getOffset())) // LocalDateTime -> OffsetDateTime
+                .selectedQuoteId(payment.getSelectedQuoteId().getSelectedQuoteId())
+                .paymentTitle(payment.getPaymentTitle())
+                .message("결제 내역 조회 성공")
+                .build();
     }
 
-    @Override
-    public PaymentResponseDto getPaymentDetail(String paymentKey) {
-        return null;
-    }
 }

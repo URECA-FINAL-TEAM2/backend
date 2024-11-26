@@ -36,7 +36,7 @@ public class Payment extends DeletableBaseTimeEntity {
 
     private String status;
 
-    private String impUid;
+    private String paymentTitle;
 
     private LocalDateTime approvedAt;
 }

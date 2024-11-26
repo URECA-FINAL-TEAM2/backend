@@ -10,6 +10,7 @@ import java.time.OffsetDateTime;
 @AllArgsConstructor
 @Builder
 public class PaymentResponseDto {
+    private String paymentTitle;
     private String paymentKey;
     private String message;
     private String status;
@@ -17,4 +18,6 @@ public class PaymentResponseDto {
     private OffsetDateTime approvedAt;
     private Integer amount;
     private Long selectedQuoteId;
+    private String orderId;
+    private String cancelReason;
 }

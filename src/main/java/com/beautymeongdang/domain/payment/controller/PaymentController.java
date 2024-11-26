@@ -24,13 +24,6 @@ public class PaymentController {
         return ResponseEntity.ok(response);
     }
 
-    // 결제 내역 목록 조회
-    @GetMapping
-    public ResponseEntity<List<PaymentResponseDto>> getPaymentList() {
-        List<PaymentResponseDto> paymentList = paymentService.getPaymentList();
-        return ResponseEntity.ok(paymentList);
-    }
-
     // 결제 내역 상세 조회
     @GetMapping("/{paymentKey}")
     public ResponseEntity<PaymentResponseDto> getPaymentDetail(@PathVariable String paymentKey) {
