@@ -1,6 +1,7 @@
 package com.beautymeongdang.global.config;
 
 import com.beautymeongdang.domain.login.service.CustomOAuth2UserService;
+import com.beautymeongdang.domain.user.repository.UserRepository;
 import com.beautymeongdang.global.jwt.JWTFilter;
 import com.beautymeongdang.global.jwt.JWTUtil;
 import com.beautymeongdang.global.oauth2.CustomSuccessHandler;
@@ -29,6 +30,7 @@ public class SecurityConfig {
     private final CustomOAuth2UserService customOAuth2UserService;
     private final CustomSuccessHandler customSuccessHandler;
     private final JWTUtil jwtUtil;
+    private final UserRepository userRepository;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -61,7 +63,7 @@ public class SecurityConfig {
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 
                 // JWT 필터 추가
-                .addFilterBefore(new JWTFilter(jwtUtil),
+                .addFilterBefore(new JWTFilter(jwtUtil, userRepository),
                         UsernamePasswordAuthenticationFilter.class);
 
         return http.build();

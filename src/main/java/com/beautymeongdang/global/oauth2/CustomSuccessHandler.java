@@ -14,10 +14,7 @@ import org.springframework.stereotype.Component;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 @Component
 @AllArgsConstructor
@@ -33,18 +30,22 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
         CustomOAuth2User customUserDetails = (CustomOAuth2User) authentication.getPrincipal();
 
-        String username = customUserDetails.getUsername();
-        Collection<? extends GrantedAuthority> authorities = authentication.getAuthorities();
-        Iterator<? extends GrantedAuthority> iterator = authorities.iterator();
-        GrantedAuthority auth = iterator.next();
-        String role = auth.getAuthority();
+        Long userId = customUserDetails.getUserId();
+        String nickname = customUserDetails.getName();
 
-        // Access Token 생성
-        String accessToken = jwtUtil.createAccessToken(username, role, ACCESS_TOKEN_EXPIRE_TIME);
+        Set<String> roles = customUserDetails.getUserDTO().getRoles();
+
+        // Access Token 생성 (userId, nickname, roles 포함)
+        String accessToken = jwtUtil.createAccessToken(
+                userId.toString(),
+                nickname,
+                roles,
+                ACCESS_TOKEN_EXPIRE_TIME
+        );
         System.out.println("Access Token 생성: " + accessToken);
 
-        // Refresh Token 생성
-        String refreshToken = jwtUtil.createRefreshToken(username, REFRESH_TOKEN_EXPIRE_TIME);
+        // Refresh Token 생성 (userId만 포함)
+        String refreshToken = jwtUtil.createRefreshToken(userId.toString(), REFRESH_TOKEN_EXPIRE_TIME);
         System.out.println("Refresh Token 생성: " + refreshToken);
 
         // Refresh Token을 쿠키에 저장
@@ -54,8 +55,9 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         // Access Token을 JSON 응답으로 전송
         Map<String, Object> responseData = new HashMap<>();
         responseData.put("access_token", accessToken);
-        responseData.put("username", username);
-        responseData.put("role", role);
+        responseData.put("userId", userId);
+        responseData.put("nickname", nickname);
+        responseData.put("roles", roles);
 
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");

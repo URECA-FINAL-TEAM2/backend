@@ -39,10 +39,4 @@ public class UserController {
         return ResponseEntity.ok("미용사 등록이 완료되었습니다.");
     }
 
-    @GetMapping("/user/additional-info")
-    public String showAdditionalInfoForm(@AuthenticationPrincipal CustomOAuth2User oauth2User, Model model) {
-        UserDTO userDTO = oauth2User.getUserDTO();
-        model.addAttribute("user", userDTO);
-        return "user/additional-info";
-    }
 }
