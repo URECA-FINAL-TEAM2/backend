@@ -25,7 +25,7 @@ public class SelectedQuoteServiceImpl implements SelectedQuoteService {
         List<SelectedQuote> selectedQuotes = selectedQuoteRepository.findAllByCustomerId(customerId);
 
         return selectedQuotes.stream()
-                .map(this::mapToCustomerResponseDto)
+                .map(this::toCustomerSelectedQuoteDto)
                 .collect(Collectors.toList());
     }
 
@@ -35,13 +35,12 @@ public class SelectedQuoteServiceImpl implements SelectedQuoteService {
         List<SelectedQuote> selectedQuotes = selectedQuoteRepository.findAllByGroomerId(groomerId);
 
         return selectedQuotes.stream()
-                .map(this::mapToGroomerResponseDto)
+                .map(this::toGroomerSelectedQuoteDto)
                 .collect(Collectors.toList());
     }
 
-    // CustomerSelectedQuoteResponseDto 매핑
-    private CustomerSelectedQuoteResponseDto mapToCustomerResponseDto(SelectedQuote selectedQuote) {
-        // Shop 데이터를 ShopRepository에서 가져옴
+    private CustomerSelectedQuoteResponseDto toCustomerSelectedQuoteDto(SelectedQuote selectedQuote) {
+
         String shopName = shopRepository.findByGroomerId(selectedQuote.getQuoteId().getGroomerId().getGroomerId())
                 .map(shop -> shop.getShopName())
                 .orElse("Shop 정보 없음");
@@ -49,23 +48,22 @@ public class SelectedQuoteServiceImpl implements SelectedQuoteService {
         return CustomerSelectedQuoteResponseDto.builder()
                 .selectedQuoteId(selectedQuote.getSelectedQuoteId())
                 .quoteId(selectedQuote.getQuoteId().getQuoteId())
-                .profileImage(selectedQuote.getQuoteId().getGroomerId().getUserId().getProfileImage())
+                .profileImage(selectedQuote.getQuoteId().getDogId().getProfileImage())
                 .shopName(shopName)
-                .GroomerName(selectedQuote.getQuoteId().getGroomerId().getUserId().getNickname())
-                .nickname(selectedQuote.getCustomerId().getUserId().getNickname())
+                .GroomerName(selectedQuote.getQuoteId().getGroomerId().getUserId().getUserName())
                 .beautyDate(selectedQuote.getQuoteId().getBeautyDate())
                 .dogName(selectedQuote.getQuoteId().getDogId().getDogName())
                 .status(selectedQuote.getStatus())
                 .build();
     }
 
-    // GroomerSelectedQuoteResponseDto 매핑
-    private GroomerSelectedQuoteResponseDto mapToGroomerResponseDto(SelectedQuote selectedQuote) {
+    private GroomerSelectedQuoteResponseDto toGroomerSelectedQuoteDto(SelectedQuote selectedQuote) {
         return GroomerSelectedQuoteResponseDto.builder()
                 .selectedQuoteId(selectedQuote.getSelectedQuoteId())
                 .quoteId(selectedQuote.getQuoteId().getQuoteId())
-                .profileImage(selectedQuote.getCustomerId().getUserId().getProfileImage())
-                .customerName(selectedQuote.getCustomerId().getUserId().getNickname())
+                .profileImage(selectedQuote.getQuoteId().getDogId().getProfileImage())
+                .customerName(selectedQuote.getCustomerId().getUserId().getUserName())
+                .nickName(selectedQuote.getCustomerId().getUserId().getNickname())
                 .phone(selectedQuote.getCustomerId().getUserId().getPhone())
                 .dogName(selectedQuote.getQuoteId().getDogId().getDogName())
                 .beautyDate(selectedQuote.getQuoteId().getBeautyDate())
