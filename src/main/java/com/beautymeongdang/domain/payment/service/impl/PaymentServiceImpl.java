@@ -10,17 +10,16 @@ import com.beautymeongdang.domain.payment.service.PaymentService;
 import com.beautymeongdang.domain.quote.entity.SelectedQuote;
 import com.beautymeongdang.domain.quote.repository.SelectedQuoteRepository;
 import com.beautymeongdang.domain.shop.repository.ShopRepository;
-import com.beautymeongdang.domain.user.entity.Groomer;
-import com.beautymeongdang.domain.user.repository.GroomerRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.*;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.web.reactive.function.client.WebClient;
 
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
-import java.util.List;
 import java.util.Map;
 
 @Service
@@ -33,14 +32,12 @@ public class PaymentServiceImpl implements PaymentService {
     private final PaymentRepository paymentRepository;
     private final SelectedQuoteRepository selectedQuoteRepository;
     private final ShopRepository shopRepository;
-    private final GroomerRepository groomerRepository;
+    private final WebClient webClient;
 
     private static final String TOSS_PAYMENTS_CONFIRM_URL = "https://api.tosspayments.com/v1/payments/confirm";
 
     @Override
     public PaymentResponseDto confirmPayment(PaymentRequestDto request) {
-        RestTemplate restTemplate = new RestTemplate();
-
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.setBasicAuth(secretKey, "");
@@ -51,25 +48,24 @@ public class PaymentServiceImpl implements PaymentService {
                 "amount", request.getAmount()
         );
 
-        HttpEntity<Map<String, Object>> entity = new HttpEntity<>(body, headers);
-
         try {
-            ResponseEntity<Map> response = restTemplate.postForEntity(TOSS_PAYMENTS_CONFIRM_URL, entity, Map.class);
+            Map<String, Object> response = webClient.post()
+                    .uri(TOSS_PAYMENTS_CONFIRM_URL)
+                    .headers(httpHeaders -> httpHeaders.addAll(headers))
+                    .bodyValue(body)
+                    .retrieve()
+                    .bodyToMono(new ParameterizedTypeReference<Map<String, Object>>() {})
+                    .block();
 
-            if (response.getStatusCode() == HttpStatus.OK) {
-                Map<String, Object> responseBody = response.getBody();
-
-                OffsetDateTime approvedAtOffset = OffsetDateTime.parse(responseBody.get("approvedAt").toString());
+            if (response != null && response.get("approvedAt") != null) {
+                OffsetDateTime approvedAtOffset = OffsetDateTime.parse(response.get("approvedAt").toString());
                 LocalDateTime approvedAt = approvedAtOffset.toLocalDateTime();
+                String method = response.get("method").toString();
 
-                String method = responseBody.get("method").toString();
-
-                // 선택된 견적서 조회
                 SelectedQuote selectedQuote = selectedQuoteRepository.findById(request.getSelectedQuoteId())
                         .orElseThrow(() -> new IllegalArgumentException("선택된 견적서를 찾을 수 없습니다."));
 
-                Long groomerId = selectedQuote.getQuoteId().getGroomerId().getGroomerId(); // GroomerId 조회
-
+                Long groomerId = selectedQuote.getQuoteId().getGroomerId().getGroomerId();
                 String shopName = shopRepository.findByGroomerId(groomerId)
                         .orElseThrow(() -> new IllegalArgumentException("샵 정보를 찾을 수 없습니다."))
                         .getShopName();
@@ -101,39 +97,52 @@ public class PaymentServiceImpl implements PaymentService {
                 return PaymentResponseDto.builder()
                         .paymentKey(request.getPaymentKey())
                         .status("FAILED")
-                        .message("결제 승인 실패: " + response.getStatusCode())
+                        .message("결제 승인 실패: 응답이 유효하지 않습니다.")
                         .build();
             }
         } catch (Exception e) {
+            if (e instanceof org.springframework.web.reactive.function.client.WebClientResponseException) {
+                org.springframework.web.reactive.function.client.WebClientResponseException we =
+                        (org.springframework.web.reactive.function.client.WebClientResponseException) e;
+
+                String errorBody = we.getResponseBodyAsString();
+                return PaymentResponseDto.builder()
+                        .paymentKey(request.getPaymentKey())
+                        .status("ERROR")
+                        .message("결제 승인 중 오류 발생: " + we.getStatusCode() + ", 응답 본문: " + errorBody)
+                        .build();
+            }
+
             return PaymentResponseDto.builder()
                     .paymentKey(request.getPaymentKey())
                     .status("ERROR")
-                    .message("결제 승인 중 오류 발생: " + e.getMessage())
+                    .message("결제 승인 중 예상치 못한 오류 발생: " + e.getMessage())
                     .build();
         }
     }
 
     @Override
     public PaymentCancelResponseDto cancelPayment(PaymentCancelRequestDto request) {
-        RestTemplate restTemplate = new RestTemplate();
-
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
-        headers.setBasicAuth(secretKey, ""); // 토스 API 인증
+        headers.setBasicAuth(secretKey, "");
 
         Map<String, Object> body = Map.of(
                 "cancelReason", request.getCancelReason()
         );
 
-        HttpEntity<Map<String, Object>> entity = new HttpEntity<>(body, headers);
+        String url = "https://api.tosspayments.com/v1/payments/" + request.getPaymentKey() + "/cancel";
 
         try {
-            String url = "https://api.tosspayments.com/v1/payments/" + request.getPaymentKey() + "/cancel";
-            ResponseEntity<Map> response = restTemplate.postForEntity(url, entity, Map.class);
+            Map<String, Object> response = webClient.post()
+                    .uri(url)
+                    .headers(httpHeaders -> httpHeaders.addAll(headers))
+                    .bodyValue(body)
+                    .retrieve()
+                    .bodyToMono(new ParameterizedTypeReference<Map<String, Object>>() {})
+                    .block();
 
-            if (response.getStatusCode() == HttpStatus.OK) {
-                Map<String, Object> responseBody = response.getBody();
-
+            if (response != null) {
                 Payment payment = paymentRepository.findByPaymentKey(request.getPaymentKey())
                         .orElseThrow(() -> new IllegalArgumentException("결제 정보를 찾을 수 없습니다."));
 
@@ -149,17 +158,29 @@ public class PaymentServiceImpl implements PaymentService {
                         .status("결제 취소")
                         .method(payment.getMethod())
                         .cancelReason(request.getCancelReason())
-                        .selectedQuoteId(payment.getSelectedQuoteId().getSelectedQuoteId()) // 필드 이름 유지
+                        .selectedQuoteId(payment.getSelectedQuoteId().getSelectedQuoteId())
                         .message("결제 취소 성공")
                         .build();
             } else {
                 return PaymentCancelResponseDto.builder()
                         .paymentKey(request.getPaymentKey())
                         .status("FAILED")
-                        .message("결제 취소 실패: " + response.getStatusCode())
+                        .message("결제 취소 실패: 응답이 유효하지 않습니다.")
                         .build();
             }
         } catch (Exception e) {
+            if (e instanceof org.springframework.web.reactive.function.client.WebClientResponseException) {
+                org.springframework.web.reactive.function.client.WebClientResponseException we =
+                        (org.springframework.web.reactive.function.client.WebClientResponseException) e;
+
+                String errorBody = we.getResponseBodyAsString();
+                return PaymentCancelResponseDto.builder()
+                        .paymentKey(request.getPaymentKey())
+                        .status("ERROR")
+                        .message("결제 취소 중 오류 발생: " + we.getStatusCode() + ", 응답 본문: " + errorBody)
+                        .build();
+            }
+
             return PaymentCancelResponseDto.builder()
                     .paymentKey(request.getPaymentKey())
                     .status("ERROR")
