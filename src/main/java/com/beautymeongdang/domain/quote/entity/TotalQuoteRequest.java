@@ -1,7 +1,6 @@
 package com.beautymeongdang.domain.quote.entity;
 
 
-import com.beautymeongdang.global.region.entity.Sigungu;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -12,12 +11,6 @@ import lombok.*;
 @Builder
 public class TotalQuoteRequest{
 
-    @Id
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "request_id",nullable = false)
-    private QuoteRequest requestId;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "sigungu_id",nullable = false)
-    private Sigungu sigunguId;
+    @EmbeddedId
+    private TotalQuoteRequestId totalQuoteRequestId;
 }
