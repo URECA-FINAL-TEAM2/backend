@@ -43,6 +43,6 @@ public class Dog extends DeletableBaseTimeEntity {
     private String profileImage;
 
     public enum DogGender {
-        male, female
+        MALE, FEMALE
     }
 }
