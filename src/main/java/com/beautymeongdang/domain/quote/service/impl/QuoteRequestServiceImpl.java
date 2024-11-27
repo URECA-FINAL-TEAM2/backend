@@ -65,9 +65,9 @@ public class QuoteRequestServiceImpl implements QuoteRequestService {
 
         QuoteRequest savedRequest = quoteRequestRepository.save(quoteRequest);
 
-        TotalQuoteRequestId totalQuoteRequestId = new TotalQuoteRequestId(savedRequest, sigungu);
         TotalQuoteRequest totalQuoteRequest = TotalQuoteRequest.builder()
-                .totalQuoteRequestId(totalQuoteRequestId)
+                .requestId(savedRequest)
+                .sigunguId(sigungu)
                 .build();
 
         totalQuoteRequestRepository.save(totalQuoteRequest);
