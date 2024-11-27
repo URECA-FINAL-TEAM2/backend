@@ -9,6 +9,7 @@ import java.math.BigDecimal;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 public class CustomerDTO {
+    private String nickName;
     private String phone;
     private Long sigunguId;
     private String address;

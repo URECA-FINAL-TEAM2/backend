@@ -10,6 +10,7 @@ import java.math.BigDecimal;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 public class GroomerRegistrationDTO {
+    private String nickName;
     private String phone;
     // Groomer 정보
     private String skill;
