@@ -21,15 +21,17 @@ import com.beautymeongdang.global.region.entity.Sigungu;
 import com.beautymeongdang.global.region.repository.SigunguRepository;
 import com.beautymeongdang.infra.s3.FileStore;
 import lombok.RequiredArgsConstructor;
+import org.springframework.web.multipart.MultipartFile;
+import com.beautymeongdang.domain.quote.dto.GroomerDirectRequestListResponseDto;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
+@Transactional(readOnly = true)
 @RequiredArgsConstructor
 public class QuoteRequestServiceImpl implements QuoteRequestService {
     private final QuoteRequestRepository quoteRequestRepository;
@@ -157,6 +159,13 @@ public class QuoteRequestServiceImpl implements QuoteRequestService {
                         .map(QuoteRequestImage::getImageUrl)
                         .collect(Collectors.toList()))
                 .build();
+      
+
+    // 미용사가 받은 1:1 요청 조회
+    @Override
+    public List<GroomerDirectRequestListResponseDto> getGroomerDirectRequestList(Long groomerId) {
+        return quoteRequestRepository.findQuoteRequestsByGroomerId(groomerId);
+
     }
 
 }
