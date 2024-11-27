@@ -1,6 +1,5 @@
 package com.beautymeongdang.domain.quote.service.impl;
 
-
 import com.beautymeongdang.domain.quote.dto.*;
 import com.beautymeongdang.domain.quote.entity.DirectQuoteRequest;
 import com.beautymeongdang.domain.quote.entity.Quote;
@@ -32,7 +31,6 @@ public class QuoteServiceImpl implements QuoteService {
     private final QuoteRequestImageRepository quoteRequestImageRepository;
     private final ShopRepository shopRepository;
     private final DirectQuoteRequestRepository directQuoteRequestRepository;
-
 
     /**
      * 고객이 자기가 보낸 견적(1:1) 요청을 조회
@@ -71,8 +69,6 @@ public class QuoteServiceImpl implements QuoteService {
                 .build();
     }
 
-
-
     /**
      * 고객이 자기가 보낸 견적(전체) 요청을 조회
      */
@@ -102,7 +98,7 @@ public class QuoteServiceImpl implements QuoteService {
                             .image(request.getDogId().getProfileImage())
                             .dogWeight(request.getDogId().getDogWeight())
                             .dogBreed(request.getDogId().getDogBreed())
-                            .dogAge(request.getDogId().getDogAge() + "세")
+                            .dogAge(String.valueOf(request.getDogId().getDogAge()))  // Removed "세" suffix
                             .requestContent(request.getContent())
                             .quotes(quoteInfos)
                             .build();
@@ -113,7 +109,6 @@ public class QuoteServiceImpl implements QuoteService {
                 .quoteRequests(requestInfos)
                 .build();
     }
-
 
     /**
      견적서 상세 조회
@@ -142,7 +137,7 @@ public class QuoteServiceImpl implements QuoteService {
                         .name(quote.getDogId().getDogName())
                         .image(quote.getDogId().getProfileImage())
                         .weight(quote.getDogId().getDogWeight())
-                        .age(quote.getDogId().getDogAge() + "세")
+                        .age(String.valueOf(quote.getDogId().getDogAge()))  // Removed "세" suffix
                         .dogGender(quote.getDogId().getDogGender().toString())
                         .neutering(quote.getDogId().getNeutering())
                         .requestContent(quote.getRequestId().getContent())
@@ -158,5 +153,4 @@ public class QuoteServiceImpl implements QuoteService {
                         .build())
                 .build();
     }
-
 }
