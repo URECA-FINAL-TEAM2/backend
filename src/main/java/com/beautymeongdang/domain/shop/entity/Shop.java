@@ -34,8 +34,10 @@ public class Shop extends DeletableBaseTimeEntity {
 
     private String address;
 
+    @Column(precision = 17, scale = 14)
     private BigDecimal latitude;
 
+    @Column(precision = 17, scale = 14)
     private BigDecimal longitude;
 
     private String businessTime;
