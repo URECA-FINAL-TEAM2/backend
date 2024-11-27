@@ -42,12 +42,22 @@ public class UserServiceImpl implements UserService {
         try {
             User user = userRepository.findById(userId)
                     .orElseThrow(() -> new EntityNotFoundException("User not found with id: " + userId));
+            // 이미 Customer로 등록되어 있는지 확인
+            if (customerRepository.existsByUserId(user)) {
+                throw new RuntimeException("User is already registered as a customer");
+            }
+
+            // 닉네임 중복 확인
+            if (!user.getNickname().equals(customerDTO.getNickName()) &&
+                    userRepository.existsByNickname(customerDTO.getNickName())) {
+                throw new RuntimeException("Nickname is already in use");
+            }
 
             Role customerRole = roleRepository.findByName("고객")
                     .orElseThrow(() -> new EntityNotFoundException("CUSTOMER role not found"));
 
             addRoleToUser(user, customerRole);
-            user.updateUserInfo(customerDTO.getPhone(), user.getNickname());
+            user.updateUserInfo(customerDTO.getPhone(), customerDTO.getNickName());
 
             Sigungu sigungu = sigunguRepository.findById(customerDTO.getSigunguId())
                     .orElseThrow(() -> new EntityNotFoundException("Sigungu not found with id: " + customerDTO.getSigunguId()));
@@ -73,12 +83,21 @@ public class UserServiceImpl implements UserService {
         try {
             User user = userRepository.findById(userId)
                     .orElseThrow(() -> new EntityNotFoundException("User not found with id: " + userId));
+            // 이미 Groomer로 등록되어 있는지 확인
+            if (groomerRepository.existsByUserId(user)) {
+                throw new RuntimeException("User is already registered as a groomer");
+            }
+            // 닉네임 중복 확인
+            if (!user.getNickname().equals(registrationDTO.getNickName()) &&
+                    userRepository.existsByNickname(registrationDTO.getNickName())) {
+                throw new RuntimeException("Nickname is already in use");
+            }
 
             Role groomerRole = roleRepository.findByName("미용사")
                     .orElseThrow(() -> new EntityNotFoundException("GROOMER role not found"));
 
             addRoleToUser(user, groomerRole);
-            user.updateUserInfo(registrationDTO.getPhone(), user.getNickname());
+            user.updateUserInfo(registrationDTO.getPhone(), registrationDTO.getNickName());
 
             userRepository.save(user);
 

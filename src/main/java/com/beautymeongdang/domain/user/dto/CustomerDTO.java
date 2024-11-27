@@ -15,4 +15,5 @@ public class CustomerDTO {
     private String address;
     private BigDecimal latitude;
     private BigDecimal longitude;
+
 }
