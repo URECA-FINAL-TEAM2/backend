@@ -1,10 +1,12 @@
 package com.beautymeongdang.domain.user.entity;
 
 import com.beautymeongdang.global.common.entity.BaseTimeEntity;
-import com.beautymeongdang.global.common.entity.CommonCode;
 import com.beautymeongdang.global.common.entity.DeletableBaseTimeEntity;
 import jakarta.persistence.*;
 import lombok.*;
+
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Getter
@@ -12,7 +14,6 @@ import lombok.*;
 @AllArgsConstructor
 @Builder
 public class User extends DeletableBaseTimeEntity {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long userId;
@@ -23,14 +24,30 @@ public class User extends DeletableBaseTimeEntity {
     @Column(nullable = false)
     private String email;
 
-    @Column(nullable = false)
+    @Column(nullable = false, unique = true)
     private String nickname;
 
-    private String role;
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private Set<UserRole> userRoles = new HashSet<>();
 
     private String socialProvider;
 
     private String profileImage;
 
     private String phone;
+
+    public void updateUserInfo(String phone, String nickname) {
+        this.phone = phone;
+        this.nickname = nickname;
+    }
+
+    public void addRole(Role role) {
+        UserRole userRole = UserRole.builder().user(this).role(role).build();
+        this.userRoles.add(userRole);
+    }
+
+    public void removeRole(Role role) {
+        this.userRoles.removeIf(userRole -> userRole.getRole().equals(role));
+    }
 }

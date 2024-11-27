@@ -7,7 +7,7 @@ import org.springframework.stereotype.Component;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.StandardCharsets;
-import java.util.Date;
+import java.util.*;
 
 @Component
 public class JWTUtil {
@@ -19,25 +19,23 @@ public class JWTUtil {
     }
 
     public String getUsername(String token) {
-
         return Jwts.parser().verifyWith(secretKey).build().parseSignedClaims(token).getPayload().get("username", String.class);
     }
 
-    public String getRole(String token) {
-
-        return Jwts.parser().verifyWith(secretKey).build().parseSignedClaims(token).getPayload().get("role", String.class);
+    public Set<String> getRoles(String token) {
+        String rolesStr = Jwts.parser().verifyWith(secretKey).build().parseSignedClaims(token).getPayload().get("roles", String.class);
+        return new HashSet<>(Arrays.asList(rolesStr.split(",")));
     }
 
     public Boolean isExpired(String token) {
-
         return Jwts.parser().verifyWith(secretKey).build().parseSignedClaims(token).getPayload().getExpiration().before(new Date());
     }
 
     // Access Token 생성
-    public String createAccessToken(String username, String role, Long expiredMs) {
+    public String createAccessToken(String username, Set<String> roles, Long expiredMs) {
         return Jwts.builder()
                 .claim("username", username)
-                .claim("role", role)
+                .claim("roles", String.join(",", roles))
                 .issuedAt(new Date(System.currentTimeMillis()))
                 .expiration(new Date(System.currentTimeMillis() + expiredMs))
                 .signWith(secretKey)
@@ -54,5 +52,16 @@ public class JWTUtil {
                 .compact();
     }
 
+    // 하위 호환성을 위한 메서드
+    @Deprecated
+    public String getRole(String token) {
+        return Jwts.parser().verifyWith(secretKey).build().parseSignedClaims(token).getPayload().get("role", String.class);
+    }
 
+    // 하위 호환성을 위한 메서드
+    @Deprecated
+    public String createAccessToken(String username, String role, Long expiredMs) {
+        Set<String> roles = new HashSet<>(Collections.singletonList(role));
+        return createAccessToken(username, roles, expiredMs);
+    }
 }

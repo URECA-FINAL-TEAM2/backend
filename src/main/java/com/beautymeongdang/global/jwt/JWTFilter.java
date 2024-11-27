@@ -2,6 +2,7 @@ package com.beautymeongdang.global.jwt;
 
 import com.beautymeongdang.domain.login.dto.CustomOAuth2User;
 import com.beautymeongdang.domain.user.dto.UserDTO;
+import io.jsonwebtoken.Jwts;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
@@ -15,6 +16,9 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
 @AllArgsConstructor
 @Slf4j
@@ -62,11 +66,11 @@ public class JWTFilter extends OncePerRequestFilter {
         try {
             if (!jwtUtil.isExpired(token)) {
                 String username = jwtUtil.getUsername(token);
-                String role = jwtUtil.getRole(token);
+                Set<String> roles = jwtUtil.getRoles(token);
 
                 UserDTO userDTO = UserDTO.builder()
                         .username(username)
-                        .role(role)
+                        .roles(roles)  // Set<String>으로 변경
                         .build();
 
                 CustomOAuth2User customOAuth2User = new CustomOAuth2User(userDTO);
@@ -81,4 +85,5 @@ public class JWTFilter extends OncePerRequestFilter {
             System.out.println("Token processing failed: " + e.getMessage());
         }
     }
+
 }

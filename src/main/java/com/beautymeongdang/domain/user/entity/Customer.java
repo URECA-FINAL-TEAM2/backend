@@ -32,4 +32,12 @@ public class Customer extends DeletableBaseTimeEntity {
     private BigDecimal latitude;
 
     private BigDecimal longitude;
+
+    // Customer 클래스
+    public void updateAddressInfo(Sigungu sigungu, String address, BigDecimal latitude, BigDecimal longitude) {
+        this.sigunguId = sigungu;
+        this.address = address;
+        this.latitude = latitude;
+        this.longitude = longitude;
+    }
 }

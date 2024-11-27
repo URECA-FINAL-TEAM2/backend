@@ -12,4 +12,6 @@ public interface UserService {
     User registerCustomer(String username, CustomerDTO customerDTO);
 
     User registerGroomer(String username, GroomerRegistrationDTO registrationDTO);
+
+
 }

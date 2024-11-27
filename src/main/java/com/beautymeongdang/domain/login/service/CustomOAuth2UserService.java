@@ -5,8 +5,12 @@ import com.beautymeongdang.domain.login.dto.GoogleResponse;
 import com.beautymeongdang.domain.login.dto.KakaoResponse;
 import com.beautymeongdang.domain.login.dto.OAuth2Response;
 import com.beautymeongdang.domain.user.dto.UserDTO;
+import com.beautymeongdang.domain.user.entity.Role;
 import com.beautymeongdang.domain.user.entity.User;
+import com.beautymeongdang.domain.user.entity.UserRole;
+import com.beautymeongdang.domain.user.repository.RoleRepository;
 import com.beautymeongdang.domain.user.repository.UserRepository;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.AllArgsConstructor;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
@@ -15,12 +19,15 @@ import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
 public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
     private final UserRepository userRepository;
+    private final RoleRepository roleRepository; // RoleRepository 추가
 
     @Override
     public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
@@ -32,7 +39,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         } else if (registrationId.equals("google")) {
             oAuth2Response = new GoogleResponse(oAuth2User.getAttributes());
         } else {
-            return null; // 지원하지 않는 제공자 처리
+            return null;
         }
 
         String provider = oAuth2Response.getProvider();
@@ -43,25 +50,30 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
         User user;
         if (existingUser.isEmpty()) {
-            // 새 사용자 생성
             user = User.builder()
                     .userName(username)
                     .email(oAuth2Response.getEmail())
                     .nickname(oAuth2Response.getName())
                     .socialProvider(provider)
                     .profileImage(oAuth2Response.getProfileImage())
-                    .role("ROLE_USER") // 새로운 사용자의 역할 설정
                     .build();
+
+            // RoleRepository를 사용하여 Role 가져오기
+            Role customerRole = roleRepository.findByName("CUSTOMER")
+                    .orElseThrow(() -> new EntityNotFoundException("CUSTOMER role not found"));
+            user.addRole(customerRole); // User 엔티티에서 직접 addRole 메서드 호출
+
             userRepository.save(user);
         } else {
-            user = existingUser.get(); // 기존 사용자 가져오기
-            // 필요하다면 OAuth 응답에서 가져온 정보로 기존 사용자 정보를 업데이트합니다.  기존 데이터를 덮어쓰는 것은 주의해야 합니다.
+            user = existingUser.get();
         }
 
         UserDTO userDTO = UserDTO.builder()
                 .username(user.getUserName())
                 .nickname(user.getNickname())
-                .role(user.getRole())
+                .roles(user.getUserRoles().stream()
+                        .map(userRole -> userRole.getRole().getName())
+                        .collect(Collectors.toSet()))
                 .profileImage(user.getProfileImage())
                 .build();
 
