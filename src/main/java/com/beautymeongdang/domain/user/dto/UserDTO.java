@@ -10,8 +10,10 @@ import java.util.Set;
 @AllArgsConstructor
 @Builder
 public class UserDTO {
+    private Long id;
     private Set<String> roles;
-    private String nickname; // name 대신 nickname 사용
+    private String nickname;
     private String username;
     private String profileImage; // 추가
+
 }

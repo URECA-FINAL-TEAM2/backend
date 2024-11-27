@@ -27,7 +27,7 @@ public class User extends DeletableBaseTimeEntity {
     @Column(nullable = false)
     private String nickname;
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     @Builder.Default
     private Set<UserRole> userRoles = new HashSet<>();
 

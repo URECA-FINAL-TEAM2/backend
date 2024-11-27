@@ -13,7 +13,6 @@ import com.beautymeongdang.domain.user.repository.GroomerRepository;
 import com.beautymeongdang.domain.user.repository.RoleRepository;
 import com.beautymeongdang.domain.user.repository.UserRepository;
 import com.beautymeongdang.domain.user.service.UserService;
-import com.beautymeongdang.global.common.entity.CommonCode;
 import com.beautymeongdang.global.common.repository.CommonCodeRepository;
 import com.beautymeongdang.global.region.entity.Sigungu;
 import com.beautymeongdang.global.region.repository.SigunguRepository;
@@ -22,6 +21,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -35,14 +36,14 @@ public class UserServiceImpl implements UserService {
     private final SigunguRepository sigunguRepository;
     private final CommonCodeRepository commonCodeRepository;
     private final RoleRepository roleRepository;
-    @Override
-    public User registerCustomer(String username, CustomerDTO customerDTO) {
-        try {
-            User user = userRepository.findByUserName(username)
-                    .orElseThrow(() -> new EntityNotFoundException("User not found with username: " + username));
 
-            // RoleRepository를 사용하여 Role 가져오기
-            Role customerRole = roleRepository.findByName("고객") // "CUSTOMER"로 변경
+    @Override
+    public User registerCustomer(Long userId, CustomerDTO customerDTO) {
+        try {
+            User user = userRepository.findById(userId)
+                    .orElseThrow(() -> new EntityNotFoundException("User not found with id: " + userId));
+
+            Role customerRole = roleRepository.findByName("고객")
                     .orElseThrow(() -> new EntityNotFoundException("CUSTOMER role not found"));
 
             addRoleToUser(user, customerRole);
@@ -68,14 +69,14 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User registerGroomer(String username, GroomerRegistrationDTO registrationDTO) {
+    public User registerGroomer(Long userId, GroomerRegistrationDTO registrationDTO) {
         try {
-            User user = userRepository.findByUserName(username)
-                    .orElseThrow(() -> new EntityNotFoundException("User not found with username: " + username));
+            User user = userRepository.findById(userId)
+                    .orElseThrow(() -> new EntityNotFoundException("User not found with id: " + userId));
 
-            // RoleRepository를 사용하여 Role 가져오기
             Role groomerRole = roleRepository.findByName("미용사")
                     .orElseThrow(() -> new EntityNotFoundException("GROOMER role not found"));
+
             addRoleToUser(user, groomerRole);
             user.updateUserInfo(registrationDTO.getPhone(), user.getNickname());
 
@@ -109,6 +110,11 @@ public class UserServiceImpl implements UserService {
             log.error("Groomer registration failed: {}", e.getMessage(), e);
             throw new RuntimeException("Groomer registration failed", e);
         }
+    }
+
+    @Override
+    public Optional<User> findById(Long userId) {
+        return userRepository.findById(userId);
     }
 
     public void addRoleToUser(User user, Role role) {

@@ -26,7 +26,7 @@ public class UserController {
             @AuthenticationPrincipal CustomOAuth2User oauth2User,
             @RequestBody CustomerDTO customerDTO) {
 
-        User user = userService.registerCustomer(oauth2User.getUsername(), customerDTO);
+        User user = userService.registerCustomer(oauth2User.getUserId(), customerDTO);
         return ResponseEntity.ok("고객 등록이 완료되었습니다.");
     }
 
@@ -35,7 +35,7 @@ public class UserController {
             @AuthenticationPrincipal CustomOAuth2User oauth2User,
             @RequestBody GroomerRegistrationDTO registrationDTO) {
 
-        User user = userService.registerGroomer(oauth2User.getUsername(), registrationDTO);
+        User user = userService.registerGroomer(oauth2User.getUserId(), registrationDTO);
         return ResponseEntity.ok("미용사 등록이 완료되었습니다.");
     }
 
