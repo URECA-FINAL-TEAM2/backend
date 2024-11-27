@@ -160,12 +160,11 @@ public class QuoteRequestServiceImpl implements QuoteRequestService {
                         .collect(Collectors.toList()))
                 .build();
 
+    }
 
-        // 미용사가 받은 1:1 요청 조회
-        @Override
-        public List<GroomerDirectRequestListResponseDto> getGroomerDirectRequestList (Long groomerId){
-            return quoteRequestRepository.findQuoteRequestsByGroomerId(groomerId);
-
-        }
+    // 미용사가 받은 1:1 요청 조회
+    @Override
+    public List<GroomerDirectRequestListResponseDto> getGroomerDirectRequestList (Long groomerId){
+        return quoteRequestRepository.findQuoteRequestsByGroomerId(groomerId);
     }
 }
