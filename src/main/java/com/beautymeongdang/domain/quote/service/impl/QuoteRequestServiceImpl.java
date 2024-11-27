@@ -25,7 +25,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import com.beautymeongdang.domain.quote.dto.GroomerDirectRequestListResponseDto;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -160,13 +159,13 @@ public class QuoteRequestServiceImpl implements QuoteRequestService {
                         .map(QuoteRequestImage::getImageUrl)
                         .collect(Collectors.toList()))
                 .build();
-      
 
-    // 미용사가 받은 1:1 요청 조회
-    @Override
-    public List<GroomerDirectRequestListResponseDto> getGroomerDirectRequestList(Long groomerId) {
-        return quoteRequestRepository.findQuoteRequestsByGroomerId(groomerId);
 
+        // 미용사가 받은 1:1 요청 조회
+        @Override
+        public List<GroomerDirectRequestListResponseDto> getGroomerDirectRequestList (Long groomerId){
+            return quoteRequestRepository.findQuoteRequestsByGroomerId(groomerId);
+
+        }
     }
-
 }

@@ -9,6 +9,21 @@ import org.springframework.data.repository.query.Param;
 import java.util.List;
 
 public interface QuoteRequestRepository extends JpaRepository<QuoteRequest, Long> {
+    // '1:1 견적' 요청 조회
+    @Query("SELECT qr FROM QuoteRequest qr " +
+            "JOIN FETCH qr.dogId d " +
+            "WHERE d.customerId.customerId = :customerId " +
+            "AND qr.requestType = '020' " +
+            "ORDER BY qr.createdAt DESC")
+    List<QuoteRequest> findAllByCustomerId(@Param("customerId") Long customerId);
+
+    // '전체 견적' 요청 조회
+    @Query("SELECT DISTINCT qr FROM QuoteRequest qr " +
+            "JOIN FETCH qr.dogId d " +
+            "WHERE d.customerId.customerId = :customerId " +
+            "AND qr.requestType = '010' " +
+            "ORDER BY qr.createdAt DESC")
+    List<QuoteRequest> findAllRequestsByCustomerId(@Param("customerId") Long customerId);
 
     // 미용사가 받은 1:1 요청 조회
     @Query(value = """
