@@ -42,7 +42,7 @@ public class UserServiceImpl implements UserService {
                     .orElseThrow(() -> new EntityNotFoundException("User not found with username: " + username));
 
             // RoleRepository를 사용하여 Role 가져오기
-            Role customerRole = roleRepository.findByName("CUSTOMER") // "CUSTOMER"로 변경
+            Role customerRole = roleRepository.findByName("고객") // "CUSTOMER"로 변경
                     .orElseThrow(() -> new EntityNotFoundException("CUSTOMER role not found"));
 
             addRoleToUser(user, customerRole);
@@ -74,7 +74,7 @@ public class UserServiceImpl implements UserService {
                     .orElseThrow(() -> new EntityNotFoundException("User not found with username: " + username));
 
             // RoleRepository를 사용하여 Role 가져오기
-            Role groomerRole = roleRepository.findByName("GROOMER") // "GROOMER"로 변경
+            Role groomerRole = roleRepository.findByName("미용사")
                     .orElseThrow(() -> new EntityNotFoundException("GROOMER role not found"));
             addRoleToUser(user, groomerRole);
             user.updateUserInfo(registrationDTO.getPhone(), user.getNickname());
