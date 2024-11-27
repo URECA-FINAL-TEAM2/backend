@@ -47,9 +47,9 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         User user;
         if (existingUser.isEmpty()) {
             user = User.builder()
-                    .userName(username)
+                    .userName(oAuth2Response.getName())     // 실제 이름을 userName에 저장
                     .email(oAuth2Response.getEmail())
-                    .nickname(oAuth2Response.getName())
+                    .nickname(username)                     // provider_id를 nickname에 저장
                     .socialProvider(provider)
                     .profileImage(oAuth2Response.getProfileImage())
                     .build();
