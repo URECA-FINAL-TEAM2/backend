@@ -22,19 +22,20 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 @AllArgsConstructor
 @Slf4j
 public class JWTFilter extends OncePerRequestFilter {
-
     private final JWTUtil jwtUtil;
     private final UserRepository userRepository;
+    private final JwtProvider jwtProvider;
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
-            throws ServletException, IOException {
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
+                                    FilterChain filterChain) throws ServletException, IOException {
 
         String accessToken = request.getHeader("Authorization");
         if (accessToken != null && accessToken.startsWith("Bearer ")) {
@@ -49,19 +50,8 @@ public class JWTFilter extends OncePerRequestFilter {
                     if (userId != null) {
                         User user = userRepository.findByIdWithRoles(Long.parseLong(userId))
                                 .orElse(null);
-
                         if (user != null) {
-                            Set<String> roles = user.getUserRoles().stream()
-                                    .map(userRole -> userRole.getRole().getName())
-                                    .collect(Collectors.toSet());
-
-                            String newAccessToken = jwtUtil.createAccessToken(
-                                    userId,
-                                    user.getNickname(),
-                                    roles,
-                                    1000 * 60 * 30L // 30분
-                            );
-                            response.setHeader("Authorization", "Bearer " + newAccessToken);
+                            Map<String, Object> tokenInfo = jwtProvider.createTokens(user, response);
                             processTokenWithUser(user);
                         }
                     }
@@ -85,7 +75,7 @@ public class JWTFilter extends OncePerRequestFilter {
             if (!jwtUtil.isExpired(token)) {
                 String userId = jwtUtil.getUserId(token);
                 if (userId != null) {
-                    User user = userRepository.findById(Long.parseLong(userId))
+                    User user = userRepository.findByIdWithRoles(Long.parseLong(userId))
                             .orElse(null);
                     if (user != null) {
                         processTokenWithUser(user);

@@ -8,11 +8,16 @@ import com.beautymeongdang.domain.user.dto.GroomerRegistrationDTO;
 import com.beautymeongdang.domain.user.dto.UserDTO;
 import com.beautymeongdang.domain.user.entity.User;
 import com.beautymeongdang.domain.user.service.UserService;
+import com.beautymeongdang.global.jwt.JwtProvider;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.token.TokenService;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
 
 @RestController
 @RequiredArgsConstructor
@@ -20,23 +25,31 @@ import org.springframework.web.bind.annotation.*;
 public class UserController {
 
     private final UserService userService;
+    private final JwtProvider jwtProvider;
+
 
     @PostMapping("/register/customer")
     public ResponseEntity<?> registerCustomer(
             @AuthenticationPrincipal CustomOAuth2User oauth2User,
-            @RequestBody CustomerDTO customerDTO) {
+            @RequestBody CustomerDTO customerDTO,
+            HttpServletResponse response) {
 
         User user = userService.registerCustomer(oauth2User.getUserId(), customerDTO);
-        return ResponseEntity.ok("고객 등록이 완료되었습니다.");
+        Map<String, Object> tokenInfo = jwtProvider.createTokens(user, response);
+
+        return ResponseEntity.ok(tokenInfo);
     }
 
     @PostMapping("/register/groomer")
     public ResponseEntity<?> registerGroomer(
             @AuthenticationPrincipal CustomOAuth2User oauth2User,
-            @RequestBody GroomerRegistrationDTO registrationDTO) {
+            @RequestBody GroomerRegistrationDTO registrationDTO,
+            HttpServletResponse response) {
 
         User user = userService.registerGroomer(oauth2User.getUserId(), registrationDTO);
-        return ResponseEntity.ok("미용사 등록이 완료되었습니다.");
+        Map<String, Object> tokenInfo = jwtProvider.createTokens(user, response);
+
+        return ResponseEntity.ok(tokenInfo);
     }
 
 }

@@ -13,10 +13,11 @@ import java.util.*;
 @Component
 @Slf4j
 public class JWTUtil {
-    private SecretKey secretKey;
+    private final SecretKey secretKey;
 
     public JWTUtil(@Value("${spring.jwt.secret}") String secret) {
-        secretKey = new SecretKeySpec(secret.getBytes(StandardCharsets.UTF_8), Jwts.SIG.HS256.key().build().getAlgorithm());
+        secretKey = new SecretKeySpec(secret.getBytes(StandardCharsets.UTF_8),
+                Jwts.SIG.HS256.key().build().getAlgorithm());
     }
 
     public String getUserId(String token) {
@@ -33,18 +34,37 @@ public class JWTUtil {
         }
     }
 
+    public String getNickname(String token) {
+        try {
+            return Jwts.parser().verifyWith(secretKey).build()
+                    .parseSignedClaims(token).getPayload().get("nickname", String.class);
+        } catch (Exception e) {
+            log.warn("Failed to get nickname from token", e);
+            return null;
+        }
+    }
+
     public Set<String> getRoles(String token) {
-        String rolesStr = Jwts.parser().verifyWith(secretKey).build()
-                .parseSignedClaims(token).getPayload().get("roles", String.class);
-        return new HashSet<>(Arrays.asList(rolesStr.split(",")));
+        try {
+            String rolesStr = Jwts.parser().verifyWith(secretKey).build()
+                    .parseSignedClaims(token).getPayload().get("roles", String.class);
+            return new HashSet<>(Arrays.asList(rolesStr.split(",")));
+        } catch (Exception e) {
+            log.warn("Failed to get roles from token", e);
+            return new HashSet<>();
+        }
     }
 
     public Boolean isExpired(String token) {
-        return Jwts.parser().verifyWith(secretKey).build()
-                .parseSignedClaims(token).getPayload().getExpiration().before(new Date());
+        try {
+            return Jwts.parser().verifyWith(secretKey).build()
+                    .parseSignedClaims(token).getPayload().getExpiration().before(new Date());
+        } catch (Exception e) {
+            log.warn("Failed to check token expiration", e);
+            return true;
+        }
     }
 
-    // Access Token 생성
     public String createAccessToken(String userId, String nickname, Set<String> roles, Long expiredMs) {
         return Jwts.builder()
                 .claim("userId", userId)
@@ -56,7 +76,6 @@ public class JWTUtil {
                 .compact();
     }
 
-    // Refresh Token 생성
     public String createRefreshToken(String userId, Long expiredMs) {
         return Jwts.builder()
                 .claim("userId", userId)

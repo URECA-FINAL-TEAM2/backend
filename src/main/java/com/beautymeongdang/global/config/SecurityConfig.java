@@ -4,6 +4,7 @@ import com.beautymeongdang.domain.login.service.CustomOAuth2UserService;
 import com.beautymeongdang.domain.user.repository.UserRepository;
 import com.beautymeongdang.global.jwt.JWTFilter;
 import com.beautymeongdang.global.jwt.JWTUtil;
+import com.beautymeongdang.global.jwt.JwtProvider;
 import com.beautymeongdang.global.oauth2.CustomSuccessHandler;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -31,6 +32,8 @@ public class SecurityConfig {
     private final CustomSuccessHandler customSuccessHandler;
     private final JWTUtil jwtUtil;
     private final UserRepository userRepository;
+    private final JwtProvider jwtProvider;
+
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -63,7 +66,7 @@ public class SecurityConfig {
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 
                 // JWT 필터 추가
-                .addFilterBefore(new JWTFilter(jwtUtil, userRepository),
+                .addFilterBefore(new JWTFilter(jwtUtil, userRepository,jwtProvider),
                         UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
@@ -85,5 +88,10 @@ public class SecurityConfig {
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;
+    }
+
+    @Bean
+    public JWTFilter jwtFilter(JWTUtil jwtUtil, UserRepository userRepository, JwtProvider jwtProvider) {
+        return new JWTFilter(jwtUtil, userRepository, jwtProvider);
     }
 }
