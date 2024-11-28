@@ -56,5 +56,10 @@ public class QuoteRequestController {
         return ApiResponse.ok(200, quoteRequestService.getGroomerDirectRequestList(groomerId), "Get DirectRequestGroomer Success");
     }
 
+    // 미용사가 견적서 보낸 견적 요청 조회
+    @GetMapping("/groomer/send/{groomerId}")
+    public ResponseEntity<?> getGroomerSendQuoteRequest(@PathVariable(name = "groomerId") Long groomerId) {
+        return ApiResponse.ok(200, quoteRequestService.getGroomerSendQuoteRequest(groomerId), "Get RequestGroomerSend Success");
+    }
 
 }

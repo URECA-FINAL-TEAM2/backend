@@ -3,10 +3,7 @@ package com.beautymeongdang.domain.quote.service.impl;
 
 import com.beautymeongdang.domain.dog.entity.Dog;
 import com.beautymeongdang.domain.dog.repository.DogRepository;
-import com.beautymeongdang.domain.quote.dto.CreateInsertRequestAllResponseDto;
-import com.beautymeongdang.domain.quote.dto.CreateInsertRequestAllRequestDto;
-import com.beautymeongdang.domain.quote.dto.CreateInsertRequestGroomerResponseDto;
-import com.beautymeongdang.domain.quote.dto.CreateInsertRequestGroomerRequestDto;
+import com.beautymeongdang.domain.quote.dto.*;
 import com.beautymeongdang.domain.quote.entity.*;
 import com.beautymeongdang.domain.quote.repository.DirectQuoteRequestRepository;
 import com.beautymeongdang.domain.quote.repository.QuoteRequestImageRepository;
@@ -24,7 +21,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
-import com.beautymeongdang.domain.quote.dto.GroomerDirectRequestListResponseDto;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -166,5 +162,11 @@ public class QuoteRequestServiceImpl implements QuoteRequestService {
     @Override
     public List<GroomerDirectRequestListResponseDto> getGroomerDirectRequestList (Long groomerId){
         return quoteRequestRepository.findQuoteRequestsByGroomerId(groomerId);
+    }
+
+    // 미용사가 견적서 보낸 견적 요청 조회
+    @Override
+    public List<GetGroomerSendQuoteRequestResponseDto> getGroomerSendQuoteRequest(Long groomerId) {
+        return quoteRequestRepository.findSendQuoteRequestsByGroomerId(groomerId);
     }
 }
