@@ -169,11 +169,12 @@ public class QuoteRequestServiceImpl implements QuoteRequestService {
     @Override
     public List<GetGroomerQuoteRequestResponseDto> getGroomerTotalRequestList(Long sigunguId) {
         return quoteRequestRepository.findQuoteRequestsBySigunguId(sigunguId);
+    }
 
     // 미용사가 견적서 보낸 견적 요청 조회
     @Override
     public List<GetGroomerSendQuoteRequestResponseDto> getGroomerSendQuoteRequest(Long groomerId) {
         return quoteRequestRepository.findSendQuoteRequestsByGroomerId(groomerId);
-
     }
+
 }
