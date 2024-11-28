@@ -10,5 +10,4 @@ import lombok.*;
 public class PaymentCancelRequestDto {
     private String paymentKey;
     private String cancelReason;
-    private Long selectedQuoteId;
 }
