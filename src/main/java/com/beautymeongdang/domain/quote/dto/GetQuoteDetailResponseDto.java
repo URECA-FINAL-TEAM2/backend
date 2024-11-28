@@ -42,6 +42,7 @@ public class GetQuoteDetailResponseDto {
         private Boolean experience;
         private String significant;
         private String requestContent;
+        private String dogBreed;
         private List<String> requestImage;
     }
     
