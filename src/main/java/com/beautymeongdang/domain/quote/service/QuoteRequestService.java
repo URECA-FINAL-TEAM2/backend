@@ -26,4 +26,7 @@ public interface QuoteRequestService {
     // 미용사 견적서 요청 상세 조회
     GetGroomerRequestDetailResponseDto getGroomerRequestDetail(Long requestId);
 
+    // 미용사 1:1 맞춤 견적 요청 거절
+    UpdateGroomerRequestRejectionResponseDto updateGroomerRequestRejection(UpdateGroomerRequestRejectionRequestDto requestDto);
+
 }
