@@ -6,7 +6,7 @@ import java.time.LocalDateTime;
 
 @Getter
 
-public class CustomerSelectedQuoteResponseDto {
+public class GetCustomerSelectedQuoteResponseDto {
     private final Long selectedQuoteId;
     private final Long quoteId;
     private final String profileImage;
@@ -17,7 +17,7 @@ public class CustomerSelectedQuoteResponseDto {
     private final String status;
 
     @Builder
-    public CustomerSelectedQuoteResponseDto(
+    public GetCustomerSelectedQuoteResponseDto(
             Long selectedQuoteId,
             Long quoteId,
             String profileImage,

@@ -1,15 +1,13 @@
 package com.beautymeongdang.domain.quote.controller;
 
-import com.beautymeongdang.domain.quote.dto.CustomerSelectedQuoteResponseDto;
-import com.beautymeongdang.domain.quote.dto.GroomerSelectedQuoteResponseDto;
+import com.beautymeongdang.domain.quote.dto.GetCustomerSelectedQuoteResponseDto;
+import com.beautymeongdang.domain.quote.dto.GetSelectedQuoteDetailResponseDto;
+import com.beautymeongdang.domain.quote.dto.GetGroomerSelectedQuoteResponseDto;
 import com.beautymeongdang.domain.quote.service.SelectedQuoteService;
 import com.beautymeongdang.global.common.dto.ApiResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -22,17 +20,25 @@ public class SelectedQuoteController {
 
     // 고객 예약 목록 조회
     @GetMapping("/customer")
-    public ResponseEntity<ApiResponse<List<CustomerSelectedQuoteResponseDto>>> getSelectedQuotesForCustomer(
+    public ResponseEntity<ApiResponse<List<GetCustomerSelectedQuoteResponseDto>>> getSelectedQuotesForCustomer(
             @RequestParam Long customerId) {
-        List<CustomerSelectedQuoteResponseDto> reservations = selectedQuoteService.getSelectedQuotesForCustomer(customerId);
+        List<GetCustomerSelectedQuoteResponseDto> reservations = selectedQuoteService.getSelectedQuotesForCustomer(customerId);
         return ApiResponse.ok(200, reservations, "고객 예약 목록 조회 성공");
     }
 
     // 미용사 예약 목록 조회
     @GetMapping("/groomer")
-    public ResponseEntity<ApiResponse<List<GroomerSelectedQuoteResponseDto>>> getSelectedQuotesForGroomer(
+    public ResponseEntity<ApiResponse<List<GetGroomerSelectedQuoteResponseDto>>> getSelectedQuotesForGroomer(
             @RequestParam Long groomerId) {
-        List<GroomerSelectedQuoteResponseDto> reservations = selectedQuoteService.getSelectedQuotesForGroomer(groomerId);
+        List<GetGroomerSelectedQuoteResponseDto> reservations = selectedQuoteService.getSelectedQuotesForGroomer(groomerId);
         return ApiResponse.ok(200, reservations, "미용사 예약 목록 조회 성공");
+    }
+
+    // 예약 상세 조회
+    @GetMapping("/{selectedQuoteId}")
+    public ResponseEntity<ApiResponse<GetSelectedQuoteDetailResponseDto>> getQuoteDetail(
+            @PathVariable Long selectedQuoteId) {
+        GetSelectedQuoteDetailResponseDto reservations = selectedQuoteService.getQuoteDetail(selectedQuoteId);
+        return ApiResponse.ok(200, reservations, "예약 상세 조회 성공");
     }
 }
