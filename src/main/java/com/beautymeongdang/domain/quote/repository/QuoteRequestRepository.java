@@ -1,6 +1,8 @@
 package com.beautymeongdang.domain.quote.repository;
 
+
 import com.beautymeongdang.domain.quote.dto.GetGroomerQuoteRequestResponseDto;
+import com.beautymeongdang.domain.quote.dto.GetGroomerSendQuoteRequestResponseDto;
 import com.beautymeongdang.domain.quote.entity.QuoteRequest;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -92,5 +94,36 @@ public interface QuoteRequestRepository extends JpaRepository<QuoteRequest, Long
                           AND tqr.sigunguId.sigunguId = :sigunguId
            """)
     List<GetGroomerQuoteRequestResponseDto> findQuoteRequestsBySigunguId(@Param("sigunguId") Long sigunguId);
+           
+    // 미용사가 견적서 보낸 견적 요청 조회
+    @Query(value = """
+            SELECT new com.beautymeongdang.domain.quote.dto.GetGroomerSendQuoteRequestResponseDto(
+                            qr.requestId,
+                            u.nickname,
+                            u.profileImage,
+                            qr.beautyDate,
+                            d.dogBreed,
+                            CAST(d.dogGender AS string),
+                            d.dogWeight,
+                            qr.content,
+                            qr.requestType
+                        )
+                        FROM
+                            QuoteRequest qr
+                        LEFT JOIN
+                            Quote q ON q.requestId = qr
+                        JOIN
+                            qr.dogId d
+                        JOIN
+                            d.customerId c
+                        JOIN
+                            c.userId u
+                        WHERE
+                            q.requestId IS NOT NULL
+                          AND qr.isDeleted = false
+                          AND qr.status = '010'
+                          AND q.groomerId.groomerId = :groomerId
+           """)
+    List<GetGroomerSendQuoteRequestResponseDto> findSendQuoteRequestsByGroomerId(@Param("groomerId") Long groomerId);
 
 }
