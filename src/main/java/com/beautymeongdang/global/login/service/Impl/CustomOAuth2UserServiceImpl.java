@@ -1,9 +1,9 @@
-package com.beautymeongdang.domain.login.service.Impl;
+package com.beautymeongdang.global.login.service.Impl;
 
 import com.beautymeongdang.global.oauth2.CustomOAuth2User;
 import com.beautymeongdang.global.oauth2.GoogleResponse;
 import com.beautymeongdang.global.oauth2.KakaoResponse;
-import com.beautymeongdang.domain.login.service.OAuth2ResponseService;
+import com.beautymeongdang.global.login.service.OAuth2ResponseService;
 import com.beautymeongdang.domain.user.dto.UserDTO;
 import com.beautymeongdang.domain.user.entity.User;
 import com.beautymeongdang.domain.user.repository.UserRepository;

@@ -1,6 +1,6 @@
 package com.beautymeongdang.global.config;
 
-import com.beautymeongdang.domain.login.service.Impl.CustomOAuth2UserServiceImpl;
+import com.beautymeongdang.global.login.service.Impl.CustomOAuth2UserServiceImpl;
 import com.beautymeongdang.domain.user.repository.UserRepository;
 import com.beautymeongdang.global.jwt.JWTFilter;
 import com.beautymeongdang.global.jwt.JWTUtil;

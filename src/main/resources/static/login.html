@@ -1,31 +1,136 @@
 <!DOCTYPE html>
+<meta charset="UTF-8">
 <html>
 <head>
-    <title>Login</title>
+    <title>로그인</title>
+    <style>
+        .login-container {
+            width: 300px;
+            margin: 0 auto;
+            text-align: center;
+        }
+        .login-status {
+            margin-top: 20px;
+            font-weight: bold;
+        }
+        .logout-button {
+            margin-top: 10px;
+        }
+    </style>
 </head>
 <body>
+<div class="login-container">
+    <h1>로그인</h1>
+    <a href="/oauth2/authorization/kakao" class="social-login-btn" id="kakaoLogin">
+        카카오 로그인
+    </a>
+    <br>
+    <a href="/oauth2/authorization/google" class="social-login-btn" id="googleLogin">
+        구글 로그인
+    </a>
 
-<h1>Login</h1>
-
-<button onclick="onNaverLogin()">Naver Login</button><br><br>
-
-<button onclick="onKakaoLogin()">Kakao Login</button><br><br>
-
-<button onclick="onGoogleLogin()">Google Login</button>
+    <div class="login-status"></div>  <!-- 로그인 상태 표시를 위한 div 추가 -->
+    <button id="logoutBtn" class="logout-button" style="display: none;">로그아웃</button> <!-- 초기에는 숨김 -->
+</div>
 
 <script>
-    function onNaverLogin() {
-        window.location.href = "http://localhost:8080/oauth2/authorization/naver";
+    // 로그인 상태 확인
+    function checkLoginStatus() {
+        const token = sessionStorage.getItem('access_token');
+        const loginStatusDiv = document.querySelector('.login-status');
+        const logoutButton = document.getElementById('logoutBtn');
+
+        if (token) {
+            loginStatusDiv.textContent = `${sessionStorage.getItem('nickname')}님 로그인되었습니다.`;
+            logoutButton.style.display = 'block'; // 로그아웃 버튼 표시
+            return true;
+        } else {
+            loginStatusDiv.textContent = '로그인되지 않았습니다.';
+            logoutButton.style.display = 'none'; // 로그아웃 버튼 숨김
+            return false;
+        }
     }
 
-    function onKakaoLogin() {
-        window.location.href = "http://localhost:8080/oauth2/authorization/kakao";
+    // OAuth 리다이렉트 처리
+    function handleOAuthRedirect() {
+        const params = new URLSearchParams(window.location.search);
+        const accessToken = params.get('access_token');
+        const userId = params.get('userId');
+        const nickname = params.get('nickname');
+        const roles = params.get('roles');
+
+        if (accessToken) {
+            sessionStorage.setItem('access_token', accessToken);
+            sessionStorage.setItem('userId', userId);
+            sessionStorage.setItem('nickname', nickname);
+            sessionStorage.setItem('roles', roles);
+            window.location.href = '/';
+        }
     }
 
-    function onGoogleLogin() {
-        window.location.href = "http://localhost:8080/oauth2/authorization/google";
+    // 로그아웃
+    async function logout() {
+        try {
+            const response = await fetch('/api/auth/logout', {
+                method: 'POST',
+                credentials: 'include'
+            });
+
+            if (response.ok) {
+                sessionStorage.removeItem('access_token');
+                sessionStorage.removeItem('userId');
+                sessionStorage.removeItem('nickname');
+                sessionStorage.removeItem('roles');
+                window.location.href = '/login';
+            }
+        } catch (error) {
+            console.error('로그아웃 실패:', error);
+        }
+    }
+
+    // API 요청시 사용할 헤더 생성 함수
+    function getAuthHeader() {
+        const token = sessionStorage.getItem('access_token');
+        return {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+        };
+    }
+
+    // 페이지 로드 시 실행
+    document.addEventListener('DOMContentLoaded', () => {
+        if (window.location.pathname === '/oauth2/redirect') {
+            handleOAuthRedirect();
+        }
+
+        // 로그인 상태 확인 및 UI 업데이트
+        checkLoginStatus();
+
+        // 로그아웃 버튼에 이벤트 리스너 추가
+        const logoutBtn = document.getElementById('logoutBtn');
+        if (logoutBtn) {
+            logoutBtn.addEventListener('click', logout);
+        }
+    });
+
+    // API 요청 예시 (필요에 따라 사용)
+    async function fetchProtectedData() {
+        try {
+            const response = await fetch('/api/protected-endpoint', {
+                headers: getAuthHeader()
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                return data;
+            }
+        } catch (error) {
+            console.error('API 요청 실패:', error);
+            if (error.status === 401) {
+                window.location.href = '/login';
+            }
+        }
     }
 </script>
-
 </body>
 </html>

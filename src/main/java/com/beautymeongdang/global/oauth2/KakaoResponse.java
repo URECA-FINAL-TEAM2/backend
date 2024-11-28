@@ -1,6 +1,6 @@
 package com.beautymeongdang.global.oauth2;
 
-import com.beautymeongdang.domain.login.service.OAuth2ResponseService;
+import com.beautymeongdang.global.login.service.OAuth2ResponseService;
 
 import java.util.Map;
 
