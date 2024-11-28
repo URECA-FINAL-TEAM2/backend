@@ -4,6 +4,7 @@ import com.beautymeongdang.global.common.entity.BaseTimeEntity;
 import com.beautymeongdang.global.common.entity.DeletableBaseTimeEntity;
 import com.beautymeongdang.global.region.entity.Sigungu;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Digits;
 import lombok.*;
 
 import java.math.BigDecimal;
@@ -29,8 +30,10 @@ public class Customer extends DeletableBaseTimeEntity {
 
     private String address;
 
+    @Column(precision = 17, scale = 14)
     private BigDecimal latitude;
 
+    @Column(precision = 17, scale = 14)
     private BigDecimal longitude;
 
 }

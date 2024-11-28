@@ -17,7 +17,7 @@ public class DirectQuoteRequestId {
     @JoinColumn(name = "request_id",nullable = false)
     private QuoteRequest requestId;
 
-    @OneToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "groomer_id",nullable = false)
     private Groomer groomerId;
 
