@@ -14,6 +14,7 @@ import java.util.List;
 public class SigunguController {
     private final SigunguService sigunguService;
 
+    // 이거 어따 쓰는거지??
     @GetMapping("/sigungu")
     public ResponseEntity<List<SigunguDto>> getSigunguList(@RequestParam Long sidoId) {
         List<SigunguDto> sigunguList = sigunguService.getSigunguList(sidoId);

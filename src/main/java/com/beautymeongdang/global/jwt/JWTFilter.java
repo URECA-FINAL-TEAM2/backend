@@ -1,12 +1,9 @@
 package com.beautymeongdang.global.jwt;
 
-import com.beautymeongdang.domain.login.dto.CustomOAuth2User;
+import com.beautymeongdang.global.oauth2.CustomOAuth2User;
 import com.beautymeongdang.domain.user.dto.UserDTO;
-import com.beautymeongdang.domain.user.entity.Role;
 import com.beautymeongdang.domain.user.entity.User;
 import com.beautymeongdang.domain.user.repository.UserRepository;
-import com.beautymeongdang.domain.user.service.UserService;
-import io.jsonwebtoken.Jwts;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
@@ -21,9 +18,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 @AllArgsConstructor

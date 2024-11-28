@@ -1,12 +1,11 @@
-package com.beautymeongdang.domain.login.service;
+package com.beautymeongdang.domain.login.service.Impl;
 
-import com.beautymeongdang.domain.login.dto.CustomOAuth2User;
-import com.beautymeongdang.domain.login.dto.GoogleResponse;
-import com.beautymeongdang.domain.login.dto.KakaoResponse;
-import com.beautymeongdang.domain.login.dto.OAuth2Response;
+import com.beautymeongdang.global.oauth2.CustomOAuth2User;
+import com.beautymeongdang.global.oauth2.GoogleResponse;
+import com.beautymeongdang.global.oauth2.KakaoResponse;
+import com.beautymeongdang.domain.login.service.OAuth2ResponseService;
 import com.beautymeongdang.domain.user.dto.UserDTO;
 import com.beautymeongdang.domain.user.entity.User;
-import com.beautymeongdang.domain.user.entity.UserRole;
 import com.beautymeongdang.domain.user.repository.UserRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
@@ -16,12 +15,11 @@ import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
-public class CustomOAuth2UserService extends DefaultOAuth2UserService {
+public class CustomOAuth2UserServiceImpl extends DefaultOAuth2UserService {
 
     private final UserRepository userRepository;
 
@@ -29,7 +27,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
     public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
         OAuth2User oAuth2User = super.loadUser(userRequest);
         String registrationId = userRequest.getClientRegistration().getRegistrationId();
-        OAuth2Response oAuth2Response = null;
+        OAuth2ResponseService oAuth2Response = null;
         if (registrationId.equals("kakao")) {
             oAuth2Response = new KakaoResponse(oAuth2User.getAttributes());
         } else if (registrationId.equals("google")) {

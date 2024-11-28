@@ -1,16 +1,14 @@
 package com.beautymeongdang.global.config;
 
-import com.beautymeongdang.domain.login.service.CustomOAuth2UserService;
+import com.beautymeongdang.domain.login.service.Impl.CustomOAuth2UserServiceImpl;
 import com.beautymeongdang.domain.user.repository.UserRepository;
 import com.beautymeongdang.global.jwt.JWTFilter;
 import com.beautymeongdang.global.jwt.JWTUtil;
 import com.beautymeongdang.global.jwt.JwtProvider;
 import com.beautymeongdang.global.oauth2.CustomSuccessHandler;
-import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -28,7 +26,7 @@ import java.util.Collections;
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-    private final CustomOAuth2UserService customOAuth2UserService;
+    private final CustomOAuth2UserServiceImpl customOAuth2UserService;
     private final CustomSuccessHandler customSuccessHandler;
     private final JWTUtil jwtUtil;
     private final UserRepository userRepository;
@@ -52,13 +50,13 @@ public class SecurityConfig {
                 .oauth2Login(oauth2 -> oauth2
                         .userInfoEndpoint(userInfo -> userInfo
                                 .userService(customOAuth2UserService))
-                        .successHandler(customSuccessHandler) // OAuth 성공 핸들러 추가
+                        .successHandler(customSuccessHandler)
                 )
 
                 //경로별 인가 작업
                 .authorizeHttpRequests((auth) -> auth
                         .requestMatchers("/").permitAll()
-                        .requestMatchers("/api/auth/**").permitAll() // 토큰 관련 API는 모두 허용
+                        .requestMatchers("/api/auth/**").permitAll()
                         .anyRequest().authenticated())
 
                 //세션 설정 : STATELESS

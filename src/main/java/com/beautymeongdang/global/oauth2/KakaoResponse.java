@@ -1,8 +1,10 @@
-package com.beautymeongdang.domain.login.dto;
+package com.beautymeongdang.global.oauth2;
+
+import com.beautymeongdang.domain.login.service.OAuth2ResponseService;
 
 import java.util.Map;
 
-public class KakaoResponse implements OAuth2Response {
+public class KakaoResponse implements OAuth2ResponseService {
 
     private final Map<String, Object> attribute;
     private final Map<String, Object> kakaoAccount;

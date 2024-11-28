@@ -14,6 +14,6 @@ public class UserDTO {
     private Set<String> roles;
     private String nickname;
     private String username;
-    private String profileImage; // 추가
+    private String profileImage;
 
 }

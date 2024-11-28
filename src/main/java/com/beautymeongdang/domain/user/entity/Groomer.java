@@ -4,6 +4,9 @@ import com.beautymeongdang.global.common.entity.DeletableBaseTimeEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.HashSet;
+import java.util.Set;
+
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -19,5 +22,8 @@ public class Groomer extends DeletableBaseTimeEntity {
     @JoinColumn(name = "user_id",nullable = false)
     private User userId;
 
-    private String skill;
+    @OneToMany(mappedBy = "groomer", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private Set<GroomerSkill> groomerSkills = new HashSet<>();
+
 }

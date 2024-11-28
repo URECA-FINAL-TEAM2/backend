@@ -34,26 +34,6 @@ public class JWTUtil {
         }
     }
 
-    public String getNickname(String token) {
-        try {
-            return Jwts.parser().verifyWith(secretKey).build()
-                    .parseSignedClaims(token).getPayload().get("nickname", String.class);
-        } catch (Exception e) {
-            log.warn("Failed to get nickname from token", e);
-            return null;
-        }
-    }
-
-    public Set<String> getRoles(String token) {
-        try {
-            String rolesStr = Jwts.parser().verifyWith(secretKey).build()
-                    .parseSignedClaims(token).getPayload().get("roles", String.class);
-            return new HashSet<>(Arrays.asList(rolesStr.split(",")));
-        } catch (Exception e) {
-            log.warn("Failed to get roles from token", e);
-            return new HashSet<>();
-        }
-    }
 
     public Boolean isExpired(String token) {
         try {

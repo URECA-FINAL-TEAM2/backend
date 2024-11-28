@@ -2,18 +2,11 @@ package com.beautymeongdang.domain.user.service.Impl;
 
 import com.beautymeongdang.domain.shop.entity.Shop;
 import com.beautymeongdang.domain.shop.repository.ShopRepository;
-import com.beautymeongdang.domain.user.dto.CustomerDTO;
-import com.beautymeongdang.domain.user.dto.GroomerRegistrationDTO;
-import com.beautymeongdang.domain.user.entity.Customer;
-import com.beautymeongdang.domain.user.entity.Groomer;
-import com.beautymeongdang.domain.user.entity.Role;
-import com.beautymeongdang.domain.user.entity.User;
-import com.beautymeongdang.domain.user.repository.CustomerRepository;
-import com.beautymeongdang.domain.user.repository.GroomerRepository;
-import com.beautymeongdang.domain.user.repository.RoleRepository;
-import com.beautymeongdang.domain.user.repository.UserRepository;
+import com.beautymeongdang.domain.user.dto.CustomerRegisterRequestDTO;
+import com.beautymeongdang.domain.user.dto.GroomerRegisterRequestDTO;
+import com.beautymeongdang.domain.user.entity.*;
+import com.beautymeongdang.domain.user.repository.*;
 import com.beautymeongdang.domain.user.service.UserService;
-import com.beautymeongdang.global.common.repository.CommonCodeRepository;
 import com.beautymeongdang.global.region.entity.Sigungu;
 import com.beautymeongdang.global.region.repository.SigunguRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -22,6 +15,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Optional;
 
 @Slf4j
@@ -34,11 +30,12 @@ public class UserServiceImpl implements UserService {
     private final CustomerRepository customerRepository;
     private final ShopRepository shopRepository;
     private final SigunguRepository sigunguRepository;
-    private final CommonCodeRepository commonCodeRepository;
     private final RoleRepository roleRepository;
+    private final SkillRepository skillRepository;
+
 
     @Override
-    public User registerCustomer(Long userId, CustomerDTO customerDTO) {
+    public User registerCustomer(Long userId, CustomerRegisterRequestDTO customerDTO) {
         try {
             User user = userRepository.findById(userId)
                     .orElseThrow(() -> new EntityNotFoundException("User not found with id: " + userId));
@@ -79,7 +76,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User registerGroomer(Long userId, GroomerRegistrationDTO registrationDTO) {
+    public User registerGroomer(Long userId, GroomerRegisterRequestDTO registrationDTO) {
         try {
             User user = userRepository.findById(userId)
                     .orElseThrow(() -> new EntityNotFoundException("User not found with id: " + userId));
@@ -106,10 +103,21 @@ public class UserServiceImpl implements UserService {
 
             Groomer groomer = Groomer.builder()
                     .userId(user)
-                    .skill(registrationDTO.getSkill())
                     .build();
 
             groomerRepository.save(groomer);
+
+            // 쉼표로 구분된 skill 문자열을 배열로 분할하고 List로 변환
+            String[] skills = registrationDTO.getSkill().split(",");
+            List<String> skillList = Arrays.asList(skills);
+
+            for (String skillName : skillList) {
+                Skill skill = skillRepository.findBySkillName(skillName.trim())
+                        .orElseGet(() -> skillRepository.save(new Skill(null, skillName.trim(), new HashSet<>())));
+
+                GroomerSkill groomerSkill = new GroomerSkill(null, groomer, skill);
+                groomer.getGroomerSkills().add(groomerSkill);
+            }
 
             Shop shop = Shop.builder()
                     .groomerId(groomer)
@@ -131,18 +139,10 @@ public class UserServiceImpl implements UserService {
         }
     }
 
-    @Override
-    public Optional<User> findById(Long userId) {
-        return userRepository.findById(userId);
-    }
 
     public void addRoleToUser(User user, Role role) {
         user.addRole(role);
         userRepository.save(user);
     }
 
-    public void removeRoleFromUser(User user, Role role) {
-        user.removeRole(role);
-        userRepository.save(user);
-    }
 }

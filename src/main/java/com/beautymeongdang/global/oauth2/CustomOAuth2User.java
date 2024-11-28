@@ -1,4 +1,4 @@
-package com.beautymeongdang.domain.login.dto;
+package com.beautymeongdang.global.oauth2;
 
 import com.beautymeongdang.domain.user.dto.UserDTO;
 import lombok.AllArgsConstructor;
@@ -42,10 +42,6 @@ public class CustomOAuth2User implements OAuth2User {
     @Override
     public String getName() {
         return userDTO.getNickname();
-    }
-
-    public String getUsername() {
-        return userDTO.getUsername();
     }
 
     public UserDTO getUserDTO() {
