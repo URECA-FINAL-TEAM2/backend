@@ -1,6 +1,5 @@
 package com.beautymeongdang.domain.quote.dto;
 
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -22,7 +21,6 @@ public class GetGroomerRequestDetailResponseDto {
     private String nickname;
 
     // dog
-    private Long dogId;
     private String dogProfileImage;
     private String dogName;
     private String dogBreed;
@@ -38,7 +36,7 @@ public class GetGroomerRequestDetailResponseDto {
 
     @Builder
     public GetGroomerRequestDetailResponseDto(Long requestId, LocalDateTime expiryDate, LocalDateTime beautyDate, String requestContent,
-                                              String userProfileImage, String nickname, Long dogId, String dogProfileImage,
+                                              String userProfileImage, String nickname, String dogProfileImage,
                                               String dogName, String dogBreed, String dogWeight, Integer dogAge, String dogGender,
                                               Boolean neutering, Boolean experience, String significant, List<String> requestImages) {
         this.requestId = requestId;
@@ -47,7 +45,6 @@ public class GetGroomerRequestDetailResponseDto {
         this.requestContent = requestContent;
         this.userProfileImage = userProfileImage;
         this.nickname = nickname;
-        this.dogId = dogId;
         this.dogProfileImage = dogProfileImage;
         this.dogName = dogName;
         this.dogBreed = dogBreed;
