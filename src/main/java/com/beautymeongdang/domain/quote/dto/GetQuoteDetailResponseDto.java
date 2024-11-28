@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Getter
@@ -38,6 +39,8 @@ public class GetQuoteDetailResponseDto {
         private String age;
         private String dogGender;
         private Boolean neutering;
+        private Boolean experience;
+        private String significant;
         private String requestContent;
         private List<String> requestImage;
     }
@@ -48,7 +51,7 @@ public class GetQuoteDetailResponseDto {
     @NoArgsConstructor
     public static class QuoteInfo {
         private Long quoteId;
-        private String beautyDate;
+        private LocalDateTime beautyDate;
         private Integer cost;
         private String quoteContent;
     }

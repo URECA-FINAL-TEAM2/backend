@@ -3,6 +3,8 @@ package com.beautymeongdang.domain.quote.dto;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
+
+import java.time.LocalDateTime;
 import java.util.List;
 
 
@@ -26,7 +28,7 @@ public class GetQuotesGroomerResponseDto {
         private final String status;
         private final String shopName;
         private final String groomerName;
-        private final String beautyDate;
+        private final LocalDateTime beautyDate;
         private final String requestContent;
     }
 

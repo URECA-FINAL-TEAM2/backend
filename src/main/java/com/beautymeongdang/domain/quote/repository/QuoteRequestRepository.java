@@ -16,6 +16,7 @@ public interface QuoteRequestRepository extends JpaRepository<QuoteRequest, Long
             "JOIN FETCH qr.dogId d " +
             "WHERE d.customerId.customerId = :customerId " +
             "AND qr.requestType = '020' " +
+            "AND qr.isDeleted = false " +
             "ORDER BY qr.createdAt DESC")
     List<QuoteRequest> findAllByCustomerId(@Param("customerId") Long customerId);
 
@@ -24,6 +25,7 @@ public interface QuoteRequestRepository extends JpaRepository<QuoteRequest, Long
             "JOIN FETCH qr.dogId d " +
             "WHERE d.customerId.customerId = :customerId " +
             "AND qr.requestType = '010' " +
+            "AND qr.isDeleted = false " +
             "ORDER BY qr.createdAt DESC")
     List<QuoteRequest> findAllRequestsByCustomerId(@Param("customerId") Long customerId);
 
