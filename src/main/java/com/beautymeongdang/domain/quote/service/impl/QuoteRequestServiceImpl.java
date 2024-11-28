@@ -10,8 +10,12 @@ import com.beautymeongdang.domain.quote.repository.QuoteRequestImageRepository;
 import com.beautymeongdang.domain.quote.repository.QuoteRequestRepository;
 import com.beautymeongdang.domain.quote.repository.TotalQuoteRequestRepository;
 import com.beautymeongdang.domain.quote.service.QuoteRequestService;
+import com.beautymeongdang.domain.user.entity.Customer;
 import com.beautymeongdang.domain.user.entity.Groomer;
+import com.beautymeongdang.domain.user.entity.User;
+import com.beautymeongdang.domain.user.repository.CustomerRepository;
 import com.beautymeongdang.domain.user.repository.GroomerRepository;
+import com.beautymeongdang.domain.user.repository.UserRepository;
 import com.beautymeongdang.global.common.entity.UploadedFile;
 import com.beautymeongdang.global.exception.handler.NotFoundException;
 import com.beautymeongdang.global.region.entity.Sigungu;
@@ -39,6 +43,8 @@ public class QuoteRequestServiceImpl implements QuoteRequestService {
     private final SigunguRepository sigunguRepository;
     private final QuoteRequestImageRepository quoteRequestImageRepository;
     private final FileStore fileStore;
+    private final CustomerRepository customerRepository;
+    private final UserRepository userRepository;
 
     /**
      전체 견적서 요청하기
@@ -175,6 +181,52 @@ public class QuoteRequestServiceImpl implements QuoteRequestService {
     @Override
     public List<GetGroomerSendQuoteRequestResponseDto> getGroomerSendQuoteRequest(Long groomerId) {
         return quoteRequestRepository.findSendQuoteRequestsByGroomerId(groomerId);
+    }
+
+    // 미용사 견적서 요청 상세 조회
+    @Override
+    public GetGroomerRequestDetailResponseDto getGroomerRequestDetail(Long requestId) {
+        // 견적서 요청
+        QuoteRequest quoteRequest = quoteRequestRepository.findById(requestId)
+                .orElseThrow(() -> NotFoundException.entityNotFound("견적서 요청"));
+
+        // dog
+        Dog dog = dogRepository.findById(quoteRequest.getDogId().getDogId())
+                .orElseThrow(() -> NotFoundException.entityNotFound("강아지"));
+
+        // user
+        Customer customer = customerRepository.findById(dog.getCustomerId().getCustomerId())
+                .orElseThrow(() -> NotFoundException.entityNotFound("고객"));
+
+        User user = userRepository.findById(customer.getUserId().getUserId())
+                .orElseThrow(() -> NotFoundException.entityNotFound("사용자"));
+
+        // quoteRequestImage
+        List<QuoteRequestImage> getQuoteRequestImageList = quoteRequestImageRepository.findAllByRequestId(requestId);
+        List<String> quoteRequestImageList = new ArrayList<>();
+        for (QuoteRequestImage quoteRequestImage : getQuoteRequestImageList) {
+            quoteRequestImageList.add(quoteRequestImage.getImageUrl());
+        }
+
+        return GetGroomerRequestDetailResponseDto.builder()
+                .requestId(quoteRequest.getRequestId())
+                .expiryDate(quoteRequest.getCreatedAt().plusDays(2))
+                .beautyDate(quoteRequest.getBeautyDate())
+                .requestContent(quoteRequest.getContent())
+                .userProfileImage(user.getProfileImage())
+                .nickname(user.getNickname())
+                .dogId(dog.getDogId())
+                .dogProfileImage(dog.getProfileImage())
+                .dogName(dog.getDogName())
+                .dogBreed(dog.getDogBreed())
+                .dogWeight(dog.getDogWeight())
+                .dogAge(dog.getDogAge())
+                .dogGender(dog.getDogGender().name())
+                .neutering(dog.getNeutering())
+                .experience(dog.getExperience())
+                .significant(dog.getSignificant())
+                .requestImages(quoteRequestImageList)
+                .build();
     }
 
 }

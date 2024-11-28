@@ -69,4 +69,10 @@ public class QuoteRequestController {
 
     }
 
+    // 미용사 견적서 요청 상세 조회
+    @GetMapping("/groomer/detail/{requestId}")
+    public ResponseEntity<?> getGroomerDetailQuoteRequest(@PathVariable(name = "requestId") Long requestId) {
+        return ApiResponse.ok(200, quoteRequestService.getGroomerRequestDetail(requestId), "Get RequestDetail Success");
+    }
+
 }
