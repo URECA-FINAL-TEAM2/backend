@@ -9,10 +9,13 @@ import java.util.List;
 public interface QuoteRequestService {
 
     // 전체 견적서 요청하기
-    CreateInsertRequestAllResponseDto createInsertRequestAll(CreateInsertRequestAllRequestDto requestDto, List<MultipartFile> images);
+    CreateInsertRequestAllResponseDto createInsertRequestAll(Long customerId, CreateInsertRequestAllRequestDto requestDto, List<MultipartFile> images);
 
     // 1:1 견적서 요청하기
-    CreateInsertRequestGroomerResponseDto createInsertRequestGroomer(CreateInsertRequestGroomerRequestDto requestDto, List<MultipartFile> images);
+    CreateInsertRequestGroomerResponseDto createInsertRequestGroomer(Long customerId, CreateInsertRequestGroomerRequestDto requestDto, List<MultipartFile> images);
+
+    // 고객이 선택한 반려견 정보 조회
+    GetDogInfoResponseDto getDogInfo(Long dogId, Long customerId);
 
     // 미용사가 받은 1:1 요청 조회
     List<GetGroomerQuoteRequestResponseDto> getGroomerDirectRequestList(Long groomerId);
