@@ -28,9 +28,10 @@ public class QuoteRequestController {
      */
     @PostMapping(value = "/all", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ApiResponse<CreateInsertRequestAllResponseDto>> createInsertRequestAll(
+            @RequestParam Long customerId,
             @RequestPart CreateInsertRequestAllRequestDto requestDto,
             @RequestPart(required = false) List<MultipartFile> images) {
-        CreateInsertRequestAllResponseDto responseDto = quoteRequestService.createInsertRequestAll(requestDto, images);
+        CreateInsertRequestAllResponseDto responseDto = quoteRequestService.createInsertRequestAll(customerId, requestDto, images);
         return ApiResponse.ok(200, responseDto, "전체 견적서 요청 성공");
     }
 
@@ -40,11 +41,25 @@ public class QuoteRequestController {
      */
     @PostMapping(value = "/groomer", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ApiResponse<CreateInsertRequestGroomerResponseDto>> createInsertRequestGroomer(
+            @RequestParam Long customerId,
             @RequestPart CreateInsertRequestGroomerRequestDto requestDto,
             @RequestPart(required = false) List<MultipartFile> images) {
-        CreateInsertRequestGroomerResponseDto responseDto = quoteRequestService.createInsertRequestGroomer(requestDto, images);
+        CreateInsertRequestGroomerResponseDto responseDto = quoteRequestService.createInsertRequestGroomer(customerId, requestDto, images);
         return ApiResponse.ok(200, responseDto, "1:1 견적서 요청 성공");
     }
+
+
+    /**
+     * 선택한 반려견 정보 조회
+     */
+    @GetMapping("/dog/info")
+    public ResponseEntity<ApiResponse<GetDogInfoResponseDto>> getDogInfo(
+            @RequestParam Long customerId,
+            @RequestBody GetDogInfoRequestDto requestDto) {
+        GetDogInfoResponseDto responseDto = quoteRequestService.getDogInfo(requestDto.getDogId(), customerId);
+        return ApiResponse.ok(200, responseDto, "선택한 반려견 조회 성공");
+    }
+
 
 
     // 미용사가 받은 1:1 요청 조회
