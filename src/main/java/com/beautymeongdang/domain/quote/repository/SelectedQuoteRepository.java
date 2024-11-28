@@ -1,5 +1,7 @@
 package com.beautymeongdang.domain.quote.repository;
 
+import com.beautymeongdang.domain.quote.dto.CustomerSelectedQuoteResponseDto;
+import com.beautymeongdang.domain.quote.dto.GroomerSelectedQuoteResponseDto;
 import com.beautymeongdang.domain.quote.entity.SelectedQuote;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -11,19 +13,26 @@ import java.util.List;
 @Repository
 public interface SelectedQuoteRepository extends JpaRepository<SelectedQuote, Long> {
 
-    // 고객 ID로 예약 목록 조회
-    @Query("SELECT sq FROM SelectedQuote sq " +
-            "JOIN FETCH sq.quoteId q " +
-            "JOIN FETCH q.groomerId g " +
-            "JOIN FETCH Shop s ON s.groomerId = g " + // Shop과 Groomer 조인
+    @Query("SELECT new com.beautymeongdang.domain.quote.dto.CustomerSelectedQuoteResponseDto(" +
+            "sq.selectedQuoteId, q.quoteId, d.profileImage, s.shopName, " +
+            "g.userId.userName, q.beautyDate, d.dogName, sq.status) " +
+            "FROM SelectedQuote sq " +
+            "JOIN sq.quoteId q " +
+            "JOIN q.dogId d " +
+            "JOIN q.groomerId g " +
+            "JOIN Shop s ON s.groomerId = g " +
             "WHERE sq.customerId.customerId = :customerId AND sq.isDeleted = false")
-    List<SelectedQuote> findAllByCustomerId(@Param("customerId") Long customerId);
+    List<CustomerSelectedQuoteResponseDto> findCustomerSelectedQuotes(@Param("customerId") Long customerId);
 
 
-    // 미용사 ID로 예약 목록 조회
-    @Query("SELECT sq FROM SelectedQuote sq " +
-            "JOIN FETCH sq.quoteId q " +
-            "JOIN FETCH sq.customerId c " +
+    @Query("SELECT new com.beautymeongdang.domain.quote.dto.GroomerSelectedQuoteResponseDto(" +
+            "sq.selectedQuoteId, q.quoteId, d.profileImage, c.userId.userName, " +
+            "c.userId.nickname, c.userId.phone, d.dogName, q.beautyDate, sq.status) " +
+            "FROM SelectedQuote sq " +
+            "JOIN sq.quoteId q " +
+            "JOIN sq.customerId c " +
+            "JOIN q.dogId d " +
             "WHERE q.groomerId.groomerId = :groomerId AND sq.isDeleted = false")
-    List<SelectedQuote> findAllByGroomerId(@Param("groomerId") Long groomerId);
+    List<GroomerSelectedQuoteResponseDto> findGroomerSelectedQuotes(@Param("groomerId") Long groomerId);
+
 }
