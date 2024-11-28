@@ -1,10 +1,7 @@
 package com.beautymeongdang.domain.quote.controller;
 
 
-import com.beautymeongdang.domain.quote.dto.CreateInsertRequestAllResponseDto;
-import com.beautymeongdang.domain.quote.dto.CreateInsertRequestAllRequestDto;
-import com.beautymeongdang.domain.quote.dto.CreateInsertRequestGroomerResponseDto;
-import com.beautymeongdang.domain.quote.dto.CreateInsertRequestGroomerRequestDto;
+import com.beautymeongdang.domain.quote.dto.*;
 import com.beautymeongdang.domain.quote.service.QuoteRequestService;
 import com.beautymeongdang.global.common.dto.ApiResponse;
 import lombok.RequiredArgsConstructor;
@@ -73,6 +70,12 @@ public class QuoteRequestController {
     @GetMapping("/groomer/detail/{requestId}")
     public ResponseEntity<?> getGroomerDetailQuoteRequest(@PathVariable(name = "requestId") Long requestId) {
         return ApiResponse.ok(200, quoteRequestService.getGroomerRequestDetail(requestId), "Get RequestDetail Success");
+    }
+
+    // 미용사 1:1 맞춤 견적 요청 거절
+    @PutMapping("/groomer")
+    public ResponseEntity<?> updateGroomerRequestRejection(@RequestBody UpdateGroomerRequestRejectionRequestDto dto) {
+        return ApiResponse.ok(200, quoteRequestService.updateGroomerRequestRejection(dto), "Update RequestRejection Success");
     }
 
 }

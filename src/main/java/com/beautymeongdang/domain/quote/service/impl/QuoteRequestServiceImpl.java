@@ -228,4 +228,49 @@ public class QuoteRequestServiceImpl implements QuoteRequestService {
                 .build();
     }
 
+    // 미용사 1:1 맞춤 견적 요청 거절
+    @Override
+    @Transactional
+    public UpdateGroomerRequestRejectionResponseDto updateGroomerRequestRejection(UpdateGroomerRequestRejectionRequestDto requestDto) {
+        QuoteRequest quoteRequest = quoteRequestRepository.findById(requestDto.getRequestId())
+                .orElseThrow(() -> NotFoundException.entityNotFound("견적서 요청"));
+
+        QuoteRequest updateQuoteRequest = QuoteRequest.builder()
+                .requestId(requestDto.getRequestId())
+                .dogId(quoteRequest.getDogId())
+                .content(quoteRequest.getContent())
+                .beautyDate(quoteRequest.getBeautyDate())
+                .status("020")
+                .requestType(quoteRequest.getRequestType())
+                .build();
+
+        QuoteRequest savedQuoteRequest = quoteRequestRepository.save(updateQuoteRequest);
+
+        Groomer groomer = groomerRepository.findById(requestDto.getGroomerId())
+                .orElseThrow(() -> NotFoundException.entityNotFound("미용사"));
+
+        DirectQuoteRequestId directQuoteRequestId = DirectQuoteRequestId.builder()
+                .requestId(quoteRequest)
+                .groomerId(groomer)
+                .build();
+
+        DirectQuoteRequest updateDirectQuoteRequest = DirectQuoteRequest.builder()
+                .directQuoteRequestId(directQuoteRequestId)
+                .reasonForRejection(requestDto.getRejectionReason())
+                .build();
+
+        DirectQuoteRequest savedDirectQuoteRequest = directQuoteRequestRepository.save(updateDirectQuoteRequest);
+
+        return UpdateGroomerRequestRejectionResponseDto.builder()
+                .requestId(savedQuoteRequest.getRequestId())
+                .dogId(savedQuoteRequest.getDogId().getDogId())
+                .beautyDate(savedQuoteRequest.getBeautyDate())
+                .content(savedQuoteRequest.getContent())
+                .status(savedQuoteRequest.getStatus())
+                .requestType(savedQuoteRequest.getRequestType())
+                .groomerId(savedDirectQuoteRequest.getDirectQuoteRequestId().getRequestId().getRequestId())
+                .reasonForRejection(savedDirectQuoteRequest.getReasonForRejection())
+                .build();
+    }
+
 }
