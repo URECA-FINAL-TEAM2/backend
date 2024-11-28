@@ -32,6 +32,9 @@ public class QuoteServiceImpl implements QuoteService {
     private final ShopRepository shopRepository;
     private final DirectQuoteRequestRepository directQuoteRequestRepository;
 
+
+
+
     /**
      * 고객이 자기가 보낸 견적(1:1) 요청을 조회
      */
@@ -58,7 +61,7 @@ public class QuoteServiceImpl implements QuoteService {
                             .status(request.getStatus())
                             .shopName(shop.getShopName())
                             .groomerName(groomer.getUserId().getUserName())
-                            .beautyDate(request.getBeautyDate().toString())
+                            .beautyDate(request.getBeautyDate())
                             .requestContent(request.getContent())
                             .build();
                 })
@@ -68,6 +71,7 @@ public class QuoteServiceImpl implements QuoteService {
                 .quoteRequests(quoteRequestInfos)
                 .build();
     }
+
 
     /**
      * 고객이 자기가 보낸 견적(전체) 요청을 조회
@@ -86,19 +90,19 @@ public class QuoteServiceImpl implements QuoteService {
                                     .status(quote.getStatus())
                                     .cost(quote.getCost())
                                     .quoteContent(quote.getContent())
-                                    .createAt(quote.getCreatedAt().toString())
+                                    .createdAt(quote.getCreatedAt())
                                     .build())
                             .collect(Collectors.toList());
 
                     return GetQuotesAllResponseDto.QuoteRequestInfo.builder()
                             .quoteRequestId(request.getRequestId())
                             .status(request.getStatus())
-                            .beautyDate(request.getBeautyDate().toString())
+                            .beautyDate(request.getBeautyDate())
                             .dogName(request.getDogId().getDogName())
                             .image(request.getDogId().getProfileImage())
                             .dogWeight(request.getDogId().getDogWeight())
                             .dogBreed(request.getDogId().getDogBreed())
-                            .dogAge(String.valueOf(request.getDogId().getDogAge()))  // Removed "세" suffix
+                            .dogAge(String.valueOf(request.getDogId().getDogAge()))
                             .requestContent(request.getContent())
                             .quotes(quoteInfos)
                             .build();
@@ -137,9 +141,11 @@ public class QuoteServiceImpl implements QuoteService {
                         .name(quote.getDogId().getDogName())
                         .image(quote.getDogId().getProfileImage())
                         .weight(quote.getDogId().getDogWeight())
-                        .age(String.valueOf(quote.getDogId().getDogAge()))  // Removed "세" suffix
+                        .age(String.valueOf(quote.getDogId().getDogAge()))
                         .dogGender(quote.getDogId().getDogGender().toString())
                         .neutering(quote.getDogId().getNeutering())
+                        .experience(quote.getDogId().getExperience())
+                        .significant(quote.getDogId().getSignificant())
                         .requestContent(quote.getRequestId().getContent())
                         .requestImage(requestImages.stream()
                                 .map(QuoteRequestImage::getImageUrl)
@@ -147,7 +153,7 @@ public class QuoteServiceImpl implements QuoteService {
                         .build())
                 .quote(GetQuoteDetailResponseDto.QuoteInfo.builder()
                         .quoteId(quote.getQuoteId())
-                        .beautyDate(quote.getBeautyDate().toString())
+                        .beautyDate(quote.getBeautyDate())
                         .cost(quote.getCost())
                         .quoteContent(quote.getContent())
                         .build())
