@@ -36,8 +36,6 @@ public class CodeInitializer implements CommandLineRunner {
         em.persist(new CommonCode(new CommonCodeId("020", "100"), requestGroup, "거절", true));
         em.persist(new CommonCode(new CommonCodeId("030", "100"), requestGroup, "마감", true));
         em.persist(new CommonCode(new CommonCodeId("040", "100"), requestGroup, "제안 완료", true));
-        em.persist(new CommonCode(new CommonCodeId("050", "100"), requestGroup, "선택요청", true));
-        em.persist(new CommonCode(new CommonCodeId("060", "100"), requestGroup, "전체요청", true));
 
         // 견적서 관련 그룹
         GroupCode quotationGroup = new GroupCode("200", "견적서 관리");

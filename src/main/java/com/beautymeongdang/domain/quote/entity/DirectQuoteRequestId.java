@@ -2,16 +2,14 @@ package com.beautymeongdang.domain.quote.entity;
 
 import com.beautymeongdang.domain.user.entity.Groomer;
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 
 @Embeddable
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
+@Builder
 public class DirectQuoteRequestId {
 
 
@@ -19,7 +17,7 @@ public class DirectQuoteRequestId {
     @JoinColumn(name = "request_id",nullable = false)
     private QuoteRequest requestId;
 
-    @OneToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "groomer_id",nullable = false)
     private Groomer groomerId;
 

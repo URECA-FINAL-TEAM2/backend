@@ -1,0 +1,73 @@
+package com.beautymeongdang.domain.quote.dto;
+
+import lombok.*;
+
+import java.time.LocalDateTime;
+import java.util.List;
+
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
+public class GetSelectedQuoteDetailResponseDto {
+    private String customerName;
+    private String groomerName;
+    private String shopName;
+    private String address;
+    private String phone;
+    private String dogName;
+    private String profileImage;
+    private String dogBreed;
+    private String dogWeight;
+    private Integer dogAge;
+    private String dogGender;
+    private Boolean neutering;
+    private Boolean experience;
+    private String significant;
+    private Long quoteId;
+    private LocalDateTime beautyDate;
+    private String requestContent;
+    private String quoteContent;
+    private List<String> requestImage;
+
+    @Builder
+    public GetSelectedQuoteDetailResponseDto(
+            String customerName,
+            String groomerName,
+            String shopName,
+            String address,
+            String phone,
+            String dogName,
+            String profileImage,
+            String dogBreed,
+            String dogWeight,
+            Integer dogAge,
+            String dogGender,
+            Boolean neutering,
+            Boolean experience,
+            String significant,
+            Long quoteId,
+            LocalDateTime beautyDate,
+            String requestContent,
+            String quoteContent
+    ) {
+        this.customerName = customerName;
+        this.groomerName = groomerName;
+        this.shopName = shopName;
+        this.address = address;
+        this.phone = phone;
+        this.dogName = dogName;
+        this.profileImage = profileImage;
+        this.dogBreed = dogBreed;
+        this.dogWeight = dogWeight;
+        this.dogAge = dogAge;
+        this.dogGender = dogGender;
+        this.neutering = neutering;
+        this.experience = experience;
+        this.significant = significant;
+        this.quoteId = quoteId;
+        this.beautyDate = beautyDate;
+        this.requestContent = requestContent;
+        this.quoteContent = quoteContent;
+    }
+}

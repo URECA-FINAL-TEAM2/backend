@@ -10,14 +10,16 @@ import lombok.*;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
-public class TotalQuoteRequest{
-
+public class TotalQuoteRequest {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
     @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "request_id",nullable = false)
+    @JoinColumn(name = "request_id", nullable = false)
     private QuoteRequest requestId;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "sigungu_id",nullable = false)
+    @JoinColumn(name = "sigungu_id", nullable = false)
     private Sigungu sigunguId;
 }
