@@ -1,18 +1,21 @@
-package com.beautymeongdang.domain.review.dto;
+package com.beautymeongdang.domain.shop.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import java.time.LocalDateTime;
 import java.util.List;
 
-public class GetReviewResponseDto{
-
+public class GetShopDetailResponseDto {
     @Getter
     @Builder
     @AllArgsConstructor
-    public static class GroomerReviewResponseDto {
-        private Long groomerId;
+    public static class ShopDetailResponseDto {
+        private String description;
+        private List<String> groomerPortfolioImages;
+        private String groomerUsername;
+        private String groomerProfileImage;
         private List<ReviewDetailDto> reviews;
     }
 
@@ -27,6 +30,7 @@ public class GetReviewResponseDto{
         private Integer recommendCount;
         private List<String> reviewsImage;
         private LocalDateTime createdAt;
+        @JsonProperty("isRecommended")
+        private boolean recommended;
     }
-
 }

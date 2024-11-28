@@ -1,4 +1,7 @@
 package com.beautymeongdang.domain.shop.service;
 
-public class ShopService {
+import com.beautymeongdang.domain.shop.dto.GetShopDetailResponseDto;
+
+public interface ShopService {
+    GetShopDetailResponseDto.ShopDetailResponseDto getShopDetail(Long groomerId, Long customerId);
 }
