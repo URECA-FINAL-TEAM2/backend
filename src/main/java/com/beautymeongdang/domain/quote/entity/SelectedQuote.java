@@ -24,4 +24,13 @@ public class SelectedQuote extends DeletableBaseTimeEntity {
     private Customer customerId;
 
     private String status;
+
+    public SelectedQuote updateStatus(String newStatus) {
+        return SelectedQuote.builder()
+                .selectedQuoteId(this.selectedQuoteId)
+                .quoteId(this.quoteId)
+                .customerId(this.customerId)
+                .status(newStatus)
+                .build();
+    }
 }

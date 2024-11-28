@@ -11,5 +11,6 @@ public class PaymentRequestDto {
     private String paymentKey;
     private String orderId;
     private Integer amount;
-    private Long selectedQuoteId;
+    private Long quoteId;
+    private Long customerId;
 }

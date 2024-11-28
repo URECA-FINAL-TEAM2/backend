@@ -7,9 +7,14 @@ import com.beautymeongdang.domain.payment.dto.PaymentResponseDto;
 import com.beautymeongdang.domain.payment.entity.Payment;
 import com.beautymeongdang.domain.payment.repository.PaymentRepository;
 import com.beautymeongdang.domain.payment.service.PaymentService;
+import com.beautymeongdang.domain.quote.entity.Quote;
 import com.beautymeongdang.domain.quote.entity.SelectedQuote;
+import com.beautymeongdang.domain.quote.repository.QuoteRepository;
 import com.beautymeongdang.domain.quote.repository.SelectedQuoteRepository;
 import com.beautymeongdang.domain.shop.repository.ShopRepository;
+import com.beautymeongdang.domain.user.entity.Customer;
+import com.beautymeongdang.domain.user.repository.CustomerRepository;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
@@ -32,11 +37,15 @@ public class PaymentServiceImpl implements PaymentService {
     private final PaymentRepository paymentRepository;
     private final SelectedQuoteRepository selectedQuoteRepository;
     private final ShopRepository shopRepository;
+    private final QuoteRepository quoteRepository;
+    private final CustomerRepository customerRepository;
     private final WebClient webClient;
 
     private static final String TOSS_PAYMENTS_CONFIRM_URL = "https://api.tosspayments.com/v1/payments/confirm";
 
+    // 결제 승인 요청 및 예약 완료
     @Override
+    @Transactional
     public PaymentResponseDto confirmPayment(PaymentRequestDto request) {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
@@ -62,8 +71,8 @@ public class PaymentServiceImpl implements PaymentService {
                 LocalDateTime approvedAt = approvedAtOffset.toLocalDateTime();
                 String method = response.get("method").toString();
 
-                SelectedQuote selectedQuote = selectedQuoteRepository.findById(request.getSelectedQuoteId())
-                        .orElseThrow(() -> new IllegalArgumentException("선택된 견적서를 찾을 수 없습니다."));
+                SelectedQuote selectedQuote = createSelectedQuote(request.getQuoteId(), request.getCustomerId());
+
 
                 Long groomerId = selectedQuote.getQuoteId().getGroomerId().getGroomerId();
                 String shopName = shopRepository.findByGroomerId(groomerId)
@@ -82,6 +91,10 @@ public class PaymentServiceImpl implements PaymentService {
                         .build();
                 paymentRepository.save(payment);
 
+                selectedQuote = selectedQuote.updateStatus("예약 완료");
+                selectedQuoteRepository.save(selectedQuote);
+
+                // 6. 응답 반환
                 return PaymentResponseDto.builder()
                         .paymentKey(request.getPaymentKey())
                         .orderId(request.getOrderId())
@@ -89,7 +102,7 @@ public class PaymentServiceImpl implements PaymentService {
                         .method(method)
                         .approvedAt(approvedAtOffset)
                         .amount(request.getAmount())
-                        .selectedQuoteId(request.getSelectedQuoteId())
+                        .selectedQuoteId(selectedQuote.getSelectedQuoteId())
                         .message("결제 승인 성공")
                         .paymentTitle(shopName)
                         .build();
@@ -121,7 +134,25 @@ public class PaymentServiceImpl implements PaymentService {
         }
     }
 
+    // 선택된 견적서 생성
+    private SelectedQuote createSelectedQuote(Long quoteId, Long customerId) {
+        Quote quote = quoteRepository.findById(quoteId)
+                .orElseThrow(() -> new IllegalArgumentException("견적 데이터를 찾을 수 없습니다."));
+        Customer customer = customerRepository.findById(customerId)
+                .orElseThrow(() -> new IllegalArgumentException("고객 데이터를 찾을 수 없습니다."));
+
+        SelectedQuote selectedQuote = SelectedQuote.builder()
+                .quoteId(quote)
+                .customerId(customer)
+                .status("선택완료")
+                .build();
+
+        return selectedQuoteRepository.save(selectedQuote);
+    }
+
+    // 결제 취소 및 예약 취소
     @Override
+    @Transactional
     public PaymentCancelResponseDto cancelPayment(PaymentCancelRequestDto request) {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
@@ -152,6 +183,10 @@ public class PaymentServiceImpl implements PaymentService {
                         .build();
 
                 paymentRepository.save(payment);
+
+                SelectedQuote selectedQuote = payment.getSelectedQuoteId();
+                selectedQuote = selectedQuote.updateStatus("예약 취소");
+                selectedQuoteRepository.save(selectedQuote);
 
                 return PaymentCancelResponseDto.builder()
                         .paymentKey(request.getPaymentKey())
@@ -205,6 +240,7 @@ public class PaymentServiceImpl implements PaymentService {
                 .selectedQuoteId(payment.getSelectedQuoteId().getSelectedQuoteId())
                 .paymentTitle(payment.getPaymentTitle())
                 .message("결제 내역 조회 성공")
+                .cancelReason(payment.getCancelReason())
                 .build();
     }
 
