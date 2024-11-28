@@ -21,6 +21,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+import com.beautymeongdang.domain.quote.dto.GetGroomerQuoteRequestResponseDto;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -160,13 +161,19 @@ public class QuoteRequestServiceImpl implements QuoteRequestService {
 
     // 미용사가 받은 1:1 요청 조회
     @Override
-    public List<GroomerDirectRequestListResponseDto> getGroomerDirectRequestList (Long groomerId){
+    public List<GetGroomerQuoteRequestResponseDto> getGroomerDirectRequestList (Long groomerId){
         return quoteRequestRepository.findQuoteRequestsByGroomerId(groomerId);
     }
+
+    // 미용사 매장 근처 견적서 요청 공고 조회
+    @Override
+    public List<GetGroomerQuoteRequestResponseDto> getGroomerTotalRequestList(Long sigunguId) {
+        return quoteRequestRepository.findQuoteRequestsBySigunguId(sigunguId);
 
     // 미용사가 견적서 보낸 견적 요청 조회
     @Override
     public List<GetGroomerSendQuoteRequestResponseDto> getGroomerSendQuoteRequest(Long groomerId) {
         return quoteRequestRepository.findSendQuoteRequestsByGroomerId(groomerId);
+
     }
 }

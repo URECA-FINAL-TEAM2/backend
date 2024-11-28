@@ -8,7 +8,7 @@ import java.time.LocalDateTime;
 
 @Getter
 @NoArgsConstructor
-public class GroomerDirectRequestListResponseDto {
+public class GetGroomerQuoteRequestResponseDto {
     private Long requestId;
     private String nickname;
     private String userProfileImage;
@@ -20,10 +20,10 @@ public class GroomerDirectRequestListResponseDto {
     private String requestContent;
 
     @Builder
-    public GroomerDirectRequestListResponseDto(Long requestId, String nickname, String profileImage, LocalDateTime createdAt,
-                                               LocalDateTime beautyDate, String dogBreed,
-                                               String dogGender,
-                                               String dogWeight, String content) {
+    public GetGroomerQuoteRequestResponseDto(Long requestId, String nickname, String profileImage, LocalDateTime createdAt,
+                                             LocalDateTime beautyDate, String dogBreed,
+                                             String dogGender,
+                                             String dogWeight, String content) {
         this.requestId = requestId;
         this.nickname = nickname;
         this.userProfileImage = profileImage;
