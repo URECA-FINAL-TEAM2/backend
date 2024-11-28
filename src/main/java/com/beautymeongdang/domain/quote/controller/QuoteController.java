@@ -51,38 +51,4 @@ public class QuoteController {
 
 
 
-//    로그인 구현되면 쓰는 코드
-//    /**
-//     * 1:1 견적 요청 조회
-//     */
-//    @GetMapping("requests/my/groomer")
-//    public ResponseEntity<ApiResponse<GetQuotesGroomerResponseDto>> getMyGroomerQuotes(
-//            @AuthenticationPrincipal Customer customer) {
-//        GetQuotesGroomerResponseDto responseDto = quoteService.getQuotesGroomer(customer.getId());
-//        return ApiResponse.ok(200, responseDto, "견적서(1:1) 요청 목록 조회 성공");
-//    }
-//
-//    /**
-//     * 전체 견적 요청 조회
-//     */
-//    @GetMapping("requests/my/all")
-//    public ResponseEntity<ApiResponse<GetQuotesAllResponseDto>> getMyAllQuotes(
-//            @AuthenticationPrincipal Customer customer) {
-//        GetQuotesGroomerResponseDto responseDto = quoteService.getQuotesAll(customer.getId());
-//        return ApiResponse.ok(200, responseDto, "견적서(전체) 요청 목록 조회 성공");
-//    }
-//
-//    /**
-//     * 견적서 상세 조회
-//     */
-//    @GetMapping("/detail/{quoteId}")
-//    public ResponseEntity<ApiResponse<GetQuoteDetailResponseDto>> getQuoteDetail(
-//            @PathVariable Long quoteId,
-//            @AuthenticationPrincipal Customer customer) {
-//        GetQuoteDetailResponseDto responseDto = quoteService.getQuoteDetail(quoteId);
-//        return ApiResponse.ok(200, responseDto, "견적서 상세 조회 성공");
-//    }
-
-
-
 }
