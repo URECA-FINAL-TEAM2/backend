@@ -5,7 +5,7 @@ import com.beautymeongdang.domain.quote.dto.CreateInsertRequestAllRequestDto;
 import com.beautymeongdang.domain.quote.dto.CreateInsertRequestGroomerResponseDto;
 import com.beautymeongdang.domain.quote.dto.CreateInsertRequestGroomerRequestDto;
 import org.springframework.web.multipart.MultipartFile;
-import com.beautymeongdang.domain.quote.dto.GroomerDirectRequestListResponseDto;
+import com.beautymeongdang.domain.quote.dto.GetGroomerQuoteRequestResponseDto;
 import java.util.List;
 
 public interface QuoteRequestService {
@@ -17,6 +17,8 @@ public interface QuoteRequestService {
     CreateInsertRequestGroomerResponseDto createInsertRequestGroomer(CreateInsertRequestGroomerRequestDto requestDto, List<MultipartFile> images);
 
     // 미용사가 받은 1:1 요청 조회
-    List<GroomerDirectRequestListResponseDto> getGroomerDirectRequestList(Long groomerId);
+    List<GetGroomerQuoteRequestResponseDto> getGroomerDirectRequestList(Long groomerId);
 
+    // 미용사 매장 근처 견적서 요청 공고 조회
+    List<GetGroomerQuoteRequestResponseDto> getGroomerTotalRequestList(Long sigunguId);
 }
