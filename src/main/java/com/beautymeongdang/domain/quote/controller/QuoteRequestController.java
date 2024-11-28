@@ -60,6 +60,7 @@ public class QuoteRequestController {
     @GetMapping("/groomer/total/{sigunguId}")
     public ResponseEntity<?> getGroomerTotalRequestList(@PathVariable(name = "sigunguId") Long sigunguId) {
         return ApiResponse.ok(200, quoteRequestService.getGroomerTotalRequestList(sigunguId), "Get TotalRequestGroomer Success");
+    }
 
     // 미용사가 견적서 보낸 견적 요청 조회
     @GetMapping("/groomer/send/{groomerId}")
