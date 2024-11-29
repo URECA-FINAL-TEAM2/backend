@@ -71,6 +71,7 @@ public class ShopServiceImpl implements ShopService {
 
         return GetShopDetailResponseDto.ShopDetailResponseDto.builder()
                 .description(shop.getDescription())
+                .shopImage(shop.getImageUrl())
                 .groomerPortfolioImages(portfolioImages)
                 .groomerUsername(groomer.getUserId().getNickname())
                 .groomerProfileImage(groomer.getUserId().getProfileImage())

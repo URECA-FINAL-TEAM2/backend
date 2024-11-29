@@ -13,6 +13,7 @@ public class GetShopDetailResponseDto {
     @AllArgsConstructor
     public static class ShopDetailResponseDto {
         private String description;
+        private String shopImage;
         private List<String> groomerPortfolioImages;
         private String groomerUsername;
         private String groomerProfileImage;
