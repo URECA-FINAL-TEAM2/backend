@@ -58,8 +58,8 @@ jobs:
             -e SPRING_PROFILES_ACTIVE=dev \
             -e RDS_ENDPOINT=${{ secrets.RDS_ENDPOINT }} \
             -e DB_NAME=${{ secrets.DB_NAME }} \
-            -e SPRING_REDIS_HOST=${{ secrets.REDIS_HOST }} \
-            -e SPRING_REDIS_PORT=${{ secrets.REDIS_PORT }} \
+            -e SPRING_DATA_REDIS_HOST=${{ secrets.REDIS_HOST }} \
+            -e SPRING_DATA_REDIS_PORT=${{ secrets.REDIS_PORT }} \
             -e DB_USERNAME=${{ secrets.DB_USERNAME }} \
             -e DB_PASSWORD=${{ secrets.DB_PASSWORD }} \
             -e TOSS_PAYMENTS_CLIENT_KEY=${{ secrets.TOSS_PAYMENTS_CLIENT_KEY }} \
