@@ -12,4 +12,7 @@ public interface QuoteService {
     // 미용사 견적서 작성
     CreateGroomerQuoteResponseDto createGroomerQuote(CreateGroomerQuoteRequestDto requestDto);
 
+    // 미용사가 보낸 견적서 상세 조회
+    GetGroomerQuoteDetailResponseDto getGroomerQuoteDetail(GetGroomerQuoteDetailRequestDto requestDto);
+
 }
