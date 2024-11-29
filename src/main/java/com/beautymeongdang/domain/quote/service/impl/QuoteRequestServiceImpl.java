@@ -237,6 +237,7 @@ public class QuoteRequestServiceImpl implements QuoteRequestService {
                 .requestContent(quoteRequest.getContent())
                 .userProfileImage(user.getProfileImage())
                 .nickname(user.getNickname())
+                .dogId(dog.getDogId())
                 .dogProfileImage(dog.getProfileImage())
                 .dogName(dog.getDogName())
                 .dogBreed(dog.getDogBreed())
