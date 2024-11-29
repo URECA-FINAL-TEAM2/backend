@@ -1,6 +1,8 @@
 package com.beautymeongdang.domain.quote.repository;
 
 import com.beautymeongdang.domain.quote.entity.Quote;
+import com.beautymeongdang.domain.quote.entity.QuoteRequest;
+import com.beautymeongdang.domain.user.entity.Groomer;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -32,5 +34,8 @@ public interface QuoteRepository extends JpaRepository<Quote, Long> {
             "WHERE q.quoteId = :quoteId " +
             "AND q.isDeleted = false")
     Optional<Quote> findQuoteDetailById(@Param("quoteId") Long quoteId);
+
+    // 미용사가 보낸 견적서 상세 조회
+    Quote findByRequestIdAndGroomerId(QuoteRequest requestId, Groomer groomerId);
 
 }
