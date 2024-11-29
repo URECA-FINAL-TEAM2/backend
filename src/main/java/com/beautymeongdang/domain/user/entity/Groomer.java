@@ -22,8 +22,6 @@ public class Groomer extends DeletableBaseTimeEntity {
     @JoinColumn(name = "user_id",nullable = false)
     private User userId;
 
-    @OneToMany(mappedBy = "groomer", cascade = CascadeType.ALL, orphanRemoval = true)
-    @Builder.Default
-    private Set<GroomerSkill> groomerSkills = new HashSet<>();
+    private String skill;
 
 }

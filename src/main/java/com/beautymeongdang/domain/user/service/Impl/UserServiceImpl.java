@@ -31,7 +31,6 @@ public class UserServiceImpl implements UserService {
     private final ShopRepository shopRepository;
     private final SigunguRepository sigunguRepository;
     private final RoleRepository roleRepository;
-    private final SkillRepository skillRepository;
 
 
     @Override
@@ -103,21 +102,10 @@ public class UserServiceImpl implements UserService {
 
             Groomer groomer = Groomer.builder()
                     .userId(user)
+                    .skill(registrationDTO.getSkill())  // 스킬을 직접 문자열로 저장
                     .build();
 
             groomerRepository.save(groomer);
-
-            // 쉼표로 구분된 skill 문자열을 배열로 분할하고 List로 변환
-            String[] skills = registrationDTO.getSkill().split(",");
-            List<String> skillList = Arrays.asList(skills);
-
-            for (String skillName : skillList) {
-                Skill skill = skillRepository.findBySkillName(skillName.trim())
-                        .orElseGet(() -> skillRepository.save(new Skill(null, skillName.trim(), new HashSet<>())));
-
-                GroomerSkill groomerSkill = new GroomerSkill(null, groomer, skill);
-                groomer.getGroomerSkills().add(groomerSkill);
-            }
 
             Shop shop = Shop.builder()
                     .groomerId(groomer)
