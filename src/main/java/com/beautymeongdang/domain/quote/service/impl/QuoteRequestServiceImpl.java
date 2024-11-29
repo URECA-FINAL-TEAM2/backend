@@ -10,6 +10,8 @@ import com.beautymeongdang.domain.quote.repository.QuoteRequestImageRepository;
 import com.beautymeongdang.domain.quote.repository.QuoteRequestRepository;
 import com.beautymeongdang.domain.quote.repository.TotalQuoteRequestRepository;
 import com.beautymeongdang.domain.quote.service.QuoteRequestService;
+import com.beautymeongdang.domain.shop.entity.Shop;
+import com.beautymeongdang.domain.shop.repository.ShopRepository;
 import com.beautymeongdang.domain.user.entity.Customer;
 import com.beautymeongdang.domain.user.entity.Groomer;
 import com.beautymeongdang.domain.user.entity.User;
@@ -45,9 +47,11 @@ public class QuoteRequestServiceImpl implements QuoteRequestService {
     private final FileStore fileStore;
     private final CustomerRepository customerRepository;
     private final UserRepository userRepository;
+    private final ShopRepository shopRepository;
+
 
     /**
-     전체 견적서 요청하기
+     * 전체 견적서 요청하기
      */
     @Override
     @Transactional
@@ -106,7 +110,7 @@ public class QuoteRequestServiceImpl implements QuoteRequestService {
     }
 
     /**
-     1:1 견적서 요청하기
+     * 1:1 견적서 요청하기
      */
     @Override
     @Transactional
@@ -166,7 +170,7 @@ public class QuoteRequestServiceImpl implements QuoteRequestService {
     }
 
     /**
-     고객이 선택한 반려견 정보 조회
+     * 고객이 선택한 반려견 정보 조회
      */
     @Override
     @Transactional(readOnly = true)
@@ -183,6 +187,25 @@ public class QuoteRequestServiceImpl implements QuoteRequestService {
                 .neutering(dog.getNeutering())
                 .experience(dog.getExperience())
                 .significant(dog.getSignificant())
+                .build();
+    }
+
+    /**
+     * 1:1 견적서 요청에서 미용사와 매장 정보 조회
+     */
+    @Override
+    @Transactional(readOnly = true)
+    public GetRequestGroomerShopResponseDto getGroomerShopInfo(Long groomerId) {
+
+        Shop shop = shopRepository.findByGroomerId(groomerId)
+                .orElseThrow(() -> NotFoundException.entityNotFound("매장"));
+
+        return GetRequestGroomerShopResponseDto.builder()
+                .shopImage(shop.getImageUrl())
+                .groomerName(shop.getGroomerId().getUserId().getUserName())
+                .shopName(shop.getShopName())
+                .address(shop.getAddress())
+                .phone(shop.getGroomerId().getUserId().getPhone())
                 .build();
     }
 
