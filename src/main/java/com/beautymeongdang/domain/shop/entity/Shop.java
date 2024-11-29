@@ -43,4 +43,17 @@ public class Shop extends DeletableBaseTimeEntity {
     private String businessTime;
 
     private String imageUrl;
+
+    // Shop 클래스
+    public void updateShopInfo(Sigungu sigungu, String shopName, String description, String address,
+                               BigDecimal latitude, BigDecimal longitude, String businessTime, String imageUrl) {
+        this.sigunguId = sigungu;
+        this.shopName = shopName;
+        this.description = description;
+        this.address = address;
+        this.latitude = latitude;
+        this.longitude = longitude;
+        this.businessTime = businessTime;
+        this.imageUrl = imageUrl;
+    }
 }

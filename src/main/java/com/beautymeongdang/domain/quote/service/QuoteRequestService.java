@@ -17,6 +17,9 @@ public interface QuoteRequestService {
     // 고객이 선택한 반려견 정보 조회
     GetDogInfoResponseDto getDogInfo(Long dogId, Long customerId);
 
+    //  1:1 견적서 요청에서 미용사와 매장 정보 조회
+    GetRequestGroomerShopResponseDto getGroomerShopInfo(Long groomerId);
+
     // 미용사가 받은 1:1 요청 조회
     List<GetGroomerQuoteRequestResponseDto> getGroomerDirectRequestList(Long groomerId);
 

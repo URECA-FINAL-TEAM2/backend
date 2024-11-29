@@ -35,4 +35,5 @@ public class Customer extends DeletableBaseTimeEntity {
 
     @Column(precision = 17, scale = 14)
     private BigDecimal longitude;
+
 }
