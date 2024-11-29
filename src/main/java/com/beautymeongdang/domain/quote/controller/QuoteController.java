@@ -49,6 +49,10 @@ public class QuoteController {
         return ApiResponse.ok(200, responseDto, "견적서 상세 조회 성공");
     }
 
-
+    // 미용사 견적서 작성
+    @PostMapping("")
+    public ResponseEntity<?> createGroomerQuote(@RequestBody CreateGroomerQuoteRequestDto requestDto) {
+        return ApiResponse.ok(200, quoteService.createGroomerQuote(requestDto), "Insert Quotes Success");
+    }
 
 }

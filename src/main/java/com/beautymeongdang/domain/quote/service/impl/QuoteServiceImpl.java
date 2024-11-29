@@ -1,5 +1,7 @@
 package com.beautymeongdang.domain.quote.service.impl;
 
+import com.beautymeongdang.domain.dog.entity.Dog;
+import com.beautymeongdang.domain.dog.repository.DogRepository;
 import com.beautymeongdang.domain.quote.dto.*;
 import com.beautymeongdang.domain.quote.entity.DirectQuoteRequest;
 import com.beautymeongdang.domain.quote.entity.Quote;
@@ -13,6 +15,7 @@ import com.beautymeongdang.domain.quote.service.QuoteService;
 import com.beautymeongdang.domain.shop.entity.Shop;
 import com.beautymeongdang.domain.shop.repository.ShopRepository;
 import com.beautymeongdang.domain.user.entity.Groomer;
+import com.beautymeongdang.domain.user.repository.GroomerRepository;
 import com.beautymeongdang.global.exception.handler.NotFoundException;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -23,6 +26,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
+@Transactional(readOnly = true)
 @RequiredArgsConstructor
 public class QuoteServiceImpl implements QuoteService {
 
@@ -31,15 +35,13 @@ public class QuoteServiceImpl implements QuoteService {
     private final QuoteRequestImageRepository quoteRequestImageRepository;
     private final ShopRepository shopRepository;
     private final DirectQuoteRequestRepository directQuoteRequestRepository;
-
-
-
+    private final GroomerRepository groomerRepository;
+    private final DogRepository dogRepository;
 
     /**
      * 고객이 자기가 보낸 견적(1:1) 요청을 조회
      */
     @Override
-    @Transactional(readOnly = true)
     public GetQuotesGroomerResponseDto getQuotesGroomer(Long customerId) {
         List<QuoteRequest> quoteRequests = quoteRequestRepository.findAllByCustomerId(customerId);
 
@@ -77,7 +79,6 @@ public class QuoteServiceImpl implements QuoteService {
      * 고객이 자기가 보낸 견적(전체) 요청을 조회
      */
     @Override
-    @Transactional(readOnly = true)
     public GetQuotesAllResponseDto getQuotesAll(Long customerId) {
         List<QuoteRequest> requests = quoteRequestRepository.findAllRequestsByCustomerId(customerId);
 
@@ -118,7 +119,6 @@ public class QuoteServiceImpl implements QuoteService {
      견적서 상세 조회
      */
     @Override
-    @Transactional(readOnly = true)
     public GetQuoteDetailResponseDto getQuoteDetail(GetQuoteDetailRequestDto requestDto) {
         Quote quote = quoteRepository.findQuoteDetailById(requestDto.getQuoteId())
                 .orElseThrow(() -> new EntityNotFoundException("견적서를 찾을 수 없습니다."));
@@ -159,4 +159,56 @@ public class QuoteServiceImpl implements QuoteService {
                         .build())
                 .build();
     }
+
+    // 미용사 견적서 작성
+    @Override
+    @Transactional
+    public CreateGroomerQuoteResponseDto createGroomerQuote(CreateGroomerQuoteRequestDto requestDto) {
+
+        QuoteRequest quoteRequest = quoteRequestRepository.findById(requestDto.getRequestId())
+                .orElseThrow(() -> NotFoundException.entityNotFound("견적서 요청"));
+
+        Groomer groomer = groomerRepository.findById(requestDto.getGroomerId())
+                .orElseThrow(() -> NotFoundException.entityNotFound("미용사"));
+
+        Dog dog = dogRepository.findById(requestDto.getDogId())
+                .orElseThrow(() -> NotFoundException.entityNotFound("강아지"));
+
+        Quote quote = Quote.builder()
+                .requestId(quoteRequest)
+                .groomerId(groomer)
+                .dogId(dog)
+                .content(requestDto.getQuoteContent())
+                .cost(requestDto.getQuoteCost())
+                .beautyDate(requestDto.getBeautyDate())
+                .status("010")
+                .build();
+
+        Quote saveQuote = quoteRepository.save(quote);
+
+        if(quoteRequest.getRequestType().equals("020")) {
+            QuoteRequest updateQuoteRequest = QuoteRequest.builder()
+                    .requestId(quoteRequest.getRequestId())
+                    .dogId(quoteRequest.getDogId())
+                    .content(quoteRequest.getContent())
+                    .beautyDate(quoteRequest.getBeautyDate())
+                    .requestType(quoteRequest.getRequestType())
+                    .status("040")
+                    .build();
+
+            quoteRequestRepository.save(updateQuoteRequest);
+        }
+
+        return CreateGroomerQuoteResponseDto.builder()
+                .quoteId(saveQuote.getQuoteId())
+                .requestId(saveQuote.getRequestId().getRequestId())
+                .groomerId(saveQuote.getGroomerId().getGroomerId())
+                .dogId(saveQuote.getDogId().getDogId())
+                .quoteContent(saveQuote.getContent())
+                .quoteCost(saveQuote.getCost())
+                .beautyDate(saveQuote.getBeautyDate())
+                .quoteStatus(saveQuote.getStatus())
+                .build();
+    }
+
 }
