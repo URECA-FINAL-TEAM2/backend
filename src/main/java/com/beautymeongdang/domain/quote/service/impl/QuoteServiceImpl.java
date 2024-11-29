@@ -14,14 +14,19 @@ import com.beautymeongdang.domain.quote.repository.QuoteRequestRepository;
 import com.beautymeongdang.domain.quote.service.QuoteService;
 import com.beautymeongdang.domain.shop.entity.Shop;
 import com.beautymeongdang.domain.shop.repository.ShopRepository;
+import com.beautymeongdang.domain.user.entity.Customer;
 import com.beautymeongdang.domain.user.entity.Groomer;
+import com.beautymeongdang.domain.user.entity.User;
+import com.beautymeongdang.domain.user.repository.CustomerRepository;
 import com.beautymeongdang.domain.user.repository.GroomerRepository;
+import com.beautymeongdang.domain.user.repository.UserRepository;
 import com.beautymeongdang.global.exception.handler.NotFoundException;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -37,6 +42,8 @@ public class QuoteServiceImpl implements QuoteService {
     private final DirectQuoteRequestRepository directQuoteRequestRepository;
     private final GroomerRepository groomerRepository;
     private final DogRepository dogRepository;
+    private final CustomerRepository customerRepository;
+    private final UserRepository userRepository;
 
     /**
      * 고객이 자기가 보낸 견적(1:1) 요청을 조회
@@ -208,6 +215,59 @@ public class QuoteServiceImpl implements QuoteService {
                 .quoteCost(saveQuote.getCost())
                 .beautyDate(saveQuote.getBeautyDate())
                 .quoteStatus(saveQuote.getStatus())
+                .build();
+    }
+
+    // 미용사가 보낸 견적서 상세 조회
+    @Override
+    public GetGroomerQuoteDetailResponseDto getGroomerQuoteDetail(GetGroomerQuoteDetailRequestDto requestDto) {
+        QuoteRequest quoteRequest = quoteRequestRepository.findById(requestDto.getRequestId())
+                .orElseThrow(() -> NotFoundException.entityNotFound("견적서 요청"));
+
+        Dog dog = dogRepository.findById(quoteRequest.getDogId().getDogId())
+                .orElseThrow(() -> NotFoundException.entityNotFound("강아지"));
+
+        Customer customer = customerRepository.findById(dog.getCustomerId().getCustomerId())
+                .orElseThrow(() -> NotFoundException.entityNotFound("고객"));
+
+        User user = userRepository.findById(customer.getUserId().getUserId())
+                .orElseThrow(() -> NotFoundException.entityNotFound("사용자"));
+
+        Groomer groomer = groomerRepository.findById(requestDto.getGroomerId())
+                .orElseThrow(() -> NotFoundException.entityNotFound("미용사"));
+
+        Quote quote = quoteRepository.findByRequestIdAndGroomerId(quoteRequest, groomer);
+
+        List<QuoteRequestImage> getQuoteRequestImageList = quoteRequestImageRepository.findAllByRequestId(requestDto.getRequestId());
+        List<String> quoteRequestImageList = new ArrayList<>();
+        for (QuoteRequestImage quoteRequestImage : getQuoteRequestImageList) {
+            quoteRequestImageList.add(quoteRequestImage.getImageUrl());
+        }
+
+
+        return GetGroomerQuoteDetailResponseDto.builder()
+                .customer(GetGroomerQuoteDetailResponseDto.CustomerInfo.builder()
+                        .profileImage(user.getProfileImage())
+                        .nickname(user.getNickname())
+                        .build())
+                .dog(GetGroomerQuoteDetailResponseDto.DogInfo.builder()
+                        .dogProfileImage(dog.getProfileImage())
+                        .dogName(dog.getDogName())
+                        .dogBreed(dog.getDogBreed())
+                        .dogWeight(dog.getDogWeight())
+                        .dogAge(dog.getDogAge())
+                        .dogGender(dog.getDogGender().name())
+                        .neutering(dog.getNeutering())
+                        .experience(dog.getExperience())
+                        .significant(dog.getSignificant())
+                        .build())
+                .quote(GetGroomerQuoteDetailResponseDto.QuoteInfo.builder()
+                        .requestContent(quoteRequest.getContent())
+                        .beautyDate(quote.getBeautyDate())
+                        .quoteCost(quote.getCost())
+                        .quoteContent(quote.getContent())
+                        .requestImageUrl(quoteRequestImageList)
+                        .build())
                 .build();
     }
 
