@@ -30,6 +30,8 @@ public class FileStore {
     public static final String QUOTE_REQUEST= "견적서 요청 이미지/";
     public static final String GROOMER_PORTFOLIO= "미용사 포트폴리오 이미지/";
     public static final String REVIEWS= "리뷰 이미지/";
+    public static final String SHOP_LOGO= "매장 로고 이미지/";
+
 
     private final AmazonS3Client amazonS3Client;
 
