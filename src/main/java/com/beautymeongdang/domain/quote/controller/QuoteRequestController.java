@@ -60,6 +60,15 @@ public class QuoteRequestController {
         return ApiResponse.ok(200, responseDto, "선택한 반려견 조회 성공");
     }
 
+    /**
+     * 1:1 견적서 요청에서 미용사와 매장 정보 조회
+     */
+    @GetMapping("/groomer/{groomerId}/shop")
+    public ResponseEntity<ApiResponse<GetRequestGroomerShopResponseDto>> getGroomerShopInfo(
+            @PathVariable Long groomerId) {
+        GetRequestGroomerShopResponseDto responseDto = quoteRequestService.getGroomerShopInfo(groomerId);
+        return ApiResponse.ok(200, responseDto, "미용사 매장 정보 조회 성공");
+    }
 
 
     // 미용사가 받은 1:1 요청 조회

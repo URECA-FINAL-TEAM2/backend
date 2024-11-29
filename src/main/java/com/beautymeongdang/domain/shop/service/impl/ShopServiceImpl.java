@@ -33,6 +33,10 @@ public class ShopServiceImpl implements ShopService {
     private final ShopRepository shopRepository;
     private final RecommendRepository recommendRepository;
 
+
+    /**
+     * 매장 상세 조회
+     */
     @Override
     public GetShopDetailResponseDto.ShopDetailResponseDto getShopDetail(Long groomerId, Long customerId) {
         Groomer groomer = groomerRepository.findById(groomerId)
