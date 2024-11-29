@@ -8,6 +8,7 @@ import lombok.*;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
+@EqualsAndHashCode
 public class RecommendId {
 
     @ManyToOne(fetch = FetchType.LAZY)

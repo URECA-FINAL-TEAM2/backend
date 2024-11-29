@@ -4,6 +4,9 @@ import com.beautymeongdang.global.common.entity.DeletableBaseTimeEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.HashSet;
+import java.util.Set;
+
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -20,4 +23,5 @@ public class Groomer extends DeletableBaseTimeEntity {
     private User userId;
 
     private String skill;
+
 }
