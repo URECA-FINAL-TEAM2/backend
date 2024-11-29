@@ -1,18 +1,18 @@
 package com.beautymeongdang.global.oauth2;
 
 import com.beautymeongdang.domain.user.dto.UserDTO;
+import com.beautymeongdang.domain.user.entity.Role;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 
-import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Map;
-import java.util.stream.Collectors;
+import java.util.Set;
 
-//  OAuth2 인증 과정에서 사용자 정보를 담는 Spring Security의 OAuth2User 인터페이스를 구현한 클래스
 @Getter
 @AllArgsConstructor
 public class CustomOAuth2User implements OAuth2User {
@@ -26,26 +26,18 @@ public class CustomOAuth2User implements OAuth2User {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        Collection<GrantedAuthority> collection = new ArrayList<>();
-
+        Set<GrantedAuthority> authorities = new HashSet<>();
         if (userDTO.getRoles() != null) {
-            collection.add(() -> userDTO.getRoles().stream()
-                    .map(SimpleGrantedAuthority::new)
-                    .collect(Collectors.toList()).toString());
-        } else {
-            collection.add(() -> new ArrayList<SimpleGrantedAuthority>().toString());
+            for (Role role : userDTO.getRoles()) {
+                authorities.add(new SimpleGrantedAuthority(role.name()));
+            }
         }
-
-        return collection;
+        return authorities;
     }
 
     @Override
     public String getName() {
         return userDTO.getNickname();
-    }
-
-    public UserDTO getUserDTO() {
-        return userDTO;
     }
 
     public Long getUserId() {

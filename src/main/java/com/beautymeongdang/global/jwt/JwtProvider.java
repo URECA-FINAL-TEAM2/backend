@@ -9,8 +9,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -22,16 +20,10 @@ public class JwtProvider {
     private static final Long REFRESH_TOKEN_EXPIRE_TIME = 1000 * 60 * 60 * 24 * 14L; // 2주
 
     public Map<String, Object> createTokens(User user, HttpServletResponse response) {
-        // Get roles from user
-        Set<String> roles = user.getUserRoles().stream()
-                .map(userRole -> userRole.getRole().getName())
-                .collect(Collectors.toSet());
-
-        // Access Token 생성 (userId, nickname, roles 포함)
+        // Access Token 생성 (userId, nickname만 포함)
         String accessToken = jwtUtil.createAccessToken(
                 user.getUserId().toString(),
                 user.getNickname(),
-                roles,
                 ACCESS_TOKEN_EXPIRE_TIME
         );
 
@@ -54,7 +46,6 @@ public class JwtProvider {
         tokenInfo.put("access_token", accessToken);
         tokenInfo.put("userId", user.getUserId());
         tokenInfo.put("nickname", user.getNickname());
-        tokenInfo.put("roles", roles);
 
         return tokenInfo;
     }

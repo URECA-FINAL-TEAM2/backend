@@ -27,9 +27,13 @@ public class User extends DeletableBaseTimeEntity {
     @Column(nullable = false, unique = true)
     private String nickname;
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    // User.java의 roles 부분만
+    @ElementCollection(fetch = FetchType.EAGER)
+    @Enumerated(EnumType.STRING)
+    @CollectionTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id"))
+    @Column(name = "role")
     @Builder.Default
-    private Set<UserRole> userRoles = new HashSet<>();
+    private Set<Role> roles = new HashSet<>();
 
     private String socialProvider;
 
@@ -43,11 +47,15 @@ public class User extends DeletableBaseTimeEntity {
     }
 
     public void addRole(Role role) {
-        UserRole userRole = UserRole.builder().user(this).role(role).build();
-        this.userRoles.add(userRole);
+        this.roles.add(role);
     }
 
     public void removeRole(Role role) {
-        this.userRoles.removeIf(userRole -> userRole.getRole().equals(role));
+        this.roles.remove(role);
     }
+
+    public boolean hasRole(Role role) {
+        return this.roles.contains(role);
+    }
+
 }

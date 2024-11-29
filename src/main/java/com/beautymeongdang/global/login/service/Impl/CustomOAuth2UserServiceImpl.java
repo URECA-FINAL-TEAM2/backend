@@ -1,10 +1,11 @@
 package com.beautymeongdang.global.login.service.Impl;
 
+import com.beautymeongdang.domain.user.dto.UserDTO;
 import com.beautymeongdang.global.oauth2.CustomOAuth2User;
 import com.beautymeongdang.global.oauth2.GoogleResponse;
 import com.beautymeongdang.global.oauth2.KakaoResponse;
 import com.beautymeongdang.global.login.service.OAuth2ResponseService;
-import com.beautymeongdang.domain.user.dto.UserDTO;
+
 import com.beautymeongdang.domain.user.entity.User;
 import com.beautymeongdang.domain.user.repository.UserRepository;
 import lombok.AllArgsConstructor;
@@ -15,7 +16,6 @@ import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
@@ -60,9 +60,7 @@ public class CustomOAuth2UserServiceImpl extends DefaultOAuth2UserService {
                 .id(user.getUserId())
                 .username(user.getUserName())
                 .nickname(user.getNickname())
-                .roles(user.getUserRoles().stream()
-                        .map(userRole -> userRole.getRole().getName())
-                        .collect(Collectors.toSet()))
+                .roles(user.getRoles())
                 .profileImage(user.getProfileImage())
                 .build();
 

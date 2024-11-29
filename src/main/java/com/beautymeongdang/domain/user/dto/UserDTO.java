@@ -1,6 +1,7 @@
 package com.beautymeongdang.domain.user.dto;
 
-import com.nimbusds.oauth2.sdk.TokenIntrospectionSuccessResponse;
+
+import com.beautymeongdang.domain.user.entity.Role;
 import lombok.*;
 
 import java.util.Set;
@@ -11,9 +12,8 @@ import java.util.Set;
 @Builder
 public class UserDTO {
     private Long id;
-    private Set<String> roles;
-    private String nickname;
     private String username;
+    private String nickname;
+    private Set<Role> roles;
     private String profileImage;
-
 }

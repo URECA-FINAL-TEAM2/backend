@@ -86,9 +86,6 @@ public class JWTFilter extends OncePerRequestFilter {
         UserDTO userDTO = UserDTO.builder()
                 .id(user.getUserId())
                 .nickname(user.getNickname())
-                .roles(user.getUserRoles().stream()
-                        .map(userRole -> userRole.getRole().getName())
-                        .collect(Collectors.toSet()))
                 .build();
 
         CustomOAuth2User customOAuth2User = new CustomOAuth2User(userDTO);
