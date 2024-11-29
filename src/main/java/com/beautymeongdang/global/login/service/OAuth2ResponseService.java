@@ -1,4 +1,4 @@
-package com.beautymeongdang.domain.login.service;
+package com.beautymeongdang.global.login.service;
 
 public interface OAuth2ResponseService {
 
