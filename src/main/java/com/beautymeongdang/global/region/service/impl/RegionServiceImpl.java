@@ -1,8 +1,11 @@
 package com.beautymeongdang.global.region.service.impl;
 
 import com.beautymeongdang.global.region.dto.GetSidoResponseDto;
+import com.beautymeongdang.global.region.dto.GetSigunguResponseDto;
 import com.beautymeongdang.global.region.entity.Sido;
+import com.beautymeongdang.global.region.entity.Sigungu;
 import com.beautymeongdang.global.region.repository.SidoRepository;
+import com.beautymeongdang.global.region.repository.SigunguRepository;
 import com.beautymeongdang.global.region.service.RegionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -16,7 +19,7 @@ import java.util.stream.Collectors;
 public class RegionServiceImpl implements RegionService {
 
     private final SidoRepository sidoRepository;
-
+    private final SigunguRepository sigunguRepository;
 
     /**
      * 시도 조회
@@ -39,6 +42,25 @@ public class RegionServiceImpl implements RegionService {
     }
 
 
+    /**
+     * 시군구 조회
+     */
+    @Override
+    @Transactional(readOnly = true)
+    public GetSigunguResponseDto getSigunguList(Long sidoId) {
+        List<Sigungu> sigunguList = sigunguRepository.findBySidoId_SidoId(sidoId);
+
+        List<GetSigunguResponseDto.SigunguDto> sigunguDtoList = sigunguList.stream()
+                .map(sigungu -> GetSigunguResponseDto.SigunguDto.builder()
+                        .sigunguId(sigungu.getSigunguId())
+                        .sigunguName(sigungu.getSigunguName())
+                        .build())
+                .collect(Collectors.toList());
+
+        return GetSigunguResponseDto.builder()
+                .sigunguList(sigunguDtoList)
+                .build();
+    }
 
 
 }
