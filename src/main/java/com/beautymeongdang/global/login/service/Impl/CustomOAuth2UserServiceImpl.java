@@ -43,15 +43,18 @@ public class CustomOAuth2UserServiceImpl extends DefaultOAuth2UserService {
         Optional<User> existingUser = userRepository.findByUserName(username);
 
         User user;
+        boolean isNewUser = false;
         if (existingUser.isEmpty()) {
+            // 신규 사용자
             user = User.builder()
-                    .userName(oAuth2Response.getName())     // 실제 이름을 userName에 저장
+                    .userName(oAuth2Response.getName())
                     .email(oAuth2Response.getEmail())
-                    .nickname(username)                     // provider_id를 nickname에 저장
+                    .nickname(username)
                     .socialProvider(provider)
                     .profileImage(oAuth2Response.getProfileImage())
                     .build();
             userRepository.save(user);
+            isNewUser = true;
         } else {
             user = existingUser.get();
         }
@@ -62,6 +65,7 @@ public class CustomOAuth2UserServiceImpl extends DefaultOAuth2UserService {
                 .nickname(user.getNickname())
                 .roles(user.getRoles())
                 .profileImage(user.getProfileImage())
+                .isNewUser(isNewUser)
                 .build();
 
         return new CustomOAuth2User(userDTO);

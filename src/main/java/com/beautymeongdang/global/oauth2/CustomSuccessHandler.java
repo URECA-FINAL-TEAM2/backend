@@ -28,19 +28,26 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         User user = userRepository.findById(customUserDetails.getUserId())
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        // JWT 토큰 생성
-        Map<String, Object> tokenInfo = jwtProvider.createTokens(user, response);
+        if (customUserDetails.getUserDTO().isNewUser()) {
+            // 신규 사용자인 경우
+            response.sendRedirect("/register");
+        } else {
+            // 기존 사용자인 경우
+            // JWT 토큰 생성
+            Map<String, Object> tokenInfo = jwtProvider.createTokens(user, response);
 
-        // Access Token을 JSON 응답으로 전송
-        Map<String, Object> responseData = new HashMap<>();
-        responseData.put("userId", customUserDetails.getUserId());
-        responseData.put("nickname", customUserDetails.getName());
-        responseData.putAll(tokenInfo);
+            // Access Token을 JSON 응답으로 전송
+            Map<String, Object> responseData = new HashMap<>();
+            responseData.put("userId", customUserDetails.getUserId());
+            responseData.put("nickname", customUserDetails.getName());
+            responseData.putAll(tokenInfo);
 
-        response.setContentType("application/json");
-        response.setCharacterEncoding("UTF-8");
-        response.getWriter().write(objectMapper.writeValueAsString(responseData));
+            response.setContentType("application/json");
+            response.setCharacterEncoding("UTF-8");
+            response.getWriter().write(objectMapper.writeValueAsString(responseData));
 
+            // index.html로 리다이렉트
+            response.sendRedirect("/index.html");
+        }
     }
-
 }
