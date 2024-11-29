@@ -6,7 +6,7 @@ import lombok.Getter;
 import java.time.LocalDateTime;
 
 @Getter
-public class GroomerSelectedQuoteResponseDto {
+public class GetGroomerSelectedQuoteResponseDto {
     private final Long selectedQuoteId;
     private final Long quoteId;
     private final String profileImage;
@@ -18,7 +18,7 @@ public class GroomerSelectedQuoteResponseDto {
     private final String status;
 
     @Builder
-    public GroomerSelectedQuoteResponseDto(
+    public GetGroomerSelectedQuoteResponseDto(
             Long selectedQuoteId,
             Long quoteId,
             String profileImage,

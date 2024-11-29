@@ -1,10 +1,7 @@
 package com.beautymeongdang.domain.quote.controller;
 
 
-import com.beautymeongdang.domain.quote.dto.CreateInsertRequestAllResponseDto;
-import com.beautymeongdang.domain.quote.dto.CreateInsertRequestAllRequestDto;
-import com.beautymeongdang.domain.quote.dto.CreateInsertRequestGroomerResponseDto;
-import com.beautymeongdang.domain.quote.dto.CreateInsertRequestGroomerRequestDto;
+import com.beautymeongdang.domain.quote.dto.*;
 import com.beautymeongdang.domain.quote.service.QuoteRequestService;
 import com.beautymeongdang.global.common.dto.ApiResponse;
 import lombok.RequiredArgsConstructor;
@@ -31,9 +28,10 @@ public class QuoteRequestController {
      */
     @PostMapping(value = "/all", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ApiResponse<CreateInsertRequestAllResponseDto>> createInsertRequestAll(
+            @RequestParam Long customerId,
             @RequestPart CreateInsertRequestAllRequestDto requestDto,
             @RequestPart(required = false) List<MultipartFile> images) {
-        CreateInsertRequestAllResponseDto responseDto = quoteRequestService.createInsertRequestAll(requestDto, images);
+        CreateInsertRequestAllResponseDto responseDto = quoteRequestService.createInsertRequestAll(customerId, requestDto, images);
         return ApiResponse.ok(200, responseDto, "전체 견적서 요청 성공");
     }
 
@@ -43,10 +41,33 @@ public class QuoteRequestController {
      */
     @PostMapping(value = "/groomer", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ApiResponse<CreateInsertRequestGroomerResponseDto>> createInsertRequestGroomer(
+            @RequestParam Long customerId,
             @RequestPart CreateInsertRequestGroomerRequestDto requestDto,
             @RequestPart(required = false) List<MultipartFile> images) {
-        CreateInsertRequestGroomerResponseDto responseDto = quoteRequestService.createInsertRequestGroomer(requestDto, images);
+        CreateInsertRequestGroomerResponseDto responseDto = quoteRequestService.createInsertRequestGroomer(customerId, requestDto, images);
         return ApiResponse.ok(200, responseDto, "1:1 견적서 요청 성공");
+    }
+
+
+    /**
+     * 선택한 반려견 정보 조회
+     */
+    @GetMapping("/dog/info")
+    public ResponseEntity<ApiResponse<GetDogInfoResponseDto>> getDogInfo(
+            @RequestParam Long customerId,
+            @RequestBody GetDogInfoRequestDto requestDto) {
+        GetDogInfoResponseDto responseDto = quoteRequestService.getDogInfo(requestDto.getDogId(), customerId);
+        return ApiResponse.ok(200, responseDto, "선택한 반려견 조회 성공");
+    }
+
+    /**
+     * 1:1 견적서 요청에서 미용사와 매장 정보 조회
+     */
+    @GetMapping("/groomer/{groomerId}/shop")
+    public ResponseEntity<ApiResponse<GetRequestGroomerShopResponseDto>> getGroomerShopInfo(
+            @PathVariable Long groomerId) {
+        GetRequestGroomerShopResponseDto responseDto = quoteRequestService.getGroomerShopInfo(groomerId);
+        return ApiResponse.ok(200, responseDto, "미용사 매장 정보 조회 성공");
     }
 
 
@@ -67,6 +88,18 @@ public class QuoteRequestController {
     public ResponseEntity<?> getGroomerSendQuoteRequest(@PathVariable(name = "groomerId") Long groomerId) {
         return ApiResponse.ok(200, quoteRequestService.getGroomerSendQuoteRequest(groomerId), "Get RequestGroomerSend Success");
 
+    }
+
+    // 미용사 견적서 요청 상세 조회
+    @GetMapping("/groomer/detail/{requestId}")
+    public ResponseEntity<?> getGroomerDetailQuoteRequest(@PathVariable(name = "requestId") Long requestId) {
+        return ApiResponse.ok(200, quoteRequestService.getGroomerRequestDetail(requestId), "Get RequestDetail Success");
+    }
+
+    // 미용사 1:1 맞춤 견적 요청 거절
+    @PutMapping("/groomer")
+    public ResponseEntity<?> updateGroomerRequestRejection(@RequestBody UpdateGroomerRequestRejectionRequestDto dto) {
+        return ApiResponse.ok(200, quoteRequestService.updateGroomerRequestRejection(dto), "Update RequestRejection Success");
     }
 
 }

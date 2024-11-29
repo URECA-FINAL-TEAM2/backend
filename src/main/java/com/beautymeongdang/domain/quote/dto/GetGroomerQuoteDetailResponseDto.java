@@ -12,48 +12,46 @@ import java.util.List;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class GetQuoteDetailResponseDto {
-    private GroomerInfo groomer;
-    private QuoteRequestInfo quoteRequest;
+public class GetGroomerQuoteDetailResponseDto {
+    private CustomerInfo customer;
+    private DogInfo dog;
     private QuoteInfo quote;
-    
+
     @Getter
     @Builder
     @AllArgsConstructor
     @NoArgsConstructor
-    public static class GroomerInfo {
-        private String groomerName;
-        private String shopName;
-        private String address;
-        private String phone;
+    public static class  CustomerInfo{
+        private String profileImage;
+        private String nickname;
     }
-    
+
     @Getter
     @Builder
     @AllArgsConstructor
     @NoArgsConstructor
-    public static class QuoteRequestInfo {
-        private String name;
-        private String image;
-        private String weight;
-        private String age;
+    public static class  DogInfo{
+        private String dogProfileImage;
+        private String dogName;
+        private String dogBreed;
+        private String dogWeight;
+        private Integer dogAge;
         private String dogGender;
         private Boolean neutering;
         private Boolean experience;
         private String significant;
-        private String requestContent;
-        private String dogBreed;
-        private List<String> requestImage;
     }
-    
+
     @Getter
     @Builder
     @AllArgsConstructor
     @NoArgsConstructor
-    public static class QuoteInfo {
-        private Long quoteId;
+    public static class  QuoteInfo{
+        private String requestContent;
         private LocalDateTime beautyDate;
-        private Integer cost;
+        private Integer quoteCost;
         private String quoteContent;
+        private List<String> requestImageUrl;
     }
+
 }
