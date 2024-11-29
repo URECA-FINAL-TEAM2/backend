@@ -31,7 +31,7 @@ public class RegionController {
     /**
      * 시군구 조회
      */
-    @GetMapping("/{sidoId}/sigungu")
+    @GetMapping("/{sidoId}")
     public ResponseEntity<ApiResponse<GetSigunguResponseDto>> getSigunguList(
             @PathVariable Long sidoId) {
         GetSigunguResponseDto response = regionService.getSigunguList(sidoId);
