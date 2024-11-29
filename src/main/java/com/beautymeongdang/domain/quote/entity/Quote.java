@@ -19,10 +19,6 @@ public class Quote extends DeletableBaseTimeEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long quoteId;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "quote_request_id")
-    private QuoteRequest quoteRequest;
-
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "request_id",nullable = false)
     private QuoteRequest requestId;
