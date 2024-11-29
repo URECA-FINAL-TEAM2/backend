@@ -34,6 +34,4 @@ public class QuoteRequest extends DeletableBaseTimeEntity {
 
     private String status;
 
-    @OneToMany(mappedBy = "quoteRequest", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Quote> quotes = new ArrayList<>();
 }
