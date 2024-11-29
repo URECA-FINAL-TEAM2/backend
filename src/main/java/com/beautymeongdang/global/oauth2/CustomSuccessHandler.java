@@ -27,14 +27,20 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         CustomOAuth2User customUserDetails = (CustomOAuth2User) authentication.getPrincipal();
         User user = userRepository.findById(customUserDetails.getUserId())
                 .orElseThrow(() -> new RuntimeException("User not found"));
+        // JWT 토큰 생성
+        Map<String, Object> tokenInfo = jwtProvider.createTokens(user, response);
 
+        // 신규 사용자인 경우
         if (customUserDetails.getUserDTO().isNewUser()) {
-            // 신규 사용자인 경우
-            response.sendRedirect("/register");
-        } else {
+
+            // 토큰 정보를 세션에 저장
+            request.getSession().setAttribute("tokenInfo", tokenInfo);
+
+            //추가 정보 입력 페이지로 리다이렉트
+            response.sendRedirect("/index1.html");
+
             // 기존 사용자인 경우
-            // JWT 토큰 생성
-            Map<String, Object> tokenInfo = jwtProvider.createTokens(user, response);
+        } else {
 
             // Access Token을 JSON 응답으로 전송
             Map<String, Object> responseData = new HashMap<>();
