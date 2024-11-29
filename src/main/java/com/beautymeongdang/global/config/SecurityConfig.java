@@ -57,7 +57,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests((auth) -> auth
                         .requestMatchers("/api/users/register/**").authenticated()
                         .requestMatchers("/").permitAll()
-                        .requestMatchers("/","/api/**", "/swagger-ui/**", "/v3/api-docs/**", "/configuration/ui", "/swagger-resources/**", "/webjars/**").permitAll()
+                        .requestMatchers("/","/oauth/**","/api/**", "/swagger-ui/**", "/v3/api-docs/**", "/configuration/ui", "/swagger-resources/**", "/webjars/**").permitAll()
                         .anyRequest().authenticated())
 
                 //세션 설정 : STATELESS
