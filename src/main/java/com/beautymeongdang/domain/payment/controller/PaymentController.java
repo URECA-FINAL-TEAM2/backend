@@ -5,6 +5,8 @@ import com.beautymeongdang.domain.payment.dto.PaymentCancelResponseDto;
 import com.beautymeongdang.domain.payment.dto.PaymentRequestDto;
 import com.beautymeongdang.domain.payment.dto.PaymentResponseDto;
 import com.beautymeongdang.domain.payment.service.PaymentService;
+import com.beautymeongdang.domain.quote.dto.CreateSelectedQuoteRequestDto;
+import com.beautymeongdang.domain.quote.entity.SelectedQuote;
 import com.beautymeongdang.global.common.dto.ApiResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -17,6 +19,15 @@ import java.util.List;
 @RequestMapping("/payments")
 public class PaymentController {
     private final PaymentService paymentService;
+
+    // 고객 선택 견적서 생성
+    @PostMapping("/selected-quote")
+    public ResponseEntity<ApiResponse<Long>> createSelectedQuote(
+            @RequestBody CreateSelectedQuoteRequestDto requestDto) {
+        Long selectedQuoteId = paymentService.createSelectedQuote(requestDto);
+        return ApiResponse.ok(200, selectedQuoteId, "선택된 견적서 생성 성공");
+    }
+
 
     // 결제 승인 요청
     @PostMapping("/confirm")
