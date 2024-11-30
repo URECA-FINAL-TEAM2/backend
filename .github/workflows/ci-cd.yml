@@ -23,13 +23,6 @@ jobs:
       - name: Build with Gradle
         run: ./gradlew build -x test
 
-      - name: Copy Pinpoint Agent from EC2
-        run: |
-          mkdir -p pinpoint-agent
-          echo "${{ secrets.EC2_SSH_KEY }}" > /tmp/id_rsa
-          chmod 600 /tmp/id_rsa
-          scp -v -i ~/.ssh/your-private-key.pem ubuntu@${{ secrets.EC2_HOST }}:/home/ubuntu/pinpoint-agent-2.4.1 ./pinpoint-agent/
-
       - name: Login to DockerHub
         if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/dev'
         uses: docker/login-action@v1
@@ -42,9 +35,10 @@ jobs:
         env:
           DOCKER_REPOSITORY: ${{ secrets.DOCKER_USERNAME }}/spring-boot-app
         run: |
-          docker build --build-arg PINPOINT_AGENT_PATH=pinpoint-agent/pinpoint-agent-2.4.1 \
-                       --build-arg JAR_FILE=build/libs/*.jar \
-                       -t $DOCKER_REPOSITORY:${{ github.sha }} .
+          docker build \
+            --build-arg PINPOINT_AGENT_PATH=pinpoint-agent-2.4.1 \
+            --build-arg JAR_FILE=build/libs/*.jar \
+            -t $DOCKER_REPOSITORY:${{ github.sha }} .
           docker push $DOCKER_REPOSITORY:${{ github.sha }}
 
   deploy:
@@ -60,7 +54,6 @@ jobs:
           username: ubuntu
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
-            ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
             docker pull ${{ secrets.DOCKER_USERNAME }}/spring-boot-app:${{ github.sha }}
             docker stop spring-app || true
             docker rm spring-app || true
