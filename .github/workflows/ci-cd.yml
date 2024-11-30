@@ -26,7 +26,9 @@ jobs:
       - name: Copy Pinpoint Agent from EC2
         run: |
           mkdir -p pinpoint-agent
-          scp -i ~/.ssh/your-private-key.pem ubuntu@${{ secrets.EC2_HOST }}:/home/ubuntu/pinpoint-agent-2.4.1 ./pinpoint-agent/
+          echo "${{ secrets.EC2_SSH_KEY }}" > /tmp/id_rsa
+          chmod 600 /tmp/id_rsa
+          scp -v -i ~/.ssh/your-private-key.pem ubuntu@${{ secrets.EC2_HOST }}:/home/ubuntu/pinpoint-agent-2.4.1 ./pinpoint-agent/
 
       - name: Login to DockerHub
         if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/dev'
