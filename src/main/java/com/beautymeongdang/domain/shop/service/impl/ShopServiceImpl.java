@@ -5,11 +5,11 @@ import com.beautymeongdang.domain.review.entity.ReviewsImage;
 import com.beautymeongdang.domain.review.repository.RecommendRepository;
 import com.beautymeongdang.domain.review.repository.ReviewRepository;
 import com.beautymeongdang.domain.review.repository.ReviewsImageRepository;
-import com.beautymeongdang.domain.shop.dto.CreateShopRequestDto;
-import com.beautymeongdang.domain.shop.dto.CreateShopResponseDto;
-import com.beautymeongdang.domain.shop.dto.GetGroomerShopListResponseDto;
+import com.beautymeongdang.domain.shop.dto.*;
+
 import static com.beautymeongdang.domain.shop.dto.GetGroomerShopListResponseDto.ShopDto;
-import com.beautymeongdang.domain.shop.dto.GetShopDetailResponseDto;
+
+import com.beautymeongdang.domain.shop.entity.Favorite;
 import com.beautymeongdang.domain.shop.entity.Shop;
 import com.beautymeongdang.domain.shop.repository.ShopRepository;
 import com.beautymeongdang.domain.shop.service.ShopService;
@@ -130,6 +130,33 @@ public class ShopServiceImpl implements ShopService {
                 .groomerUsername(groomer.getUserId().getNickname())
                 .groomerProfileImage(groomer.getUserId().getProfileImage())
                 .reviews(reviewDtos)
+                .build();
+    }
+
+
+    /**
+     * 매장 삭제
+     */
+    @Override
+    @Transactional
+    public DeleteShopResponseDto deleteShop(Long shopId) {
+        Shop shop = shopRepository.findById(shopId)
+                .orElseThrow(() -> NotFoundException.entityNotFound("매장"));
+
+        // 매장에 리뷰 논리적 삭제
+        List<Reviews> reviews = shopRepository.findReviewsByGroomer(shop.getGroomerId());
+        reviews.forEach(Reviews::delete);
+
+        // 매장 찜 논리적 삭제
+        List<Favorite> favorites = shopRepository.findFavoritesByShop(shop);
+        favorites.forEach(Favorite::delete);
+
+        // 매장 논리적 삭제
+        shop.delete();
+
+        return DeleteShopResponseDto.builder()
+                .shopId(shop.getShopId())
+                .shopName(shop.getShopName())
                 .build();
     }
 
