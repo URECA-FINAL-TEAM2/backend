@@ -39,7 +39,7 @@ public class ReviewServiceImpl implements ReviewService {
     // 리뷰 작성
     @Override
     @Transactional
-    public CreateReviewResponseDto createReview(CreateReviewRequestDto requestDto, List<MultipartFile> images) {
+    public CreateUpdateReviewResponseDto createReview(CreateReviewRequestDto requestDto, List<MultipartFile> images) {
 
         Groomer groomer = groomerRepository.findById(requestDto.getGroomerId())
                 .orElseThrow(() -> NotFoundException.entityNotFound("미용사"));
@@ -75,7 +75,57 @@ public class ReviewServiceImpl implements ReviewService {
             savedImages = reviewsImageRepository.saveAll(reviewsImages);
         }
 
-        return CreateReviewResponseDto.builder()
+        return CreateUpdateReviewResponseDto.builder()
+                .reviewId(savedReview.getReviewId())
+                .groomerId(savedReview.getGroomerId().getGroomerId())
+                .customerId(savedReview.getCustomerId().getCustomerId())
+                .selectedQuoteId(savedReview.getSelectedQuoteId().getSelectedQuoteId())
+                .starScore(savedReview.getStarRating())
+                .content(savedReview.getContent())
+                .reviewsImage(savedImages.stream()
+                        .map(ReviewsImage::getImageUrl)
+                        .collect(Collectors.toList()))
+                .build();
+    }
+
+    // 리뷰 수정
+    @Override
+    @Transactional
+    public CreateUpdateReviewResponseDto updateReview(Long reviewId, UpdateReviewRequestDto requestDto, List<MultipartFile> images) {
+        Reviews reviews = reviewRepository.findById(reviewId)
+                .orElseThrow(() -> NotFoundException.entityNotFound("리뷰"));
+
+        Reviews updateReview = Reviews.builder()
+                .reviewId(reviewId)
+                .content(requestDto.getContent())
+                .starRating(requestDto.getStarScore())
+                .groomerId(reviews.getGroomerId())
+                .customerId(reviews.getCustomerId())
+                .selectedQuoteId(reviews.getSelectedQuoteId())
+                .build();
+
+        Reviews savedReview = reviewRepository.save(updateReview);
+
+        // 이미지 삭제 및 추가
+        List<ReviewsImage> reviewsImageList = reviewsImageRepository.findReviewImagesByReviewId(reviewId);
+
+        reviewsImageRepository.deleteAll(reviewsImageList);
+
+        List<ReviewsImage> savedImages = new ArrayList<>();
+        if (images != null && !images.isEmpty()) {
+            List<UploadedFile> uploadedFiles = fileStore.storeFiles(images, FileStore.REVIEWS);
+
+            List<ReviewsImage> reviewsImages = uploadedFiles.stream()
+                    .map(uploadedFile -> ReviewsImage.builder()
+                            .reviewId(savedReview)
+                            .imageUrl(uploadedFile.getFileUrl())
+                            .build())
+                    .collect(Collectors.toList());
+
+            savedImages = reviewsImageRepository.saveAll(reviewsImages);
+        }
+
+        return CreateUpdateReviewResponseDto.builder()
                 .reviewId(savedReview.getReviewId())
                 .groomerId(savedReview.getGroomerId().getGroomerId())
                 .customerId(savedReview.getCustomerId().getCustomerId())
