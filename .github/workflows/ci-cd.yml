@@ -35,10 +35,7 @@ jobs:
         env:
           DOCKER_REPOSITORY: ${{ secrets.DOCKER_USERNAME }}/spring-boot-app
         run: |
-          docker build \
-            --build-arg PINPOINT_AGENT_PATH=pinpoint-agent-2.4.1 \
-            --build-arg JAR_FILE=build/libs/*.jar \
-            -t $DOCKER_REPOSITORY:${{ github.sha }} .
+          docker build -t $DOCKER_REPOSITORY:${{ github.sha }} .
           docker push $DOCKER_REPOSITORY:${{ github.sha }}
 
   deploy:
@@ -57,10 +54,7 @@ jobs:
             docker pull ${{ secrets.DOCKER_USERNAME }}/spring-boot-app:${{ github.sha }}
             docker stop spring-app || true
             docker rm spring-app || true
-            docker run -d --name spring-app \
-              -p 8081:8081 \
-              -v /home/ubuntu/pinpoint-agent-2.4.1:/pinpoint-agent \
-              -e JAVA_OPTS="-javaagent:/pinpoint-agent/pinpoint-bootstrap.jar -Dpinpoint.agentId=${{ secrets.PINPOINT_AGENT_ID }} -Dpinpoint.applicationName=${{ secrets.PINPOINT_APPLICATION_NAME }}" \
+            docker run -d --name spring-app -p 8081:8081 \
               -e SPRING_PROFILES_ACTIVE=dev \
               -e RDS_ENDPOINT=${{ secrets.RDS_ENDPOINT }} \
               -e DB_NAME=${{ secrets.DB_NAME }} \
