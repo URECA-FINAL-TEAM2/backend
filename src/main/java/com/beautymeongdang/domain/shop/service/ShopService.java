@@ -11,7 +11,7 @@ public interface ShopService {
     // 매장 상세 조회
     GetShopDetailResponseDto.ShopDetailResponseDto getShopDetail(Long groomerId, Long customerId);
 
-    //미용사 삭제
+    // 매장 삭제
     DeleteShopResponseDto deleteShop(Long shopId);
 
     // 미용사 찾기 매장 리스트 조회
