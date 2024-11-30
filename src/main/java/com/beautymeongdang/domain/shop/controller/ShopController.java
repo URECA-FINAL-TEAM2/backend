@@ -23,9 +23,10 @@ public class ShopController {
     /**
      * 매장 등록
      */
-    @PostMapping(value = "/groomer/shop",consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<?> createShop(@RequestPart CreateShopRequestDto requestDto,
-                                        @RequestPart MultipartFile shopLogo) {
+    @PostMapping(value = "/groomer/shop", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<ApiResponse<CreateShopResponseDto>> createShop(
+            @RequestPart CreateShopRequestDto requestDto,
+            @RequestPart MultipartFile shopLogo) {
         CreateShopResponseDto response = shopService.createShop(requestDto, shopLogo);
         return ApiResponse.ok(200, response, "매장 등록 성공");
     }
