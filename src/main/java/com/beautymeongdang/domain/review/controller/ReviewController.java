@@ -17,12 +17,20 @@ import java.util.List;
 public class ReviewController {
     private final ReviewService reviewService;
 
-
     // 리뷰 작성
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> createReviews(@RequestPart CreateReviewRequestDto requestDto
             , @RequestPart(required = false) List<MultipartFile> images) {
         return ApiResponse.ok(200, reviewService.createReview(requestDto, images), "리뷰 작성 성공");
+    }
+
+    // 리뷰 수정
+    @PutMapping(value = "/{reviewId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<?> updateReviews(
+            @PathVariable(name = "reviewId") Long reviewId,
+            @RequestPart UpdateReviewRequestDto requestDto,
+            @RequestPart(required = false) List<MultipartFile> images) {
+        return ApiResponse.ok(200, reviewService.updateReview(reviewId, requestDto, images), "리뷰 수정 성공");
     }
 
 }

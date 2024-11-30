@@ -9,7 +9,7 @@ import java.util.List;
 
 @Getter
 @NoArgsConstructor
-public class CreateReviewResponseDto {
+public class CreateUpdateReviewResponseDto {
     private Long reviewId;
     private Long groomerId;
     private Long customerId;
@@ -19,8 +19,8 @@ public class CreateReviewResponseDto {
     private List<String> reviewsImage;
 
     @Builder
-    public CreateReviewResponseDto(Long reviewId, Long groomerId, Long customerId, Long selectedQuoteId,
-                                   BigDecimal starScore, String content, List<String> reviewsImage) {
+    public CreateUpdateReviewResponseDto(Long reviewId, Long groomerId, Long customerId, Long selectedQuoteId,
+                                         BigDecimal starScore, String content, List<String> reviewsImage) {
         this.reviewId = reviewId;
         this.groomerId = groomerId;
         this.customerId = customerId;
