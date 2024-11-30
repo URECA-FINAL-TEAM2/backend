@@ -75,19 +75,16 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-
-        configuration.setAllowedOrigins(Collections.singletonList("http://localhost:8080"));
-        configuration.setAllowedMethods(Collections.singletonList("*"));
+        configuration.setAllowedOrigins(Arrays.asList("http://localhost:5173"));
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        configuration.setAllowedHeaders(Arrays.asList("*"));
         configuration.setAllowCredentials(true);
-        configuration.setAllowedHeaders(Collections.singletonList("*"));
-        configuration.setMaxAge(3600L);
-
-        configuration.setExposedHeaders(Arrays.asList("Authorization", "Set-Cookie"));
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;
     }
+
 
     @Bean
     public JWTFilter jwtFilter(JWTUtil jwtUtil, UserRepository userRepository, JwtProvider jwtProvider) {
