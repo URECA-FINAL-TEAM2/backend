@@ -8,7 +8,6 @@ import com.beautymeongdang.domain.review.repository.ReviewRepository;
 import com.beautymeongdang.domain.shop.repository.ShopRepository;
 import com.beautymeongdang.domain.user.service.MainService;
 import com.beautymeongdang.global.exception.handler.NotFoundException;
-import com.beautymeongdang.global.region.entity.Sigungu;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
