@@ -7,11 +7,17 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface ReviewsImageRepository extends JpaRepository<ReviewsImage, Long> {
 
-    //리뷰 이미지 찾기
+    // 리뷰 이미지 찾기
     @Query("SELECT ri FROM ReviewsImage ri WHERE ri.reviewId.reviewId = :reviewId")
     List<ReviewsImage> findReviewImagesByReviewId(@Param("reviewId") Long reviewId);
+
+    // 고객 메인 페이지 베스트리뷰에서 첫 번째 이미지 조회
+    @Query("SELECT ri.imageUrl FROM ReviewsImage ri WHERE ri.reviewId.reviewId = :reviewId ORDER BY ri.reviewsImageId ASC LIMIT 1")
+    Optional<String> findFirstImageUrlByReviewId(@Param("reviewId") Long reviewId);
+
 }

@@ -35,14 +35,16 @@ jobs:
       env:
         DOCKER_REPOSITORY: ${{ secrets.DOCKER_USERNAME }}/spring-boot-app
       run: |
-        docker build -t $DOCKER_REPOSITORY:${{ github.sha }} .
+        docker build --build-arg PINPOINT_AGENT_PATH=/home/ubuntu/pinpoint-agent-2.4.1 \
+                     --build-arg JAR_FILE=build/libs/*.jar \
+                     -t $DOCKER_REPOSITORY:${{ github.sha }} .
         docker push $DOCKER_REPOSITORY:${{ github.sha }}
         
   deploy:
     needs: build
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
-    
+
     steps:
     - name: Deploy to EC2
       uses: appleboy/ssh-action@master
@@ -51,10 +53,12 @@ jobs:
         username: ubuntu
         key: ${{ secrets.EC2_SSH_KEY }}
         script: |
+          scp -r /home/ubuntu/pinpoint-agent-2.4.1 ubuntu@${{ secrets.EC2_HOST }}:/home/ubuntu/
           docker pull ${{ secrets.DOCKER_USERNAME }}/spring-boot-app:${{ github.sha }}
           docker stop spring-app || true
           docker rm spring-app || true
           docker run -d --name spring-app -p 8081:8081 \
+            -v /home/ubuntu/pinpoint-agent-2.4.1:/pinpoint-agent \
             -e SPRING_PROFILES_ACTIVE=dev \
             -e RDS_ENDPOINT=${{ secrets.RDS_ENDPOINT }} \
             -e DB_NAME=${{ secrets.DB_NAME }} \
@@ -75,4 +79,9 @@ jobs:
             -e KAKAO_CLIENT_SECRET=${{ secrets.KAKAO_CLIENT_SECRET }} \
             -e GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }} \
             -e GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }} \
+            -e PINPOINT_AGENT_ID=${{ secrets.PINPOINT_AGENT_ID }} \
+            -e PINPOINT_APPLICATION_NAME=${{ secrets.PINPOINT_APPLICATION_NAME }} \
+            -e JAVA_OPTS=-javaagent:/pinpoint-agent/pinpoint-bootstrap.jar \
+                          -Dpinpoint.agentId=${{ secrets.PINPOINT_AGENT_ID }} \
+                          -Dpinpoint.applicationName=${{ secrets.PINPOINT_APPLICATION_NAME }} \
             ${{ secrets.DOCKER_USERNAME }}/spring-boot-app:${{ github.sha }}
