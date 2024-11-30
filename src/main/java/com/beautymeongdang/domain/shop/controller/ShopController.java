@@ -1,10 +1,7 @@
 package com.beautymeongdang.domain.shop.controller;
 
 
-import com.beautymeongdang.domain.shop.dto.CreateShopRequestDto;
-import com.beautymeongdang.domain.shop.dto.CreateShopResponseDto;
-import com.beautymeongdang.domain.shop.dto.GetGroomerShopListResponseDto;
-import com.beautymeongdang.domain.shop.dto.GetShopDetailResponseDto;
+import com.beautymeongdang.domain.shop.dto.*;
 import com.beautymeongdang.domain.shop.service.ShopService;
 import com.beautymeongdang.global.common.dto.ApiResponse;
 import lombok.RequiredArgsConstructor;
@@ -42,6 +39,16 @@ public class ShopController {
         GetShopDetailResponseDto.ShopDetailResponseDto response = shopService.getShopDetail(groomerId, customerId);
         return ApiResponse.ok(200, response, "매장 상세 조회 성공");
     }
+
+    /**
+     * 매장 삭제
+     */
+    @DeleteMapping("/groomer/shop/{shopId}")
+    public ResponseEntity<ApiResponse<DeleteShopResponseDto>> deleteShop(@PathVariable Long shopId) {
+        DeleteShopResponseDto response = shopService.deleteShop(shopId);
+        return ApiResponse.ok(200, response, "매장 삭제 성공");
+    }
+
 
     /**
      * 미용사 찾기 매장 리스트 조회
