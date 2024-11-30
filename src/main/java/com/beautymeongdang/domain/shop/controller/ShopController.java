@@ -1,20 +1,36 @@
 package com.beautymeongdang.domain.shop.controller;
 
 
+import com.beautymeongdang.domain.shop.dto.CreateShopRequestDto;
+import com.beautymeongdang.domain.shop.dto.CreateShopResponseDto;
 import com.beautymeongdang.domain.shop.dto.GetGroomerShopListResponseDto;
 import com.beautymeongdang.domain.shop.dto.GetShopDetailResponseDto;
 import com.beautymeongdang.domain.shop.service.ShopService;
 import com.beautymeongdang.global.common.dto.ApiResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
 
 @RestController
 @RequestMapping("/profile")
 @RequiredArgsConstructor
 public class ShopController {
-
     private final ShopService shopService;
+
+    /**
+     * 매장 등록
+     */
+    @PostMapping(value = "/groomer/shop", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<ApiResponse<CreateShopResponseDto>> createShop(
+            @RequestPart CreateShopRequestDto requestDto,
+            @RequestPart MultipartFile shopLogo) {
+        CreateShopResponseDto response = shopService.createShop(requestDto, shopLogo);
+        return ApiResponse.ok(200, response, "매장 등록 성공");
+    }
+
 
     /**
      * 매장 상세 조회
