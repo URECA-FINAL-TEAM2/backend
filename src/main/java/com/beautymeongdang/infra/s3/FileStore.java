@@ -1,14 +1,18 @@
 package com.beautymeongdang.infra.s3;
 
 import com.amazonaws.services.s3.AmazonS3Client;
+import com.amazonaws.services.s3.model.DeleteObjectRequest;
+import com.amazonaws.services.s3.model.DeleteObjectsRequest;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 
 import com.beautymeongdang.global.common.entity.UploadedFile;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import com.beautymeongdang.global.exception.handler.BadRequestException;
 import com.beautymeongdang.global.exception.handler.InternalServerException;
@@ -16,6 +20,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
+
 
 @Component
 @RequiredArgsConstructor
@@ -89,4 +94,51 @@ public class FileStore {
             throw BadRequestException.invalidRequest("파일 개수는 " + FILE_COUNT + "개를 초과할 수 없습니다");
         }
     }
+
+    // 단일 파일 삭제
+    public void deleteFile(String fileUrl) {
+        try {
+            String fileName = extractFileKeyFromUrl(fileUrl);
+            amazonS3Client.deleteObject(new DeleteObjectRequest(bucketName, fileName));
+        } catch (Exception e) {
+            throw InternalServerException.error("파일 삭제 중 오류가 발생했습니다: " + e.getMessage());
+        }
+    }
+
+
+    // 다중 파일 삭제
+    public void deleteFiles(List<String> fileUrls) {
+        try {
+            if (fileUrls == null || fileUrls.isEmpty()) {
+                return;
+            }
+
+            List<String> keys = fileUrls.stream()
+                    .map(this::extractFileKeyFromUrl)
+                    .collect(Collectors.toList());
+
+            DeleteObjectsRequest deleteObjectsRequest = new DeleteObjectsRequest(bucketName)
+                    .withKeys(keys.stream()
+                            .map(DeleteObjectsRequest.KeyVersion::new)
+                            .collect(Collectors.toList()));
+
+            amazonS3Client.deleteObjects(deleteObjectsRequest);
+        } catch (Exception e) {
+            throw InternalServerException.error("파일 일괄 삭제 중 오류가 발생했습니다: " + e.getMessage());
+        }
+    }
+
+
+    // S3 URL에서 파일 키(경로+파일명) 추출
+    private String extractFileKeyFromUrl(String fileUrl) {
+        try {
+            URL url = new URL(fileUrl);
+            String path = url.getPath();
+            String decodedPath = java.net.URLDecoder.decode(path, "UTF-8");
+            return decodedPath.startsWith("/") ? decodedPath.substring(1) : decodedPath;
+        } catch (Exception e) {
+            throw InternalServerException.error("파일 URL 처리 중 오류가 발생했습니다: " + e.getMessage());
+        }
+    }
+
 }
