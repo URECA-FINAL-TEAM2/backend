@@ -44,7 +44,7 @@ jobs:
     needs: build
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
-    
+
     steps:
     - name: Deploy to EC2
       uses: appleboy/ssh-action@master
@@ -58,6 +58,7 @@ jobs:
           docker stop spring-app || true
           docker rm spring-app || true
           docker run -d --name spring-app -p 8081:8081 \
+            -v /home/ubuntu/pinpoint-agent-2.4.1:/pinpoint-agent \
             -e SPRING_PROFILES_ACTIVE=dev \
             -e RDS_ENDPOINT=${{ secrets.RDS_ENDPOINT }} \
             -e DB_NAME=${{ secrets.DB_NAME }} \
@@ -80,7 +81,7 @@ jobs:
             -e GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }} \
             -e PINPOINT_AGENT_ID=${{ secrets.PINPOINT_AGENT_ID }} \
             -e PINPOINT_APPLICATION_NAME=${{ secrets.PINPOINT_APPLICATION_NAME }} \
-            -e JAVA_OPTS="-javaagent:/pinpoint-agent/pinpoint-bootstrap.jar \
+            -e JAVA_OPTS=-javaagent:/pinpoint-agent/pinpoint-bootstrap.jar \
                           -Dpinpoint.agentId=${{ secrets.PINPOINT_AGENT_ID }} \
-                          -Dpinpoint.applicationName=${{ secrets.PINPOINT_APPLICATION_NAME }}" \
+                          -Dpinpoint.applicationName=${{ secrets.PINPOINT_APPLICATION_NAME }} \
             ${{ secrets.DOCKER_USERNAME }}/spring-boot-app:${{ github.sha }}
