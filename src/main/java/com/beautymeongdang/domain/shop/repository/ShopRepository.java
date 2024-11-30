@@ -36,7 +36,7 @@ public interface ShopRepository extends JpaRepository<Shop, Long> {
         FROM Reviews r
         WHERE r.groomerId = g
         AND r.isDeleted = false
-    ) DESC, 
+    ) DESC,
     (
         SELECT AVG(r.starRating)
         FROM Reviews r
