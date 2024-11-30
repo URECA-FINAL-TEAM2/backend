@@ -22,7 +22,7 @@ public class MainController {
      */
     @GetMapping("/customer")
     public ResponseEntity<ApiResponse<GetMainCustomerResponseDto.MainResponse>> getMainPage(
-            @RequestParam(required = false) Long customerId) {
+            @RequestParam Long customerId) {
         GetMainCustomerResponseDto.MainResponse response = mainService.getMainPage(customerId);
         return ApiResponse.ok(200, response, "메인페이지 조회 성공");
     }
