@@ -109,7 +109,7 @@ public class ReviewServiceImpl implements ReviewService {
         // 이미지 삭제 및 추가
         List<ReviewsImage> reviewsImageList = reviewsImageRepository.findReviewImagesByReviewId(reviewId);
 
-        reviewsImageRepository.deleteAll(reviewsImageList);
+        reviewsImageRepository.deleteAllByReviewId(savedReview);
 
         List<ReviewsImage> savedImages = new ArrayList<>();
         if (images != null && !images.isEmpty()) {
