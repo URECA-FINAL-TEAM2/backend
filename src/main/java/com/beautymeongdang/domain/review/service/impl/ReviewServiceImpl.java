@@ -1,5 +1,6 @@
 package com.beautymeongdang.domain.review.service.impl;
 
+import com.beautymeongdang.domain.quote.entity.QuoteRequestImage;
 import com.beautymeongdang.domain.quote.entity.SelectedQuote;
 import com.beautymeongdang.domain.quote.repository.SelectedQuoteRepository;
 import com.beautymeongdang.domain.review.dto.*;
@@ -109,6 +110,12 @@ public class ReviewServiceImpl implements ReviewService {
         // 이미지 삭제 및 추가
         List<ReviewsImage> reviewsImageList = reviewsImageRepository.findReviewImagesByReviewId(reviewId);
 
+        // 이미지 S3 삭제
+        for (ReviewsImage reviewsImage : reviewsImageList) {
+            fileStore.deleteFile(reviewsImage.getImageUrl());
+        }
+
+        // 이미지 DB 삭제
         reviewsImageRepository.deleteAllByReviewId(savedReview);
 
         List<ReviewsImage> savedImages = new ArrayList<>();
