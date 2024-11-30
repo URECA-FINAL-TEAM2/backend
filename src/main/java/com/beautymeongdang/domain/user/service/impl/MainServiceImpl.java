@@ -49,7 +49,7 @@ public class MainServiceImpl implements MainService {
                 .collect(Collectors.toList());
 
         // 우리동네 미용사
-        List<Shop> localGroomers = shopRepository.findRecentLocalShopsByCustomerId(customerId);
+        List<Shop> localGroomers = shopRepository.findShopsByCustomerSigunguOrderByReviewCountAndStarScore(customerId);
         List<LocalGroomerDto> localGroomerDtos = localGroomers.stream()
                 .map(shop -> {
                     Long groomerId = shop.getGroomerId().getGroomerId();
