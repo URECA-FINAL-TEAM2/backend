@@ -78,9 +78,9 @@ public class QuoteRequestController {
     }
 
     // 미용사 매장 근처 견적서 요청 공고 조회
-    @GetMapping("/groomer/total/{sigunguId}")
-    public ResponseEntity<?> getGroomerTotalRequestList(@PathVariable(name = "sigunguId") Long sigunguId) {
-        return ApiResponse.ok(200, quoteRequestService.getGroomerTotalRequestList(sigunguId), "Get TotalRequestGroomer Success");
+    @GetMapping("/groomer/total/{groomerId}")
+    public ResponseEntity<?> getGroomerTotalRequestList(@PathVariable(name = "groomerId") Long groomerId) {
+        return ApiResponse.ok(200, quoteRequestService.getGroomerTotalRequestList(groomerId), "Get TotalRequestGroomer Success");
     }
 
     // 미용사가 견적서 보낸 견적 요청 조회
