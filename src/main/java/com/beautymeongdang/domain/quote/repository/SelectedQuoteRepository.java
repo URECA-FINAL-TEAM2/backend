@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Repository
@@ -52,7 +53,17 @@ public interface SelectedQuoteRepository extends JpaRepository<SelectedQuote, Lo
             "WHERE sq.selectedQuoteId = :selectedQuoteId AND sq.isDeleted = false")
     GetSelectedQuoteDetailResponseDto findQuoteDetailById(@Param("selectedQuoteId") Long selectedQuoteId);
 
-
+    // 미용사 메인 페이지 - 오늘의 예약 건수 조회
+    @Query(value = """
+        SELECT COUNT(sq) as todayReservation
+        FROM SelectedQuote sq
+        JOIN sq.quoteId q
+        WHERE sq.status = '010'
+          AND sq.isDeleted = false
+          AND q.groomerId.groomerId = :groomerId
+          AND FUNCTION('DATE', q.beautyDate) = FUNCTION('DATE', :todayDate)
+    """)
+    Integer countTodayReservations(@Param("groomerId") Long groomerId, @Param("todayDate") LocalDateTime todayDate);
 
 
 
