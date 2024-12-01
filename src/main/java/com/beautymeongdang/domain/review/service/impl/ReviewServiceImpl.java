@@ -137,6 +137,20 @@ public class ReviewServiceImpl implements ReviewService {
                         .collect(Collectors.toList()))
                 .build();
     }
+
+    // 리뷰 논리적 삭제
+    @Override
+    @Transactional
+    public DeleteReviewResponseDto deleteReview(Long reviewId) {
+        Reviews reviews = reviewRepository.findById(reviewId)
+                .orElseThrow(() -> NotFoundException.entityNotFound("리뷰"));
+
+        reviews.delete();
+
+        return DeleteReviewResponseDto.builder()
+                .reviewId(reviews.getReviewId())
+                .build();
+    }
 }
 
 
