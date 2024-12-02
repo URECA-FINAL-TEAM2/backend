@@ -16,5 +16,9 @@ COPY ${JAR_FILE} app.jar
 ENTRYPOINT ["java", \
     "-javaagent:/pinpoint-agent/pinpoint-bootstrap.jar", \
     "-Dpinpoint.agentId=${HOSTNAME}", \
-    "-Dpinpoint.applicationName=beatuymeongdang-app", \
+    "-Dpinpoint.applicationName=beautymeongdang-app", \
+    "-Dprofiler.transport.grpc.collector.ip=pinpoint-collector", \
+    "-Dprofiler.transport.grpc.collector.port=9991", \
+    "-Dprofiler.transport.grpc.metadata.port=9992", \
+    "-Dprofiler.transport.grpc.stat.port=9993", \
     "-jar", "/app.jar"]
