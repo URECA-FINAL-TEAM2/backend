@@ -13,6 +13,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.web.util.UriComponentsBuilder;
+
 import java.io.IOException;
 import java.util.*;
 
@@ -34,45 +36,31 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 
             Map<String, Object> tokenInfo = jwtProvider.createTokens(user, response);
             Map<String, Object> responseData = new HashMap<>();
-            ApiResponse<?> apiResponse;
 
             // 신규 사용자인 경우
             if (!customUserDetails.getUserDTO().isRegister()) {
-                request.getSession().setAttribute("tokenInfo", tokenInfo);
-
                 responseData.put("isRegister", false);
-                responseData.put("message", "추가 정보 입력이 필요합니다.");
-                apiResponse = ApiResponse.ok(200, responseData, "신규 사용자 로그인 성공").getBody();
-
-                writeJsonResponse(response, apiResponse);
-                response.sendRedirect("/InfoRequired.jsx");
+                responseData.put("userId", customUserDetails.getUserId());
+                responseData.put("token", tokenInfo.get("accessToken"));
+                responseData.put("redirectUrl", "http://localhost:5173/InfoRequired");
             }
             // 기존 사용자인 경우
             else {
                 responseData.put("isRegister", true);
                 responseData.put("userId", customUserDetails.getUserId());
                 responseData.put("nickname", customUserDetails.getName());
-                responseData.putAll(tokenInfo);
-
-                apiResponse = ApiResponse.ok(200, responseData, "로그인 성공").getBody();
-
-                writeJsonResponse(response, apiResponse);
-                response.sendRedirect("/Login.jsx");
+                responseData.put("token", tokenInfo.get("accessToken"));
+                responseData.put("redirectUrl", "http://localhost:5173/Login");
             }
+
+            ApiResponse<?> apiResponse = ApiResponse.ok(200, responseData, "로그인 성공").getBody();
+            writeJsonResponse(response, apiResponse);
+
         } catch (Exception e) {
             log.error("로그인 처리 중 오류 발생: {}", e.getMessage(), e);
-            handleAuthenticationError(response, e);
+            ApiResponse<?> errorResponse = ApiResponse.badRequest(400, "로그인 처리 실패: " + e.getMessage()).getBody();
+            writeJsonResponse(response, errorResponse);
         }
-    }
-
-    private void handleAuthenticationError(HttpServletResponse response, Exception e) throws IOException {
-        response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-
-        ApiResponse<?> errorResponse = ApiResponse.badRequest(400, "로그인 처리 실패: " + e.getMessage()).getBody();
-        writeJsonResponse(response, errorResponse);
-
-        // 에러 페이지로 리다이렉트 (선택사항)
-        response.sendRedirect("/error.html");
     }
 
     private void writeJsonResponse(HttpServletResponse response, ApiResponse<?> apiResponse) throws IOException {
