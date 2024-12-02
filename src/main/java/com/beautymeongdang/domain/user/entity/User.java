@@ -42,6 +42,7 @@ public class User extends DeletableBaseTimeEntity {
     private String phone;
 
     @Column
+    @Builder.Default
     private boolean isRegister = false;
 
     @Column(nullable = false)
