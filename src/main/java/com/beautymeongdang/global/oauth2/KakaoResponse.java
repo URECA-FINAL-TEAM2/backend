@@ -10,6 +10,7 @@ public class KakaoResponse implements OAuth2ResponseService {
     private final Map<String, Object> kakaoAccount;
     private final Map<String, Object> profile;
 
+    @SuppressWarnings("unchecked")
     public KakaoResponse(Map<String, Object> attribute) {
         this.attribute = attribute;
         this.kakaoAccount = (Map<String, Object>) attribute.get("kakao_account");

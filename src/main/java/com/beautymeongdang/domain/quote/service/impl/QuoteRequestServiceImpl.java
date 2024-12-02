@@ -218,8 +218,11 @@ public class QuoteRequestServiceImpl implements QuoteRequestService {
 
     // 미용사 매장 근처 견적서 요청 공고 조회
     @Override
-    public List<GetGroomerQuoteRequestResponseDto> getGroomerTotalRequestList(Long sigunguId) {
-        return quoteRequestRepository.findQuoteRequestsBySigunguId(sigunguId);
+    public List<GetGroomerQuoteRequestResponseDto> getGroomerTotalRequestList(Long groomerId) {
+        Shop shop = shopRepository.findByGroomerId(groomerId)
+                .orElseThrow(() -> NotFoundException.entityNotFound("미용실"));
+
+        return quoteRequestRepository.findQuoteRequestsBySigunguId(shop.getSigunguId().getSigunguId());
     }
 
     // 미용사가 견적서 보낸 견적 요청 조회

@@ -71,13 +71,23 @@ public class PaymentServiceImpl implements PaymentService {
                 LocalDateTime approvedAt = approvedAtOffset.toLocalDateTime();
                 String method = response.get("method").toString();
 
-                SelectedQuote selectedQuote = createSelectedQuote(request.getQuoteId(), request.getCustomerId());
+                Quote quote = quoteRepository.findById(request.getQuoteId())
+                        .orElseThrow(() -> new IllegalArgumentException("견적 데이터를 찾을 수 없습니다."));
+                Customer customer = customerRepository.findById(request.getCustomerId())
+                        .orElseThrow(() -> new IllegalArgumentException("고객 데이터를 찾을 수 없습니다."));
 
-
-                Long groomerId = selectedQuote.getQuoteId().getGroomerId().getGroomerId();
+                Long groomerId = quote.getGroomerId().getGroomerId();
                 String shopName = shopRepository.findByGroomerId(groomerId)
                         .orElseThrow(() -> new IllegalArgumentException("샵 정보를 찾을 수 없습니다."))
                         .getShopName();
+
+                SelectedQuote selectedQuote = SelectedQuote.builder()
+                        .quoteId(quote)
+                        .customerId(customer)
+                        .status("예약 완료")
+                        .build();
+
+                selectedQuote = selectedQuoteRepository.save(selectedQuote);
 
                 Payment payment = Payment.builder()
                         .paymentKey(request.getPaymentKey())
@@ -86,15 +96,12 @@ public class PaymentServiceImpl implements PaymentService {
                         .method(method)
                         .status("결제 완료")
                         .approvedAt(approvedAt)
-                        .selectedQuoteId(selectedQuote)
                         .paymentTitle(shopName)
+                        .selectedQuoteId(selectedQuote)
                         .build();
+
                 paymentRepository.save(payment);
 
-                selectedQuote = selectedQuote.updateStatus("예약 완료");
-                selectedQuoteRepository.save(selectedQuote);
-
-                // 6. 응답 반환
                 return PaymentResponseDto.builder()
                         .paymentKey(request.getPaymentKey())
                         .orderId(request.getOrderId())
@@ -134,21 +141,10 @@ public class PaymentServiceImpl implements PaymentService {
         }
     }
 
-    // 선택된 견적서 생성
-    private SelectedQuote createSelectedQuote(Long quoteId, Long customerId) {
-        Quote quote = quoteRepository.findById(quoteId)
-                .orElseThrow(() -> new IllegalArgumentException("견적 데이터를 찾을 수 없습니다."));
-        Customer customer = customerRepository.findById(customerId)
-                .orElseThrow(() -> new IllegalArgumentException("고객 데이터를 찾을 수 없습니다."));
 
-        SelectedQuote selectedQuote = SelectedQuote.builder()
-                .quoteId(quote)
-                .customerId(customer)
-                .status("선택완료")
-                .build();
 
-        return selectedQuoteRepository.save(selectedQuote);
-    }
+
+
 
     // 결제 취소 및 예약 취소
     @Override
@@ -225,6 +221,7 @@ public class PaymentServiceImpl implements PaymentService {
     }
 
 
+    // 결제 내역 조회
     @Override
     public PaymentResponseDto getPaymentDetail(String paymentKey) {
         Payment payment = paymentRepository.findByPaymentKey(paymentKey)

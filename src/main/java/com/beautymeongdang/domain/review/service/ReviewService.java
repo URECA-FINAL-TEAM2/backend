@@ -1,16 +1,17 @@
 package com.beautymeongdang.domain.review.service;
 
 
-import com.beautymeongdang.domain.review.dto.CreateLikeRequestDto;
-import com.beautymeongdang.domain.review.dto.CreateLikeResponseDto;
-import com.beautymeongdang.domain.review.dto.DeleteLikeRequestDto;
-import com.beautymeongdang.domain.review.dto.DeleteLikeResponseDto;
+import com.beautymeongdang.domain.review.dto.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.util.List;
 
 public interface ReviewService {
 
-    // 좋아요 생성
-    CreateLikeResponseDto createLike(Long customerId, CreateLikeRequestDto request);
+    // 리뷰 작성
+    CreateUpdateReviewResponseDto createReview(CreateReviewRequestDto requestDto, List<MultipartFile> images);
 
-    // 좋아요 취소
-    DeleteLikeResponseDto deleteLike(Long customerId, DeleteLikeRequestDto request);
+    // 리뷰 수정
+    CreateUpdateReviewResponseDto updateReview(Long reviewId, UpdateReviewRequestDto requestDto, List<MultipartFile> images);
+
 }

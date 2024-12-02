@@ -24,7 +24,7 @@ public interface QuoteRequestService {
     List<GetGroomerQuoteRequestResponseDto> getGroomerDirectRequestList(Long groomerId);
 
     // 미용사 매장 근처 견적서 요청 공고 조회
-    List<GetGroomerQuoteRequestResponseDto> getGroomerTotalRequestList(Long sigunguId);
+    List<GetGroomerQuoteRequestResponseDto> getGroomerTotalRequestList(Long groomerId);
 
     // 미용사가 견적서 보낸 견적 요청 조회
     List<GetGroomerSendQuoteRequestResponseDto> getGroomerSendQuoteRequest(Long groomerId);
