@@ -45,7 +45,7 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
                 apiResponse = ApiResponse.ok(200, responseData, "신규 사용자 로그인 성공").getBody();
 
                 writeJsonResponse(response, apiResponse);
-                response.sendRedirect("/index1.html");
+                response.sendRedirect("/InfoRequired.jsx");
             }
             // 기존 사용자인 경우
             else {
@@ -57,7 +57,7 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
                 apiResponse = ApiResponse.ok(200, responseData, "로그인 성공").getBody();
 
                 writeJsonResponse(response, apiResponse);
-                response.sendRedirect("/index.html");
+                response.sendRedirect("/Login.jsx");
             }
         } catch (Exception e) {
             log.error("로그인 처리 중 오류 발생: {}", e.getMessage(), e);
