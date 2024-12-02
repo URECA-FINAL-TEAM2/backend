@@ -1,5 +1,6 @@
 package com.beautymeongdang.domain.user.controller;
 
+import com.beautymeongdang.domain.user.repository.UserRepository;
 import com.beautymeongdang.global.common.dto.ApiResponse;
 import com.beautymeongdang.global.oauth2.CustomOAuth2User;
 import com.beautymeongdang.domain.user.dto.CustomerRegisterRequestDTO;
@@ -7,6 +8,7 @@ import com.beautymeongdang.domain.user.dto.GroomerRegisterRequestDTO;
 import com.beautymeongdang.domain.user.entity.User;
 import com.beautymeongdang.domain.user.service.UserService;
 import com.beautymeongdang.global.jwt.JwtProvider;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -14,6 +16,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.Map;
 
 @Slf4j
@@ -24,6 +27,7 @@ public class UserController {
 
     private final UserService userService;
     private final JwtProvider jwtProvider;
+    private final UserRepository userRepository;
 
     @PostMapping("/register/customer")
     public ResponseEntity<ApiResponse<Map<String, Object>>> registerCustomer(
@@ -53,5 +57,34 @@ public class UserController {
             log.error("미용사 회원가입 실패: {}", e.getMessage(), e);
             return ApiResponse.badRequest(400, "미용사 회원가입 실패: " + e.getMessage());
         }
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<ApiResponse<Map<String, String>>> logout(HttpServletRequest request,
+            HttpServletResponse response) {
+        try {
+            userService.logout(request, response);
+            Map<String, String> result = new HashMap<>();
+            result.put("result", "JWT Token delete");
+
+            return ApiResponse.ok(201, result, "logout Success");
+        } catch (Exception e) {
+            log.error("Logout failed: {}", e.getMessage(), e);
+            return ApiResponse.badRequest(400, "Logout failed: " + e.getMessage());
+        }
+    }
+
+
+    // Controller
+    @GetMapping("/nickname/{nickname}/check")
+    public ResponseEntity<ApiResponse<Boolean>> checkNicknameAvailability(@PathVariable String nickname) {
+        boolean isAvailable = !userRepository.existsByNickname(nickname);
+        String message = userService.getNicknameCheckMessage(nickname);
+
+        if (!isAvailable) {
+            return ApiResponse.badRequest(400, message);  // 이미 사용 중인 경우
+        }
+
+        return ApiResponse.ok(200, true, message);  // 사용 가능한 경우
     }
 }
