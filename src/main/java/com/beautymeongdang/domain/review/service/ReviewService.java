@@ -14,4 +14,7 @@ public interface ReviewService {
     // 리뷰 수정
     CreateUpdateReviewResponseDto updateReview(Long reviewId, UpdateReviewRequestDto requestDto, List<MultipartFile> images);
 
+    // 리뷰 논리적 삭제
+    DeleteReviewResponseDto deleteReview(Long reviewId);
+
 }
