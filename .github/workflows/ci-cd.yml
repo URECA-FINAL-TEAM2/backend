@@ -61,7 +61,7 @@ jobs:
             docker run -d --name spring-app -p 8081:8081 \
               -e SPRING_PROFILES_ACTIVE=dev \
               -e PINPOINT_AGENT_ID=${HOSTNAME} \
-              -e PINPOINT_APPLICATION_NAME=${{PINPOINT_APPLICATION_NAME}} \
+              -e PINPOINT_APPLICATION_NAME=${{secrets.PINPOINT_APPLICATION_NAME}} \
               -e RDS_ENDPOINT=${{ secrets.RDS_ENDPOINT }} \
               -e DB_NAME=${{ secrets.DB_NAME }} \
               -e SPRING_DATA_REDIS_HOST=${{ secrets.SPRING_DATA_REDIS_HOST }} \
