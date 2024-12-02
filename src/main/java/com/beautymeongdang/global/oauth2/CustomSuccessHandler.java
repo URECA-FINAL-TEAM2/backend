@@ -38,6 +38,7 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 
             //추가 정보 입력 페이지로 리다이렉트
             response.sendRedirect("/index1.html");
+            user.completeRegistration();
 
             // 기존 사용자인 경우
         } else {

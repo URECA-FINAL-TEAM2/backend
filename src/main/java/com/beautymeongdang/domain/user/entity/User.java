@@ -41,6 +41,9 @@ public class User extends DeletableBaseTimeEntity {
 
     private String phone;
 
+    @Column
+    private boolean isRegister = false;
+
     public void updateUserInfo(String phone, String nickname) {
         this.phone = phone;
         this.nickname = nickname;
@@ -50,12 +53,8 @@ public class User extends DeletableBaseTimeEntity {
         this.roles.add(role);
     }
 
-    public void removeRole(Role role) {
-        this.roles.remove(role);
-    }
-
-    public boolean hasRole(Role role) {
-        return this.roles.contains(role);
+    public void completeRegistration() {
+        this.isRegister = true;
     }
 
 }
