@@ -52,12 +52,23 @@ public class SecurityConfig {
                                 .userService(customOAuth2UserService))
                         .successHandler(customSuccessHandler)
                 )
-
+                //로그아웃 설정 추가
+                .logout(logout -> logout
+                        .logoutUrl("/api/auth/logout")
+                        .logoutSuccessUrl("/login.html")
+                        .deleteCookies("JSESSIONID", "refreshToken")
+                        .clearAuthentication(true)
+                        .invalidateHttpSession(true)
+                        .permitAll()
+                )
                 //경로별 인가 작업
                 .authorizeHttpRequests((auth) -> auth
-                        .requestMatchers("/api/users/register/**").authenticated()
+                        .requestMatchers("/api/users/register/**").permitAll()
                         .requestMatchers("/").permitAll()
-                        .requestMatchers("/","login/","/login/oauth2/code/**","/oauth/**","/api/**", "/swagger-ui/**", "/v3/api-docs/**", "/configuration/ui", "/swagger-resources/**", "/webjars/**").permitAll()
+                        .requestMatchers("/login.html", "/index.html", "/index1.html").permitAll()
+                        .requestMatchers("/login/**", "/oauth2/**", "/login/oauth2/code/**").permitAll()
+                        .requestMatchers("/api/**", "/swagger-ui/**", "/v3/api-docs/**",
+                                "/configuration/ui", "/swagger-resources/**", "/webjars/**").permitAll()
                         .anyRequest().authenticated())
 
                 //세션 설정 : STATELESS

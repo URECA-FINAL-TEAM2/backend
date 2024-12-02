@@ -16,5 +16,5 @@ public class UserDTO {
     private String nickname;
     private Set<Role> roles;
     private String profileImage;
-    private boolean isNewUser;
+    private boolean isRegister;
 }
