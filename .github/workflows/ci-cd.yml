@@ -51,11 +51,17 @@ jobs:
           username: ubuntu
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
+            wget https://github.com/pinpoint-apm/pinpoint/releases/download/v2.4.1/pinpoint-agent-2.4.1.tar.gz
+            tar -xzvf pinpoint-agent-2.4.1.tar.gz
+            sudo mv pinpoint-agent-2.4.1 /opt/pinpoint-agent
+          
             docker pull ${{ secrets.DOCKER_USERNAME }}/spring-boot-app:${{ github.sha }}
             docker stop spring-app || true
             docker rm spring-app || true
             docker run -d --name spring-app -p 8081:8081 \
               -e SPRING_PROFILES_ACTIVE=dev \
+              -e PINPOINT_AGENT_ID=${HOSTNAME} \
+              -e PINPOINT_APPLICATION_NAME=${{PINPOINT_APPLICATION_NAME}} \
               -e RDS_ENDPOINT=${{ secrets.RDS_ENDPOINT }} \
               -e DB_NAME=${{ secrets.DB_NAME }} \
               -e SPRING_DATA_REDIS_HOST=${{ secrets.SPRING_DATA_REDIS_HOST }} \
