@@ -37,7 +37,8 @@ public class CustomOAuth2User implements OAuth2User {
 
     @Override
     public String getName() {
-        return userDTO.getNickname();
+        // providerId를 principalName으로 사용
+        return userDTO.getUsername(); // 또는 userDTO에서 적절한 식별자를 반환
     }
 
     public Long getUserId() {

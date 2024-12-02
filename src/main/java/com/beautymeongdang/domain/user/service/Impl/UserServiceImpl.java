@@ -39,14 +39,15 @@ public class UserServiceImpl implements UserService {
             }
 
             // 닉네임 중복 확인
-            if (!user.getNickname().equals(customerDTO.getNickName()) &&
+            if (user.getNickname() != null && !user.getNickname().equals(customerDTO.getNickName()) &&
                     userRepository.existsByNickname(customerDTO.getNickName())) {
                 throw new RuntimeException("Nickname is already in use");
             }
 
+
             user.getRoles().add(Role.고객);
             user.updateUserInfo(customerDTO.getPhone(), customerDTO.getNickName());
-
+            user.completeRegistration();
             userRepository.save(user);
 
             Sigungu sigungu = sigunguRepository.findById(customerDTO.getSigunguId())
@@ -80,14 +81,15 @@ public class UserServiceImpl implements UserService {
             }
 
             // 닉네임 중복 확인
-            if (!user.getNickname().equals(registrationDTO.getNickName()) &&
+            if (user.getNickname() != null && !user.getNickname().equals(registrationDTO.getNickName()) &&
                     userRepository.existsByNickname(registrationDTO.getNickName())) {
                 throw new RuntimeException("Nickname is already in use");
             }
 
+
             user.getRoles().add(Role.미용사);
             user.updateUserInfo(registrationDTO.getPhone(), registrationDTO.getNickName());
-
+            user.completeRegistration();
             userRepository.save(user);
 
             Sigungu sigungu = sigunguRepository.findById(registrationDTO.getSigunguId())

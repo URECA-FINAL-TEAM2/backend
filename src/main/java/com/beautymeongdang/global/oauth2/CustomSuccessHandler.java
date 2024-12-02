@@ -31,14 +31,13 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         Map<String, Object> tokenInfo = jwtProvider.createTokens(user, response);
 
         // 신규 사용자인 경우
-        if (customUserDetails.getUserDTO().isRegister()) {
+        if (!customUserDetails.getUserDTO().isRegister()) {
 
             // 토큰 정보를 세션에 저장
             request.getSession().setAttribute("tokenInfo", tokenInfo);
 
             //추가 정보 입력 페이지로 리다이렉트
             response.sendRedirect("/index1.html");
-            user.completeRegistration();
 
             // 기존 사용자인 경우
         } else {

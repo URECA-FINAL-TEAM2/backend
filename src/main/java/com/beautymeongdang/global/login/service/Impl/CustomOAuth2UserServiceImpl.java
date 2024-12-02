@@ -38,9 +38,9 @@ public class CustomOAuth2UserServiceImpl extends DefaultOAuth2UserService {
 
         String provider = oAuth2Response.getProvider();
         String providerId = oAuth2Response.getProviderId();
-        String username = provider + "_" + providerId; // "_"로 변경
 
-        Optional<User> existingUser = userRepository.findByUserName(username);
+        // 먼저 providerId로 사용자 찾기
+        Optional<User> existingUser = userRepository.findByProviderIdAndSocialProvider(providerId, provider);
 
         User user;
         if (existingUser.isEmpty()) {
@@ -48,9 +48,10 @@ public class CustomOAuth2UserServiceImpl extends DefaultOAuth2UserService {
             user = User.builder()
                     .userName(oAuth2Response.getName())
                     .email(oAuth2Response.getEmail())
-                    .nickname(username)
+                    .providerId(providerId)
                     .socialProvider(provider)
                     .profileImage(oAuth2Response.getProfileImage())
+                    .isRegister(false)
                     .build();
             userRepository.save(user);
         } else {
@@ -63,6 +64,7 @@ public class CustomOAuth2UserServiceImpl extends DefaultOAuth2UserService {
                 .nickname(user.getNickname())
                 .roles(user.getRoles())
                 .profileImage(user.getProfileImage())
+                .isRegister(user.isRegister())
                 .build();
 
         return new CustomOAuth2User(userDTO);
