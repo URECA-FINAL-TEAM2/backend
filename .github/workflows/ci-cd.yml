@@ -42,15 +42,8 @@ jobs:
     needs: build
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
-    steps:
-      - name: Clean up disk space
-        run: |
-          sudo docker system prune -af
-          sudo rm -rf /usr/share/dotnet
-          sudo rm -rf /opt/ghc
-          sudo rm -rf "/usr/local/share/boost"
-          sudo rm -rf "$AGENT_TOOLSDIRECTORY"
 
+    steps:
       - name: Deploy to EC2
         uses: appleboy/ssh-action@master
         with:
@@ -58,15 +51,11 @@ jobs:
           username: ubuntu
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
-            docker system prune -af
-          
             docker pull ${{ secrets.DOCKER_USERNAME }}/spring-boot-app:${{ github.sha }}
             docker stop spring-app || true
             docker rm spring-app || true
             docker run -d --name spring-app -p 8081:8081 \
               -e SPRING_PROFILES_ACTIVE=dev \
-              -e PINPOINT_AGENT_ID=${HOSTNAME} \
-              -e PINPOINT_APPLICATION_NAME=${{secrets.PINPOINT_APPLICATION_NAME}} \
               -e RDS_ENDPOINT=${{ secrets.RDS_ENDPOINT }} \
               -e DB_NAME=${{ secrets.DB_NAME }} \
               -e SPRING_DATA_REDIS_HOST=${{ secrets.SPRING_DATA_REDIS_HOST }} \
