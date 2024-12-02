@@ -21,7 +21,6 @@ configurations {
 
 repositories {
 	mavenCentral()
-	maven { url 'https://repo.navercorp.com/maven2/' }
 }
 
 dependencies {
@@ -54,11 +53,6 @@ dependencies {
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 
-	// Pinpoint 의존성 추가
-	implementation 'com.navercorp.pinpoint:pinpoint-bootstrap-core:2.4.1'
-	implementation 'com.navercorp.pinpoint:pinpoint-profiler:2.4.1'
-	implementation 'com.navercorp.pinpoint:pinpoint-agent:2.4.1'
-
 	// 소셜로그인
 	implementation 'com.fasterxml.jackson.core:jackson-databind'
 	implementation 'org.springframework.boot:spring-boot-starter-security'
@@ -73,6 +67,3 @@ tasks.named('test') {
 	useJUnitPlatform()
 }
 
-tasks.withType(JavaExec) {
-	classpath = files(classpath.files.collect { it.absolutePath.length() > 255 ? it : it.absolutePath })
-}
