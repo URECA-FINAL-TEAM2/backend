@@ -24,7 +24,7 @@ public class User extends DeletableBaseTimeEntity {
     @Column(nullable = false)
     private String email;
 
-    @Column(nullable = false, unique = true)
+    @Column(unique = true)
     private String nickname;
 
     // User.java의 roles 부분만
@@ -41,6 +41,12 @@ public class User extends DeletableBaseTimeEntity {
 
     private String phone;
 
+    @Column
+    private boolean isRegister = false;
+
+    @Column(nullable = false)
+    private String providerId;
+
     public void updateUserInfo(String phone, String nickname) {
         this.phone = phone;
         this.nickname = nickname;
@@ -50,12 +56,8 @@ public class User extends DeletableBaseTimeEntity {
         this.roles.add(role);
     }
 
-    public void removeRole(Role role) {
-        this.roles.remove(role);
-    }
-
-    public boolean hasRole(Role role) {
-        return this.roles.contains(role);
+    public void completeRegistration() {
+        this.isRegister = true;
     }
 
 }

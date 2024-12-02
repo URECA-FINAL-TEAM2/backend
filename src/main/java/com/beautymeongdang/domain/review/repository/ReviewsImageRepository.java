@@ -1,5 +1,6 @@
 package com.beautymeongdang.domain.review.repository;
 
+import com.beautymeongdang.domain.review.entity.Reviews;
 import com.beautymeongdang.domain.review.entity.ReviewsImage;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -19,5 +20,8 @@ public interface ReviewsImageRepository extends JpaRepository<ReviewsImage, Long
     // 고객 메인 페이지 베스트리뷰에서 첫 번째 이미지 조회
     @Query("SELECT ri.imageUrl FROM ReviewsImage ri WHERE ri.reviewId.reviewId = :reviewId ORDER BY ri.reviewsImageId ASC LIMIT 1")
     Optional<String> findFirstImageUrlByReviewId(@Param("reviewId") Long reviewId);
+
+    // 리뷰 수정
+    List<ReviewsImage> deleteAllByReviewId(Reviews reviewId);
 
 }

@@ -10,8 +10,12 @@ import com.beautymeongdang.domain.user.service.UserService;
 import com.beautymeongdang.global.region.entity.Sigungu;
 import com.beautymeongdang.global.region.repository.SigunguRepository;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -39,14 +43,15 @@ public class UserServiceImpl implements UserService {
             }
 
             // 닉네임 중복 확인
-            if (!user.getNickname().equals(customerDTO.getNickName()) &&
+            if (user.getNickname() != null && !user.getNickname().equals(customerDTO.getNickName()) &&
                     userRepository.existsByNickname(customerDTO.getNickName())) {
                 throw new RuntimeException("Nickname is already in use");
             }
 
+
             user.getRoles().add(Role.고객);
             user.updateUserInfo(customerDTO.getPhone(), customerDTO.getNickName());
-
+            user.completeRegistration();
             userRepository.save(user);
 
             Sigungu sigungu = sigunguRepository.findById(customerDTO.getSigunguId())
@@ -80,14 +85,15 @@ public class UserServiceImpl implements UserService {
             }
 
             // 닉네임 중복 확인
-            if (!user.getNickname().equals(registrationDTO.getNickName()) &&
+            if (user.getNickname() != null && !user.getNickname().equals(registrationDTO.getNickName()) &&
                     userRepository.existsByNickname(registrationDTO.getNickName())) {
                 throw new RuntimeException("Nickname is already in use");
             }
 
+
             user.getRoles().add(Role.미용사);
             user.updateUserInfo(registrationDTO.getPhone(), registrationDTO.getNickName());
-
+            user.completeRegistration();
             userRepository.save(user);
 
             Sigungu sigungu = sigunguRepository.findById(registrationDTO.getSigunguId())
@@ -121,9 +127,36 @@ public class UserServiceImpl implements UserService {
     }
 
 
-    public void addRoleToUser(User user, Role role) {
-        user.addRole(role);
-        userRepository.save(user);
+    @Override
+    public String getNicknameCheckMessage(String nickname) {
+        boolean isAvailable = !userRepository.existsByNickname(nickname);
+        return isAvailable ? "사용 가능한 닉네임입니다." : "이미 사용 중인 닉네임입니다.";
     }
 
+    @Override
+    public void logout(HttpServletRequest request, HttpServletResponse response) {
+        try {
+            Cookie[] cookies = request.getCookies();
+            if (cookies != null) {
+                for (Cookie cookie : cookies) {
+                    cookie.setValue("");
+                    cookie.setPath("/");
+                    cookie.setMaxAge(0);
+                    response.addCookie(cookie);
+                }
+            }
+            SecurityContextHolder.clearContext();
+        } catch (Exception e) {
+            log.error("Cookie deletion failed: {}", e.getMessage(), e);
+            throw new RuntimeException("Cookie deletion failed", e);
+        }
+    }
+
+    private String extractAccessToken(HttpServletRequest request) {
+        String bearerToken = request.getHeader("Authorization");
+        if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
+            return bearerToken.substring(7);
+        }
+        return null;
+    }
 }

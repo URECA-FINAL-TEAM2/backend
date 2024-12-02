@@ -1,5 +1,6 @@
 package com.beautymeongdang.domain.review.service.impl;
 
+import com.beautymeongdang.domain.quote.entity.QuoteRequestImage;
 import com.beautymeongdang.domain.quote.entity.SelectedQuote;
 import com.beautymeongdang.domain.quote.repository.SelectedQuoteRepository;
 import com.beautymeongdang.domain.review.dto.*;
@@ -109,7 +110,13 @@ public class ReviewServiceImpl implements ReviewService {
         // 이미지 삭제 및 추가
         List<ReviewsImage> reviewsImageList = reviewsImageRepository.findReviewImagesByReviewId(reviewId);
 
-        reviewsImageRepository.deleteAll(reviewsImageList);
+        // 이미지 S3 삭제
+        for (ReviewsImage reviewsImage : reviewsImageList) {
+            fileStore.deleteFile(reviewsImage.getImageUrl());
+        }
+
+        // 이미지 DB 삭제
+        reviewsImageRepository.deleteAllByReviewId(savedReview);
 
         List<ReviewsImage> savedImages = new ArrayList<>();
         if (images != null && !images.isEmpty()) {
@@ -135,6 +142,20 @@ public class ReviewServiceImpl implements ReviewService {
                 .reviewsImage(savedImages.stream()
                         .map(ReviewsImage::getImageUrl)
                         .collect(Collectors.toList()))
+                .build();
+    }
+
+    // 리뷰 논리적 삭제
+    @Override
+    @Transactional
+    public DeleteReviewResponseDto deleteReview(Long reviewId) {
+        Reviews reviews = reviewRepository.findById(reviewId)
+                .orElseThrow(() -> NotFoundException.entityNotFound("리뷰"));
+
+        reviews.delete();
+
+        return DeleteReviewResponseDto.builder()
+                .reviewId(reviews.getReviewId())
                 .build();
     }
 }
