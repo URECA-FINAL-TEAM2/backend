@@ -87,4 +87,33 @@ public class UserController {
 
         return ApiResponse.ok(200, true, message);  // 사용 가능한 경우
     }
+
+
+// 테스트 용 (삭제 가능)
+    @PostMapping("/auth/login")
+    public ResponseEntity<ApiResponse<Map<String, Object>>> login(@RequestParam Long userId, HttpServletResponse response) {
+        try {
+            User user = userRepository.findById(userId)
+                    .orElseThrow(() -> new RuntimeException("User not found"));
+
+            // JWT 토큰 생성
+            Map<String, Object> tokenInfo = jwtProvider.createTokens(user, response);
+
+            // 응답 데이터 구성
+            Map<String, Object> responseData = new HashMap<>();
+            responseData.put("isRegister", user.isRegister());
+            responseData.put("accessToken", tokenInfo.get("accessToken"));
+
+            // 사용자 정보 구성
+            Map<String, Object> userInfo = new HashMap<>();
+            userInfo.put("userId", user.getUserId());
+            userInfo.put("nickname", user.getNickname());
+            responseData.put("userInfo", userInfo);
+
+            return ApiResponse.ok(200, responseData, "로그인 성공");
+        } catch (Exception e) {
+            log.error("Login failed: {}", e.getMessage(), e);
+            return ApiResponse.badRequest(400, "로그인 실패: " + e.getMessage());
+        }
+    }
 }
