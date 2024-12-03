@@ -10,7 +10,9 @@ import com.beautymeongdang.domain.shop.dto.*;
 import static com.beautymeongdang.domain.shop.dto.GetGroomerShopListResponseDto.ShopDto;
 
 import com.beautymeongdang.domain.shop.entity.Favorite;
+import com.beautymeongdang.domain.shop.entity.FavoriteId;
 import com.beautymeongdang.domain.shop.entity.Shop;
+import com.beautymeongdang.domain.shop.repository.FavoriteRepository;
 import com.beautymeongdang.domain.shop.repository.ShopRepository;
 import com.beautymeongdang.domain.shop.service.ShopService;
 import com.beautymeongdang.domain.user.entity.Customer;
@@ -19,6 +21,7 @@ import com.beautymeongdang.domain.user.repository.CustomerRepository;
 import com.beautymeongdang.domain.user.repository.GroomerPortfolioImageRepository;
 import com.beautymeongdang.domain.user.repository.GroomerRepository;
 import com.beautymeongdang.global.common.entity.UploadedFile;
+import com.beautymeongdang.global.exception.handler.BadRequestException;
 import com.beautymeongdang.global.exception.handler.NotFoundException;
 import com.beautymeongdang.global.region.entity.Sigungu;
 import com.beautymeongdang.global.region.repository.SigunguRepository;
@@ -46,6 +49,7 @@ public class ShopServiceImpl implements ShopService {
     private final CustomerRepository customerRepository;
     private final SigunguRepository sigunguRepository;
     private final FileStore fileStore;
+    private final FavoriteRepository favoriteRepository;
 
     /**
      * 매장 등록
@@ -194,6 +198,36 @@ public class ShopServiceImpl implements ShopService {
 
         return GetGroomerShopListResponseDto.ShopListResponse.builder()
                 .shopLists(shopDtos)
+                .build();
+    }
+
+    // 매장 찜 등록
+    @Override
+    @Transactional
+    public CreateFavoriteResponseDto createFavorite(CreateFavoriteRequestDto requestDto) {
+        Shop shop = shopRepository.findById(requestDto.getShopId())
+                .orElseThrow(() -> NotFoundException.entityNotFound("매장"));
+
+        Customer customer = customerRepository.findById(requestDto.getCustomerId())
+                .orElseThrow(() -> NotFoundException.entityNotFound("고객"));
+
+        FavoriteId favoriteId = FavoriteId.builder()
+                .shopId(shop)
+                .customerId(customer)
+                .build();
+
+        if(favoriteRepository.existsById(favoriteId)) {
+            throw new BadRequestException("이미 찜한 매장입니다.");
+        }
+
+        Favorite favorite = Favorite.builder()
+                .favoriteId(favoriteId)
+                .build();
+
+        Favorite savedFavorite = favoriteRepository.save(favorite);
+
+        return CreateFavoriteResponseDto.builder()
+                .shopId(savedFavorite.getFavoriteId().getShopId().getShopId())
                 .build();
     }
 }
