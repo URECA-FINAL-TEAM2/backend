@@ -33,6 +33,14 @@ public class JwtProvider {
                 REFRESH_TOKEN_EXPIRE_TIME
         );
 
+        // Access Token을 쿠키에 저장
+        Cookie accessTokenCookie = new Cookie("access_token", accessToken);
+        accessTokenCookie.setMaxAge(ACCESS_TOKEN_EXPIRE_TIME.intValue() / 1000);
+        accessTokenCookie.setSecure(true);
+        accessTokenCookie.setPath("/");
+        accessTokenCookie.setHttpOnly(true);
+        response.addCookie(accessTokenCookie);
+
         // Refresh Token을 쿠키에 저장
         Cookie refreshTokenCookie = new Cookie("refresh_token", refreshToken);
         refreshTokenCookie.setMaxAge(REFRESH_TOKEN_EXPIRE_TIME.intValue() / 1000);
