@@ -33,10 +33,10 @@ public class ShopController {
      * 매장 상세 조회
      */
     @GetMapping("/groomer/shop/detail")
-    public ResponseEntity<ApiResponse<GetShopDetailResponseDto.ShopDetailResponseDto>> getShopDetail(
-            @RequestParam Long groomerId,
+    public ResponseEntity<ApiResponse<GetShopDetailResponseDto>> getShopDetail(
+            @RequestParam Long shopId,
             @RequestParam Long customerId) {
-        GetShopDetailResponseDto.ShopDetailResponseDto response = shopService.getShopDetail(groomerId, customerId);
+        GetShopDetailResponseDto response = shopService.getShopDetail(shopId, customerId);
         return ApiResponse.ok(200, response, "매장 상세 조회 성공");
     }
 
