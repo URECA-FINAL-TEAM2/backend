@@ -1,16 +1,16 @@
 package com.beautymeongdang.domain.review.service.impl;
 
 
-import com.beautymeongdang.domain.review.dto.CreateLikeRequestDto;
-import com.beautymeongdang.domain.review.dto.CreateLikeResponseDto;
-import com.beautymeongdang.domain.review.dto.DeleteLikeRequestDto;
-import com.beautymeongdang.domain.review.dto.DeleteLikeResponseDto;
+import com.beautymeongdang.domain.review.dto.CreateRecommendRequestDto;
+import com.beautymeongdang.domain.review.dto.CreateRecommendResponseDto;
+import com.beautymeongdang.domain.review.dto.DeleteRecommendRequestDto;
+import com.beautymeongdang.domain.review.dto.DeleteRecommendResponseDto;
 import com.beautymeongdang.domain.review.entity.Recommend;
 import com.beautymeongdang.domain.review.entity.RecommendId;
 import com.beautymeongdang.domain.review.entity.Reviews;
 import com.beautymeongdang.domain.review.repository.RecommendRepository;
 import com.beautymeongdang.domain.review.repository.ReviewRepository;
-import com.beautymeongdang.domain.review.service.LikeService;
+import com.beautymeongdang.domain.review.service.RecommendService;
 import com.beautymeongdang.domain.user.entity.Customer;
 import com.beautymeongdang.domain.user.repository.CustomerRepository;
 import com.beautymeongdang.global.exception.handler.BadRequestException;
@@ -22,7 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
-public class LikeServiceImpl implements LikeService{
+public class RecommendServiceImpl implements RecommendService {
 
     private final ReviewRepository reviewRepository;
     private final RecommendRepository recommendRepository;
@@ -30,11 +30,11 @@ public class LikeServiceImpl implements LikeService{
 
 
     /**
-     * 좋아요 생성
+     * 추천 생성
      */
     @Override
     @Transactional
-    public CreateLikeResponseDto createLike(Long customerId, CreateLikeRequestDto request) {
+    public CreateRecommendResponseDto createRecommend(Long customerId, CreateRecommendRequestDto request) {
         Customer customer = customerRepository.findById(customerId)
                 .orElseThrow(() -> NotFoundException.entityNotFound("회원"));
 
@@ -57,18 +57,17 @@ public class LikeServiceImpl implements LikeService{
 
         recommendRepository.save(recommend);
 
-        return CreateLikeResponseDto.builder()
+        return CreateRecommendResponseDto.builder()
                 .reviewId(request.getReviewId())
                 .build();
     }
 
-
     /**
-     * 좋아요 삭제
+     * 추천 삭제
      */
     @Override
     @Transactional
-    public DeleteLikeResponseDto deleteLike(Long customerId, DeleteLikeRequestDto request) {
+    public DeleteRecommendResponseDto deleteRecommend(Long customerId, DeleteRecommendRequestDto request) {
         Customer customer = customerRepository.findById(customerId)
                 .orElseThrow(() -> NotFoundException.entityNotFound("회원"));
 
@@ -79,7 +78,7 @@ public class LikeServiceImpl implements LikeService{
 
         recommendRepository.deleteById(recommendId);
 
-        return DeleteLikeResponseDto.builder()
+        return DeleteRecommendResponseDto.builder()
                 .reviewId(request.getReviewId())
                 .build();
     }

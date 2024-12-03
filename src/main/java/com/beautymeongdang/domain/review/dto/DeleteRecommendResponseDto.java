@@ -6,6 +6,6 @@ import lombok.*;
 @Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
-public class CreateLikeResponseDto {
+public class DeleteRecommendResponseDto {
     private Long reviewId;
 }
