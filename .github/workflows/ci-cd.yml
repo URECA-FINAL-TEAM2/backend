@@ -51,28 +51,30 @@ jobs:
           username: ubuntu
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
+            export RDS_ENDPOINT=${{ secrets.RDS_ENDPOINT }}
+            export DB_NAME=${{ secrets.DB_NAME }}
+            export DB_USERNAME=${{ secrets.DB_USERNAME }}
+            export DB_PASSWORD=${{ secrets.DB_PASSWORD }}
+            export SPRING_DATA_REDIS_HOST=${{ secrets.SPRING_DATA_REDIS_HOST }}
+            export SPRING_DATA_REDIS_PORT=${{ secrets.SPRING_DATA_REDIS_PORT }}
+            export AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
+            export AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
+            export S3_BUCKET_NAME=${{ secrets.S3_BUCKET_NAME }}
+            export AWS_REGION=${{ secrets.AWS_REGION }}
+            export TOSS_PAYMENTS_CLIENT_KEY=${{ secrets.TOSS_PAYMENTS_CLIENT_KEY }}
+            export TOSS_PAYMENTS_SECRET_KEY=${{ secrets.TOSS_PAYMENTS_SECRET_KEY }}
+            export JWT_SECRET=${{ secrets.JWT_SECRET }}
+            export KAKAO_CLIENT_ID=${{ secrets.KAKAO_CLIENT_ID }}
+            export KAKAO_CLIENT_SECRET=${{ secrets.KAKAO_CLIENT_SECRET }}
+            export GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}
+            export GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }}
+
             docker pull ${{ secrets.DOCKER_USERNAME }}/spring-boot-app:${{ github.sha }}
-            docker stop spring-app || true
-            docker rm spring-app || true
-            docker run -d --name spring-app -p 8081:8081 \
-              -e SPRING_PROFILES_ACTIVE=dev \
-              -e RDS_ENDPOINT=${{ secrets.RDS_ENDPOINT }} \
-              -e DB_NAME=${{ secrets.DB_NAME }} \
-              -e SPRING_DATA_REDIS_HOST=${{ secrets.SPRING_DATA_REDIS_HOST }} \
-              -e SPRING_DATA_REDIS_PORT=${{ secrets.SPRING_DATA_REDIS_PORT }} \
-              -e DB_USERNAME=${{ secrets.DB_USERNAME }} \
-              -e DB_PASSWORD=${{ secrets.DB_PASSWORD }} \
-              -e TOSS_PAYMENTS_CLIENT_KEY=${{ secrets.TOSS_PAYMENTS_CLIENT_KEY }} \
-              -e TOSS_PAYMENTS_SECRET_KEY=${{ secrets.TOSS_PAYMENTS_SECRET_KEY }} \
-              -e AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }} \
-              -e AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }} \
-              -e AWS_REGION=${{ secrets.AWS_REGION }} \
-              -e S3_BUCKET_NAME=${{ secrets.S3_BUCKET_NAME }} \
-              -e CLOUD_AWS_ACCESS_KEY=${{ secrets.AWS_ACCESS_KEY_ID }} \
-              -e CLOUD_AWS_SECRET_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }} \
-              -e JWT_SECRET=${{ secrets.JWT_SECRET }} \
-              -e KAKAO_CLIENT_ID=${{ secrets.KAKAO_CLIENT_ID }} \
-              -e KAKAO_CLIENT_SECRET=${{ secrets.KAKAO_CLIENT_SECRET }} \
-              -e GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }} \
-              -e GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }} \
-              ${{ secrets.DOCKER_USERNAME }}/spring-boot-app:${{ github.sha }}
+
+            cd /home/ubuntu
+            docker-compose down
+
+            sed -i "s|image: .*|image: ${{ secrets.DOCKER_USERNAME }}/spring-boot-app:${{ github.sha }}|" docker-compose.yml
+
+            docker-compose up -d
+  
