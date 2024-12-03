@@ -6,7 +6,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/chats")
+@RequestMapping("/messages")
 @RequiredArgsConstructor
-public class ChatController {
+public class ChatMessageController {
+
 }
