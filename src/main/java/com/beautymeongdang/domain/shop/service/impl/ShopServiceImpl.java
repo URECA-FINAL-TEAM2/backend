@@ -11,6 +11,7 @@ import static com.beautymeongdang.domain.shop.dto.GetGroomerShopListResponseDto.
 
 import com.beautymeongdang.domain.shop.entity.Favorite;
 import com.beautymeongdang.domain.shop.entity.Shop;
+import com.beautymeongdang.domain.shop.repository.FavoriteRepository;
 import com.beautymeongdang.domain.shop.repository.ShopRepository;
 import com.beautymeongdang.domain.shop.service.ShopService;
 import com.beautymeongdang.domain.user.entity.Customer;
@@ -46,6 +47,7 @@ public class ShopServiceImpl implements ShopService {
     private final CustomerRepository customerRepository;
     private final SigunguRepository sigunguRepository;
     private final FileStore fileStore;
+    private final FavoriteRepository favoriteRepository;
 
     /**
      * 매장 등록
@@ -194,6 +196,30 @@ public class ShopServiceImpl implements ShopService {
 
         return GetGroomerShopListResponseDto.ShopListResponse.builder()
                 .shopLists(shopDtos)
+                .build();
+    }
+
+
+
+    /**
+     * 매장 찜 삭제
+     */
+    @Override
+    @Transactional
+    public DeleteFavoriteResponseDto deleteFavorite(Long customerId, Long shopId) {
+        Customer customer = customerRepository.findById(customerId)
+                .orElseThrow(() -> NotFoundException.entityNotFound("고객"));
+
+        Shop shop = shopRepository.findById(shopId)
+                .orElseThrow(() -> NotFoundException.entityNotFound("매장"));
+
+        Favorite favorite = favoriteRepository.findByFavoriteId_CustomerIdAndFavoriteId_ShopId(customer, shop)
+                .orElseThrow(() -> NotFoundException.entityNotFound("찜"));
+
+        favorite.delete();
+
+        return DeleteFavoriteResponseDto.builder()
+                .shopId(shopId)
                 .build();
     }
 }
