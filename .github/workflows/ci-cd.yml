@@ -68,6 +68,9 @@ jobs:
             export KAKAO_CLIENT_SECRET=${{ secrets.KAKAO_CLIENT_SECRET }}
             export GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}
             export GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }}
+            
+            docker stop spring-app || true
+            docker rm spring-app || true
 
             docker pull ${{ secrets.DOCKER_USERNAME }}/spring-boot-app:${{ github.sha }}
 
@@ -77,4 +80,4 @@ jobs:
             sed -i "s|image: .*|image: ${{ secrets.DOCKER_USERNAME }}/spring-boot-app:${{ github.sha }}|" docker-compose.yml
 
             docker-compose up -d
-  
+            
