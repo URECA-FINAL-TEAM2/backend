@@ -21,17 +21,20 @@ public interface ReviewRepository extends JpaRepository<Reviews, Long> {
     Integer countRecommendsByReviewId(@Param("reviewId") Long reviewId);
 
 
-    // Best 미용후기 2개
+    // customer과 같은 시군구에 있는 Best 미용후기 2개
     @Query("""
-        SELECT r FROM Reviews r
+        SELECT DISTINCT r FROM Reviews r
         JOIN FETCH r.groomerId g
-        WHERE r.isDeleted = false
-        ORDER BY
-        (SELECT COUNT(rec) FROM Recommend rec
-         WHERE rec.recommendId.reviewId = r) DESC
+        JOIN Shop s ON s.groomerId = g
+        JOIN Customer c ON c.customerId = :customerId
+        WHERE s.sigunguId = c.sigunguId
+        AND r.isDeleted = false
+        AND s.isDeleted = false
+        AND g.isDeleted = false
+        ORDER BY r.starRating DESC, r.createdAt DESC
         LIMIT 2
         """)
-    List<Reviews> findTop2BestReviews();
+    List<Reviews> findTop2BestReviewsBySigungu(@Param("customerId") Long customerId);
 
 
     //각 미용사의 리뷰 개수
