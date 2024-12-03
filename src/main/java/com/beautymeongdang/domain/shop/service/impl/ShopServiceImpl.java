@@ -21,6 +21,7 @@ import com.beautymeongdang.domain.user.repository.CustomerRepository;
 import com.beautymeongdang.domain.user.repository.GroomerPortfolioImageRepository;
 import com.beautymeongdang.domain.user.repository.GroomerRepository;
 import com.beautymeongdang.global.common.entity.UploadedFile;
+import com.beautymeongdang.global.exception.handler.BadRequestException;
 import com.beautymeongdang.global.exception.handler.NotFoundException;
 import com.beautymeongdang.global.region.entity.Sigungu;
 import com.beautymeongdang.global.region.repository.SigunguRepository;
@@ -145,6 +146,7 @@ public class ShopServiceImpl implements ShopService {
                 .favorite(shopRepository.countFavoritesByShop(shop))
                 .isFavorite(isFavorite)
                 .description(shop.getDescription())
+                .shopImage(shop.getImageUrl())
                 .groomerPortfolioImages(portfolioImages)
                 .groomerUsername(groomer.getUserId().getNickname())
                 .groomerProfileImage(groomer.getUserId().getProfileImage())
@@ -167,9 +169,9 @@ public class ShopServiceImpl implements ShopService {
         List<Reviews> reviews = shopRepository.findReviewsByGroomer(shop.getGroomerId());
         reviews.forEach(Reviews::delete);
 
-        // 매장 찜 논리적 삭제
+        // 매장 찜 삭제
         List<Favorite> favorites = shopRepository.findFavoritesByShop(shop);
-        favorites.forEach(Favorite::delete);
+        favoriteRepository.deleteAll(favorites);
 
         // 매장 논리적 삭제
         shop.delete();
@@ -236,10 +238,40 @@ public class ShopServiceImpl implements ShopService {
         Favorite favorite = favoriteRepository.findById(favoriteId)
                 .orElseThrow(() -> NotFoundException.entityNotFound("찜"));
 
-        favorite.delete();
+        favoriteRepository.delete(favorite);
 
         return DeleteFavoriteResponseDto.builder()
                 .shopId(shopId)
+                .build();
+    }
+
+    // 매장 찜 등록
+    @Override
+    @Transactional
+    public CreateFavoriteResponseDto createFavorite(CreateFavoriteRequestDto requestDto) {
+        Shop shop = shopRepository.findById(requestDto.getShopId())
+                .orElseThrow(() -> NotFoundException.entityNotFound("매장"));
+
+        Customer customer = customerRepository.findById(requestDto.getCustomerId())
+                .orElseThrow(() -> NotFoundException.entityNotFound("고객"));
+
+        FavoriteId favoriteId = FavoriteId.builder()
+                .shopId(shop)
+                .customerId(customer)
+                .build();
+
+        if(favoriteRepository.existsById(favoriteId)) {
+            throw new BadRequestException("이미 찜한 매장입니다.");
+        }
+
+        Favorite favorite = Favorite.builder()
+                .favoriteId(favoriteId)
+                .build();
+
+        Favorite savedFavorite = favoriteRepository.save(favorite);
+
+        return CreateFavoriteResponseDto.builder()
+                .shopId(savedFavorite.getFavoriteId().getShopId().getShopId())
                 .build();
     }
 }

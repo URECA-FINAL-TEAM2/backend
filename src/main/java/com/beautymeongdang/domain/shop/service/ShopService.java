@@ -20,4 +20,8 @@ public interface ShopService {
     // 매장 찜 삭제
     DeleteFavoriteResponseDto deleteFavorite(Long customerId, Long shopId);
 
+    // 매장 찜 등록
+    CreateFavoriteResponseDto createFavorite(CreateFavoriteRequestDto requestDto);
+
+
 }
