@@ -1,4 +1,4 @@
-package com.beautymeongdang.domain.user.service.Impl;
+package com.beautymeongdang.domain.user.service.impl;
 
 import com.beautymeongdang.domain.quote.repository.QuoteRequestRepository;
 import com.beautymeongdang.domain.quote.repository.SelectedQuoteRepository;
@@ -31,30 +31,37 @@ public class MainServiceImpl implements MainService {
     private final QuoteRequestRepository quoteRequestRepository;
 
 
+    /**
+     * 고객 메인 페이지 조회
+     */
     @Override
     public MainResponse getMainPage(Long customerId) {
-        // 베스트 리뷰 조회
-        List<Reviews> bestReviews = reviewRepository.findTop2BestReviews();
+        // 베스트 미용후기 조회
+        List<Reviews> bestReviews = reviewRepository.findTop2BestReviewsBySigungu(customerId);
         List<BestReviewDto> bestReviewDtos = bestReviews.stream()
                 .map(review -> {
                     Shop shop = shopRepository.findByGroomerId(review.getGroomerId().getGroomerId())
                             .orElseThrow(() -> NotFoundException.entityNotFound("매장"));
 
+                    Long groomerId = shop.getGroomerId().getGroomerId();
+
                     String reviewImage = reviewsImageRepository.findFirstImageUrlByReviewId(review.getReviewId())
                             .orElse("https://s3-beauty-meongdang.s3.ap-northeast-2.amazonaws.com/%EB%A6%AC%EB%B7%B0+%EC%9D%B4%EB%AF%B8%EC%A7%80/%EB%A9%94%EC%9D%B8%EB%A6%AC%EB%B7%B0%EB%85%B8%EC%9D%B4%EB%AF%B8%EC%A7%80.jpg");
 
                     return BestReviewDto.builder()
+                            .groomerId(groomerId)
                             .reviewId(review.getReviewId())
                             .shopName(shop.getShopName())
                             .reviewImage(reviewImage)
                             .content(review.getContent())
                             .starScore(review.getStarRating().doubleValue())
                             .recommendCount(reviewRepository.countRecommendsByReviewId(review.getReviewId()))
+                            .createdAt(review.getCreatedAt())
                             .build();
                 })
                 .collect(Collectors.toList());
 
-        // 우리동네 미용사
+        // 우리동네 디자이너
         List<Shop> localGroomers = shopRepository.findShopsByCustomerSigunguOrderByReviewCountAndStarScore(customerId);
         List<LocalGroomerDto> localGroomerDtos = localGroomers.stream()
                 .map(shop -> {

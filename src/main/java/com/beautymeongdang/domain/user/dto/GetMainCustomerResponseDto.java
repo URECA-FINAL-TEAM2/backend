@@ -4,6 +4,8 @@ package com.beautymeongdang.domain.user.dto;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
+
+import java.time.LocalDateTime;
 import java.util.List;
 
 public class GetMainCustomerResponseDto {
@@ -20,12 +22,14 @@ public class GetMainCustomerResponseDto {
     @Builder
     @AllArgsConstructor
     public static class BestReviewDto {
+        private Long groomerId;
         private Long reviewId;
         private String shopName;
         private String reviewImage;
         private String content;
         private Double starScore;
         private Integer recommendCount;
+        private LocalDateTime createdAt;
     }
 
     @Getter
