@@ -10,6 +10,7 @@ import com.beautymeongdang.domain.shop.dto.*;
 import static com.beautymeongdang.domain.shop.dto.GetGroomerShopListResponseDto.ShopDto;
 
 import com.beautymeongdang.domain.shop.entity.Favorite;
+import com.beautymeongdang.domain.shop.entity.FavoriteId;
 import com.beautymeongdang.domain.shop.entity.Shop;
 import com.beautymeongdang.domain.shop.repository.FavoriteRepository;
 import com.beautymeongdang.domain.shop.repository.ShopRepository;
@@ -213,7 +214,9 @@ public class ShopServiceImpl implements ShopService {
         Shop shop = shopRepository.findById(shopId)
                 .orElseThrow(() -> NotFoundException.entityNotFound("매장"));
 
-        Favorite favorite = favoriteRepository.findByFavoriteId_CustomerIdAndFavoriteId_ShopId(customer, shop)
+        FavoriteId favoriteId = new FavoriteId(customer, shop);
+
+        Favorite favorite = favoriteRepository.findById(favoriteId)
                 .orElseThrow(() -> NotFoundException.entityNotFound("찜"));
 
         favorite.delete();
