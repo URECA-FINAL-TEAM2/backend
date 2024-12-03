@@ -14,6 +14,7 @@ import com.beautymeongdang.domain.user.entity.Groomer;
 import com.beautymeongdang.domain.user.repository.CustomerRepository;
 import com.beautymeongdang.domain.user.repository.GroomerRepository;
 import com.beautymeongdang.global.common.entity.UploadedFile;
+import com.beautymeongdang.global.exception.handler.BadRequestException;
 import com.beautymeongdang.global.exception.handler.NotFoundException;
 import com.beautymeongdang.infra.s3.FileStore;
 import lombok.RequiredArgsConstructor;
@@ -41,6 +42,9 @@ public class ReviewServiceImpl implements ReviewService {
     @Override
     @Transactional
     public CreateUpdateReviewResponseDto createReview(CreateReviewRequestDto requestDto, List<MultipartFile> images) {
+        if (images.size() > 3) {
+            throw new BadRequestException("등록 가능한 리뷰 이미지 수를 초과하였습니다.");
+        }
 
         Groomer groomer = groomerRepository.findById(requestDto.getGroomerId())
                 .orElseThrow(() -> NotFoundException.entityNotFound("미용사"));
