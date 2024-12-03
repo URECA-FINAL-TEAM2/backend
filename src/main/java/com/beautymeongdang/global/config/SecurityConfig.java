@@ -70,8 +70,9 @@ public class SecurityConfig {
                 //경로별 인가 작업
                 .authorizeHttpRequests((auth) -> auth
                         .requestMatchers("/api/users/register/**").permitAll()
+                        .requestMatchers("/login/oauth2/code/**").permitAll()
                         .requestMatchers("/").permitAll()
-                        .requestMatchers("/login.html", "/index.html", "/index1.html").permitAll()
+                        .requestMatchers("/login.html","/InfoRequired.jsx","/login.jsx", "/index.html", "/index1.html").permitAll()
                         .requestMatchers("/login/**", "/oauth2/**", "/login/oauth2/code/**").permitAll()
                         .requestMatchers("/api/**", "/swagger-ui/**", "/v3/api-docs/**",
                                 "/configuration/ui", "/swagger-resources/**", "/webjars/**").permitAll()
