@@ -60,11 +60,16 @@ public class ShopController {
         return ApiResponse.ok(200, response, "매장 목록 조회 성공");
     }
 
+    // 매장 찜 등록
+    @PostMapping("/groomer/shop/favorite")
+    public ResponseEntity<?> createFavoriteShop(@RequestBody CreateFavoriteRequestDto requestDto) {
+        return ApiResponse.ok(200, shopService.createFavorite(requestDto), "매장 추천 성공하였습니다.");
+    }
 
     /**
      * 매장 찜 삭제
      */
-    @DeleteMapping("/groomer/shop/Favorite")
+    @DeleteMapping("/groomer/shop/favorite")
     public ResponseEntity<ApiResponse<DeleteFavoriteResponseDto>> deleteFavorite(
             @RequestBody DeleteFavoriteRequestDto requestDto) {
         DeleteFavoriteResponseDto response = shopService.deleteFavorite(

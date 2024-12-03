@@ -9,6 +9,7 @@ import lombok.*;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @EqualsAndHashCode
+@Builder
 public class FavoriteId {
 
     @ManyToOne(fetch = FetchType.LAZY)

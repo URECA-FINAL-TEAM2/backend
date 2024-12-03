@@ -53,9 +53,6 @@ public class User extends DeletableBaseTimeEntity {
         this.nickname = nickname;
     }
 
-    public void addRole(Role role) {
-        this.roles.add(role);
-    }
 
     public void completeRegistration() {
         this.isRegister = true;
