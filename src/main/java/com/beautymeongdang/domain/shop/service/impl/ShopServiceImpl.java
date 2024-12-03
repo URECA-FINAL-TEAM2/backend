@@ -169,9 +169,9 @@ public class ShopServiceImpl implements ShopService {
         List<Reviews> reviews = shopRepository.findReviewsByGroomer(shop.getGroomerId());
         reviews.forEach(Reviews::delete);
 
-        // 매장 찜 논리적 삭제
+        // 매장 찜 삭제
         List<Favorite> favorites = shopRepository.findFavoritesByShop(shop);
-        favorites.forEach(Favorite::delete);
+        favoriteRepository.deleteAll(favorites);
 
         // 매장 논리적 삭제
         shop.delete();
@@ -238,7 +238,7 @@ public class ShopServiceImpl implements ShopService {
         Favorite favorite = favoriteRepository.findById(favoriteId)
                 .orElseThrow(() -> NotFoundException.entityNotFound("찜"));
 
-        favorite.delete();
+        favoriteRepository.delete(favorite);
 
         return DeleteFavoriteResponseDto.builder()
                 .shopId(shopId)

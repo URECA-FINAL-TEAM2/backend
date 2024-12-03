@@ -69,7 +69,7 @@ public class ShopController {
     /**
      * 매장 찜 삭제
      */
-    @DeleteMapping("/groomer/shop/Favorite")
+    @DeleteMapping("/groomer/shop/favorite")
     public ResponseEntity<ApiResponse<DeleteFavoriteResponseDto>> deleteFavorite(
             @RequestBody DeleteFavoriteRequestDto requestDto) {
         DeleteFavoriteResponseDto response = shopService.deleteFavorite(
