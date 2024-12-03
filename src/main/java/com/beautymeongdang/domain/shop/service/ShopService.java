@@ -9,7 +9,7 @@ public interface ShopService {
     CreateShopResponseDto createShop(CreateShopRequestDto requestDto, MultipartFile shopLogo);
 
     // 매장 상세 조회
-    GetShopDetailResponseDto.ShopDetailResponseDto getShopDetail(Long groomerId, Long customerId);
+    GetShopDetailResponseDto getShopDetail(Long shopId, Long customerId);
 
     // 매장 삭제
     DeleteShopResponseDto deleteShop(Long shopId);
