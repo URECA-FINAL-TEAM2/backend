@@ -17,5 +17,7 @@ public interface ShopService {
     // 미용사 찾기 매장 리스트 조회
     GetGroomerShopListResponseDto.ShopListResponse getShopList(Long customerId);
 
+    // 매장 찜 삭제
+    DeleteFavoriteResponseDto deleteFavorite(Long customerId, Long shopId);
 
 }

@@ -10,6 +10,7 @@ import com.beautymeongdang.domain.shop.dto.*;
 import static com.beautymeongdang.domain.shop.dto.GetGroomerShopListResponseDto.ShopDto;
 
 import com.beautymeongdang.domain.shop.entity.Favorite;
+import com.beautymeongdang.domain.shop.entity.FavoriteId;
 import com.beautymeongdang.domain.shop.entity.Shop;
 import com.beautymeongdang.domain.shop.repository.FavoriteRepository;
 import com.beautymeongdang.domain.shop.repository.ShopRepository;
@@ -213,6 +214,32 @@ public class ShopServiceImpl implements ShopService {
 
         return GetGroomerShopListResponseDto.ShopListResponse.builder()
                 .shopLists(shopDtos)
+                .build();
+    }
+
+
+
+    /**
+     * 매장 찜 삭제
+     */
+    @Override
+    @Transactional
+    public DeleteFavoriteResponseDto deleteFavorite(Long customerId, Long shopId) {
+        Customer customer = customerRepository.findById(customerId)
+                .orElseThrow(() -> NotFoundException.entityNotFound("고객"));
+
+        Shop shop = shopRepository.findById(shopId)
+                .orElseThrow(() -> NotFoundException.entityNotFound("매장"));
+
+        FavoriteId favoriteId = new FavoriteId(customer, shop);
+
+        Favorite favorite = favoriteRepository.findById(favoriteId)
+                .orElseThrow(() -> NotFoundException.entityNotFound("찜"));
+
+        favorite.delete();
+
+        return DeleteFavoriteResponseDto.builder()
+                .shopId(shopId)
                 .build();
     }
 }

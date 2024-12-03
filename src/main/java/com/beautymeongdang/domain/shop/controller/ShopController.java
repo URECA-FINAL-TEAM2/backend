@@ -61,4 +61,15 @@ public class ShopController {
     }
 
 
+    /**
+     * 매장 찜 삭제
+     */
+    @DeleteMapping("/groomer/shop/Favorite")
+    public ResponseEntity<ApiResponse<DeleteFavoriteResponseDto>> deleteFavorite(
+            @RequestBody DeleteFavoriteRequestDto requestDto) {
+        DeleteFavoriteResponseDto response = shopService.deleteFavorite(
+                requestDto.getCustomerId(),
+                requestDto.getShopId());
+        return ApiResponse.ok(200, response, "매장 찜 삭제 성공하였습니다.");
+    }
 }
