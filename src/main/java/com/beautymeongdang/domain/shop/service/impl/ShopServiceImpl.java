@@ -92,20 +92,22 @@ public class ShopServiceImpl implements ShopService {
      * 매장 상세 조회
      */
     @Override
-    public GetShopDetailResponseDto.ShopDetailResponseDto getShopDetail(Long groomerId, Long customerId) {
-        Groomer groomer = groomerRepository.findById(groomerId)
-                .orElseThrow(() -> NotFoundException.entityNotFound("미용사"));
-
-        Shop shop = shopRepository.findByGroomerId(groomerId)
+    public GetShopDetailResponseDto getShopDetail(Long shopId, Long customerId) {
+        Shop shop = shopRepository.findById(shopId)
                 .orElseThrow(() -> NotFoundException.entityNotFound("매장"));
 
-        List<String> portfolioImages = groomerPortfolioImageRepository.findImageUrlsByGroomerId(groomerId);
+        Groomer groomer = shop.getGroomerId();
+        Double starScore = shopRepository.getAverageStarRatingByGroomerId(groomer.getGroomerId());
+        Integer starCount = reviewRepository.countGroomerReviews(groomer.getGroomerId());
+
+        List<String> portfolioImages = groomerPortfolioImageRepository.findImageUrlsByGroomerId(groomer.getGroomerId());
+
 
         List<Long> recommendedReviewIds = (customerId != null) ?
                 recommendRepository.findReviewIdsByCustomerId(customerId) :
                 Collections.emptyList();
 
-        List<Reviews> reviews = reviewRepository.findGroomerReviews(groomerId);
+        List<Reviews> reviews = reviewRepository.findGroomerReviews(groomer.getGroomerId());
         List<GetShopDetailResponseDto.ReviewDetailDto> reviewDtos = reviews.stream()
                 .map(review -> {
                     Integer recommendCount = reviewRepository.countRecommendsByReviewId(review.getReviewId());
@@ -122,12 +124,27 @@ public class ShopServiceImpl implements ShopService {
                             .recommendCount(recommendCount)
                             .reviewsImage(reviewImageUrls)
                             .createdAt(review.getCreatedAt())
-                            .recommended(recommendedReviewIds.contains(review.getReviewId()))
+                            .isRecommended(recommendedReviewIds.contains(review.getReviewId()))
                             .build();
                 })
                 .collect(Collectors.toList());
 
-        return GetShopDetailResponseDto.ShopDetailResponseDto.builder()
+        Boolean isFavorite = favoriteRepository.existsByShopIdAndCustomerId(shopId, customerId);
+
+        return GetShopDetailResponseDto.builder()
+                .groomerId(groomer.getGroomerId())
+                .shopId(shop.getShopId())
+                .shopLogo(shop.getImageUrl())
+                .shopName(shop.getShopName())
+                .starScore(starScore)
+                .starCount(starCount)
+                .address(shop.getAddress())
+                .businessTime(shop.getBusinessTime())
+                .skills(groomer.getSkill())
+                .latitude(shop.getLatitude().doubleValue())
+                .longitude(shop.getLongitude().doubleValue())
+                .favorite(shopRepository.countFavoritesByShop(shop))
+                .isFavorite(isFavorite)
                 .description(shop.getDescription())
                 .shopImage(shop.getImageUrl())
                 .groomerPortfolioImages(portfolioImages)
@@ -136,6 +153,7 @@ public class ShopServiceImpl implements ShopService {
                 .reviews(reviewDtos)
                 .build();
     }
+
 
 
     /**
@@ -198,6 +216,32 @@ public class ShopServiceImpl implements ShopService {
 
         return GetGroomerShopListResponseDto.ShopListResponse.builder()
                 .shopLists(shopDtos)
+                .build();
+    }
+
+
+
+    /**
+     * 매장 찜 삭제
+     */
+    @Override
+    @Transactional
+    public DeleteFavoriteResponseDto deleteFavorite(Long customerId, Long shopId) {
+        Customer customer = customerRepository.findById(customerId)
+                .orElseThrow(() -> NotFoundException.entityNotFound("고객"));
+
+        Shop shop = shopRepository.findById(shopId)
+                .orElseThrow(() -> NotFoundException.entityNotFound("매장"));
+
+        FavoriteId favoriteId = new FavoriteId(customer, shop);
+
+        Favorite favorite = favoriteRepository.findById(favoriteId)
+                .orElseThrow(() -> NotFoundException.entityNotFound("찜"));
+
+        favorite.delete();
+
+        return DeleteFavoriteResponseDto.builder()
+                .shopId(shopId)
                 .build();
     }
 
