@@ -1,5 +1,6 @@
 package com.beautymeongdang.global.login.controller;
 
+import com.beautymeongdang.domain.user.dto.UserDTO;
 import com.beautymeongdang.global.common.dto.ApiResponse;
 import com.beautymeongdang.global.login.service.OAuth2Service;
 import lombok.RequiredArgsConstructor;
@@ -25,10 +26,9 @@ public class OAuth2Controller {
             log.info("카카오 인가 코드 수신: {}", code);
 
             Map<String, Object> responseData = oauth2Service.processKakaoLogin(code);
+            UserDTO userDTO = (UserDTO) responseData.get("user");
 
-            // 신규 사용자 체크
-            boolean isNewUser = (boolean) responseData.get("isNewUser");
-            if (isNewUser) {
+            if (!userDTO.isRegister()) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                         .body(ApiResponse.badRequest(400, "추가 정보 입력이 필요한 사용자입니다."));
             }
