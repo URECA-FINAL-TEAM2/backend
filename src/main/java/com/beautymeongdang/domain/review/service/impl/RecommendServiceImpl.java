@@ -1,9 +1,7 @@
 package com.beautymeongdang.domain.review.service.impl;
 
 
-import com.beautymeongdang.domain.review.dto.CreateRecommendRequestDto;
 import com.beautymeongdang.domain.review.dto.CreateRecommendResponseDto;
-import com.beautymeongdang.domain.review.dto.DeleteRecommendRequestDto;
 import com.beautymeongdang.domain.review.dto.DeleteRecommendResponseDto;
 import com.beautymeongdang.domain.review.entity.Recommend;
 import com.beautymeongdang.domain.review.entity.RecommendId;
