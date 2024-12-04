@@ -23,27 +23,27 @@ public class OAuth2Controller {
     @GetMapping("/login/oauth2/code/kakao")
     public ResponseEntity<?> handleKakaoCallback(@RequestParam String code) {
         try {
-            log.info("카카오 인가 코드 수신: {}", code);
+            log.info("login-log 카카오 인가 코드 수신: {}", code);
 
             Map<String, Object> responseData = oauth2Service.processKakaoLogin(code);
-            log.debug("responseData 데이터 확인: {}", responseData);
+            log.debug("login-log responseData 데이터 확인: {}", responseData);
 
             UserDTO userDTO = (UserDTO) responseData.get("user");
-            log.debug("userDTO 데이터 확인: {}", userDTO);
+            log.debug("login-log userDTO 데이터 확인: {}", userDTO);
 
             if (!userDTO.isRegister()) {
-                log.warn("추가 정보 입력이 필요한 사용자입니다. userDTO: {}", userDTO);
+                log.warn("login-log 추가 정보 입력이 필요한 사용자입니다. userDTO: {}", userDTO);
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                        .body(ApiResponse.badRequest(400, "추가 정보 입력이 필요한 사용자입니다."));
+                        .body(ApiResponse.badRequest(400, "login-log 추가 정보 입력이 필요한 사용자입니다."));
             }
 
-            log.info("로그인 성공. 사용자 정보: {}", userDTO);
-            return ResponseEntity.ok(ApiResponse.ok(200, responseData, "로그인 성공"));
+            log.info("login-log 로그인 성공. 사용자 정보: {}", userDTO);
+            return ResponseEntity.ok(ApiResponse.ok(200, responseData, "login-log 로그인 성공"));
 
         } catch (Exception e) {
-            log.error("OAuth2 인증 실패", e);
+            log.error("login-log OAuth2 인증 실패", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(ApiResponse.badRequest(500, "인증 실패: " + e.getMessage()));
+                    .body(ApiResponse.badRequest(500, "login-log인증 실패: " + e.getMessage()));
         }
     }
 }
