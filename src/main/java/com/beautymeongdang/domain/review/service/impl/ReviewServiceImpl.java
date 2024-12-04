@@ -1,6 +1,5 @@
 package com.beautymeongdang.domain.review.service.impl;
 
-import com.beautymeongdang.domain.quote.entity.QuoteRequestImage;
 import com.beautymeongdang.domain.quote.entity.SelectedQuote;
 import com.beautymeongdang.domain.quote.repository.SelectedQuoteRepository;
 import com.beautymeongdang.domain.review.dto.*;
@@ -42,7 +41,7 @@ public class ReviewServiceImpl implements ReviewService {
     @Override
     @Transactional
     public CreateUpdateReviewResponseDto createReview(CreateReviewRequestDto requestDto, List<MultipartFile> images) {
-        if (images.size() > 3) {
+        if (images!= null && images.size() > 3) {
             throw new BadRequestException("등록 가능한 리뷰 이미지 수를 초과하였습니다.");
         }
 
@@ -97,6 +96,10 @@ public class ReviewServiceImpl implements ReviewService {
     @Override
     @Transactional
     public CreateUpdateReviewResponseDto updateReview(Long reviewId, UpdateReviewRequestDto requestDto, List<MultipartFile> images) {
+        if (images!= null && images.size() > 3) {
+            throw new BadRequestException("등록 가능한 리뷰 이미지 수를 초과하였습니다.");
+        }
+
         Reviews reviews = reviewRepository.findById(reviewId)
                 .orElseThrow(() -> NotFoundException.entityNotFound("리뷰"));
 

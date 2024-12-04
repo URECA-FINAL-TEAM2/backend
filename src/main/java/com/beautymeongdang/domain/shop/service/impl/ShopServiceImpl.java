@@ -33,6 +33,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 
@@ -274,4 +275,37 @@ public class ShopServiceImpl implements ShopService {
                 .shopId(savedFavorite.getFavoriteId().getShopId().getShopId())
                 .build();
     }
+
+    @Override
+    public List<GetFavoriteShopListResponseDto> getFavoriteShops(Long customerId) {
+        // Favorite 조회
+        List<Favorite> favorites = favoriteRepository.findByFavoriteIdCustomerId(customerId);
+
+        return favorites.stream()
+                .map(favorite -> {
+                    Shop shop = favorite.getFavoriteId().getShopId(); // Shop 확인
+                    Groomer groomer = shop.getGroomerId(); // Groomer 확인
+
+                    // 별점 평균 및 리뷰 개수 계산
+                    Double starScoreAvg = Optional.ofNullable(reviewRepository.getAverageStarRatingByGroomerId(groomer.getGroomerId()))
+                            .orElse(0.0);
+                    Integer reviewCount = Optional.ofNullable(reviewRepository.countGroomerReviews(groomer.getGroomerId()))
+                            .orElse(0);
+
+                    return GetFavoriteShopListResponseDto.builder()
+                            .groomerId(groomer.getGroomerId())
+                            .shopId(shop.getShopId())
+                            .shopLogo(shop.getImageUrl())
+                            .shopName(shop.getShopName())
+                            .address(shop.getAddress())
+                            .businessTime(shop.getBusinessTime())
+                            .skill(groomer.getSkill())
+                            .starScoreAvg(starScoreAvg)
+                            .reviewCount(reviewCount)
+                            .build();
+                })
+                .collect(Collectors.toList());
+    }
+
+
 }

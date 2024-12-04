@@ -2,15 +2,13 @@ package com.beautymeongdang.domain.user.entity;
 
 import com.beautymeongdang.global.common.entity.BaseTimeEntity;
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Entity
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Builder
 public class GroomerPortfolioImage extends BaseTimeEntity{
 
     @Id

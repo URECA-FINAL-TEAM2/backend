@@ -10,6 +10,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.List;
+
 
 @RestController
 @RequestMapping("/profile")
@@ -77,4 +79,12 @@ public class ShopController {
                 requestDto.getShopId());
         return ApiResponse.ok(200, response, "매장 찜 삭제 성공하였습니다.");
     }
+
+    // 찜한 매장 리스트 조회
+    @GetMapping("/{customerId}/favorites")
+    public ResponseEntity<ApiResponse<List<GetFavoriteShopListResponseDto>>> getFavoriteShops(@PathVariable Long customerId) {
+        List<GetFavoriteShopListResponseDto> favoriteShops = shopService.getFavoriteShops(customerId);
+        return ApiResponse.ok(200, favoriteShops, "찜한 매장 리스트 조회 성공");
+    }
+
 }
