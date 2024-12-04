@@ -1,6 +1,6 @@
 package com.beautymeongdang.global.config;
 
-import com.beautymeongdang.global.login.service.Impl.CustomOAuth2UserServiceImpl;
+import com.beautymeongdang.global.login.service.impl.CustomOAuth2UserServiceImpl;
 import com.beautymeongdang.domain.user.repository.UserRepository;
 import com.beautymeongdang.global.jwt.JWTFilter;
 import com.beautymeongdang.global.jwt.JWTUtil;
@@ -19,7 +19,6 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.Arrays;
-import java.util.Collections;
 
 @Configuration
 @EnableWebSecurity
