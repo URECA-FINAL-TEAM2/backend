@@ -40,6 +40,7 @@ public class OAuth2AuthorizationClient {
 
         // 요청 파라미터 로깅
         log.info("login-log Kakao token request parameters - clientId: {}, clientSecret: {} , redirectUri: {}", clientId, clientSecret, redirectUri);
+
         MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
         params.add("grant_type", "authorization_code");
         params.add("client_id", clientId);
@@ -48,21 +49,19 @@ public class OAuth2AuthorizationClient {
         params.add("code", code);
 
         HttpHeaders headers = new HttpHeaders();
-        headers.add("Content-Type", "application/x-www-form-urlencoded");
+        headers.add("Content-Type", "application/x-www-form-urlencoded;charset=utf-8");
 
-//        HttpHeaders headers = new HttpHeaders();
-//        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
-
-//        HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(params, headers);
+        HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(params, headers);
 
         try {
-            KakaoToken response = restTemplate.postForObject(
+            ResponseEntity<KakaoToken> response = restTemplate.postForEntity(
                     tokenUrl,
-                    new HttpEntity<>(params,headers),
+                    request,
                     KakaoToken.class
             );
             log.info("login-log ✅ 카카오 토큰 발급 성공");
-            return response;
+            return response.getBody();
+
         } catch (Exception e) {
             log.error("login-log 카카오 토큰 요청 실패", e);
             throw new RuntimeException("login-log 카카오 토큰 발급 실패", e);
