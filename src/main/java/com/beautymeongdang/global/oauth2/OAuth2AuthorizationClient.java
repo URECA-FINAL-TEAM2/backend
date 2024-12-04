@@ -56,6 +56,7 @@ public class OAuth2AuthorizationClient {
                     request,
                     KakaoToken.class
             );
+            log.info("✅ 카카오 토큰 발급 성공");
             return response.getBody();
         } catch (Exception e) {
             log.error("카카오 토큰 요청 실패", e);
@@ -64,6 +65,7 @@ public class OAuth2AuthorizationClient {
     }
 
     public KakaoUserInfo getKakaoUserInfo(String accessToken) {
+        log.info("👤 카카오 사용자 정보 요청 시작");
         String userInfoUrl = "https://kapi.kakao.com/v2/user/me";
 
         HttpHeaders headers = new HttpHeaders();
@@ -81,7 +83,7 @@ public class OAuth2AuthorizationClient {
             );
 
             JsonNode jsonNode = objectMapper.readTree(response.getBody());
-
+            log.info("📄 카카오 응답 데이터: {}", response.getBody());
             return KakaoUserInfo.builder()
                     .id(jsonNode.get("id").asLong())
                     .email(jsonNode.get("kakao_account").get("email").asText())
