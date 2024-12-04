@@ -39,14 +39,14 @@ public class CustomOAuth2UserServiceImpl extends DefaultOAuth2UserService implem
 
     @Override
     public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
-        log.info("🔑 OAuth2 로그인 시작 - Provider: {}", userRequest.getClientRegistration().getRegistrationId());
+        log.info("login-log🔑 OAuth2 로그인 시작 - Provider: {}", userRequest.getClientRegistration().getRegistrationId());
         OAuth2User oAuth2User = super.loadUser(userRequest);
-        log.info("👤 OAuth2 유저 정보 로드 완료: {}", oAuth2User.getAttributes());
+        log.info("login-log👤 OAuth2 유저 정보 로드 완료: {}", oAuth2User.getAttributes());
         String registrationId = userRequest.getClientRegistration().getRegistrationId();
         OAuth2ResponseService oAuth2Response = null;
         if (registrationId.equals("kakao")) {
             oAuth2Response = new KakaoResponse(oAuth2User.getAttributes());
-            log.info("🟡 카카오 응답 처리 중...");
+            log.info("login-log🟡 카카오 응답 처리 중...");
         } else if (registrationId.equals("google")) {
             oAuth2Response = new GoogleResponse(oAuth2User.getAttributes());
         } else {
@@ -58,7 +58,7 @@ public class CustomOAuth2UserServiceImpl extends DefaultOAuth2UserService implem
 
         // 먼저 providerId로 사용자 찾기
         Optional<User> existingUser = userRepository.findByProviderIdAndSocialProvider(providerId, provider);
-        log.info("🔍 기존 유저 조회 결과: {}", existingUser.isPresent() ? "유저 존재" : "신규 유저");
+        log.info("🔍login-log 기존 유저 조회 결과: {}", existingUser.isPresent() ? "유저 존재" : "신규 유저");
 
         User user;
         if (existingUser.isEmpty()) {
