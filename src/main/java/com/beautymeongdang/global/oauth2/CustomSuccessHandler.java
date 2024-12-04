@@ -41,6 +41,6 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         // JSON 반환
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");
-        response.getWriter().write("{\"token\": \"" + tokenInfo + "\", \"message\": \"로그인 성공\"}");
+        response.getWriter().write("{ login-log \"token\": \"" + tokenInfo + "\", \"message\": \"로그인 성공\"}");
     }
 }

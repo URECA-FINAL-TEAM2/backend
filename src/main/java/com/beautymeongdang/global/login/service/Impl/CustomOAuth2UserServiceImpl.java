@@ -91,14 +91,14 @@ public class CustomOAuth2UserServiceImpl extends DefaultOAuth2UserService implem
 
     @Override
     public Map<String, Object> processKakaoLogin(String code) {
-        log.info("🟡 카카오 로그인 프로세스 시작 - 인가 코드: {}", code);
+        log.info("login-log 🟡 카카오 로그인 프로세스 시작 - 인가 코드: {}", code);
         // 1. 프론트엔드에서 받은 인가 코드로 카카오 액세스 토큰을 요청하고 받아옴
         KakaoToken kakaoToken = oauth2Client.getKakaoAccessToken(code);
-        log.info("🎫 카카오 액세스 토큰 발급 완료");
+        log.info("login-log 🎫 카카오 액세스 토큰 발급 완료");
 
         // 2. 받아온 액세스 토큰으로 카카오 API를 호출하여 사용자 정보(이름, 이메일 등)를 조회
         KakaoUserInfo userInfo = oauth2Client.getKakaoUserInfo(kakaoToken.getAccess_token());
-        log.info("👤 카카오 유저 정보 조회 완료 - ID: {}, Email: {}", userInfo.getId(), userInfo.getEmail());
+        log.info("login-log 👤 카카오 유저 정보 조회 완료 - ID: {}, Email: {}", userInfo.getId(), userInfo.getEmail());
 
         // 3. 카카오에서 받은 고유 ID와 제공자 정보(KAKAO)로 기존 사용자가 있는지 DB에서 조회
         Optional<User> existingUser = userRepository.findByProviderIdAndSocialProvider(
