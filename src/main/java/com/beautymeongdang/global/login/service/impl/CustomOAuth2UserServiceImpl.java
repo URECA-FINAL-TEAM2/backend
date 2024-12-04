@@ -1,4 +1,4 @@
-package com.beautymeongdang.global.login.service.Impl;
+package com.beautymeongdang.global.login.service.impl;
 
 import com.beautymeongdang.domain.user.dto.UserDTO;
 import com.beautymeongdang.global.jwt.JwtProvider;
