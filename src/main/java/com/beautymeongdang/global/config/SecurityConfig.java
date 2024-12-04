@@ -32,6 +32,7 @@ public class SecurityConfig {
     private final UserRepository userRepository;
     private final JwtProvider jwtProvider;
 
+
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http.cors(corsCustomizer -> corsCustomizer.configurationSource(corsConfigurationSource()))
@@ -60,7 +61,7 @@ public class SecurityConfig {
                 //로그아웃 설정 추가
                 .logout(logout -> logout
                         .logoutUrl("/api/auth/logout")
-                        .logoutSuccessUrl("https://beautymeongdang.com/login")
+                        .logoutSuccessUrl("/login.html")
                         .deleteCookies("JSESSIONID", "refreshToken")
                         .clearAuthentication(true)
                         .invalidateHttpSession(true)
@@ -69,10 +70,10 @@ public class SecurityConfig {
                 //경로별 인가 작업
                 .authorizeHttpRequests((auth) -> auth
                         .requestMatchers("/api/users/register/**").permitAll()
-                        .requestMatchers("/login/oauth2/code/*").permitAll()
-                        .requestMatchers("/**","/selectRole").permitAll()
-                        .requestMatchers("/login","/InfoRequired", "/login", "/index", "/index1").permitAll()
-                        .requestMatchers("/login/**", "/oauth2/**", "/login/oauth2/code/*").permitAll()
+                        .requestMatchers("/login/oauth2/code/**").permitAll()
+                        .requestMatchers("/**","/selectRole.html").permitAll()
+                        .requestMatchers("/login.html","/InfoRequired.jsx","/login.jsx", "/index.html", "/index1.html").permitAll()
+                        .requestMatchers("/login/**", "/oauth2/**", "/login/oauth2/code/**").permitAll()
                         .requestMatchers("/api/**", "/swagger-ui/**", "/v3/api-docs/**",
                                 "/configuration/ui", "/swagger-resources/**", "/webjars/**").permitAll()
                         .anyRequest().authenticated())
@@ -98,15 +99,16 @@ public class SecurityConfig {
                 "https://www.beautymeongdang.com"
         ));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-        // 중복된 allowedHeaders 설정 제거
+        configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "x-auth-token"));
+        configuration.setExposedHeaders(Arrays.asList("Authorization")); // JWT 토큰 노출
         configuration.setAllowedHeaders(Arrays.asList("*"));
-        configuration.setExposedHeaders(Arrays.asList("Authorization"));
         configuration.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;
     }
+
 
     @Bean
     public JWTFilter jwtFilter(JWTUtil jwtUtil, UserRepository userRepository, JwtProvider jwtProvider) {
