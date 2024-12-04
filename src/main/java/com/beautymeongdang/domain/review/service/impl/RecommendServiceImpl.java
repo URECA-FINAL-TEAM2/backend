@@ -30,15 +30,15 @@ public class RecommendServiceImpl implements RecommendService {
 
 
     /**
-     * 추천 생성
+     * 리뷰 추천 생성
      */
     @Override
     @Transactional
-    public CreateRecommendResponseDto createRecommend(Long customerId, CreateRecommendRequestDto request) {
+    public CreateRecommendResponseDto createRecommend(Long customerId, Long reviewId) {
         Customer customer = customerRepository.findById(customerId)
                 .orElseThrow(() -> NotFoundException.entityNotFound("회원"));
 
-        Reviews review = reviewRepository.findById(request.getReviewId())
+        Reviews review = reviewRepository.findById(reviewId)
                 .orElseThrow(() -> NotFoundException.entityNotFound("리뷰"));
 
         RecommendId recommendId = new RecommendId(customer, review);
@@ -58,20 +58,20 @@ public class RecommendServiceImpl implements RecommendService {
         recommendRepository.save(recommend);
 
         return CreateRecommendResponseDto.builder()
-                .reviewId(request.getReviewId())
+                .reviewId(reviewId)
                 .build();
     }
 
     /**
-     * 추천 삭제
+     * 리뷰 추천 삭제
      */
     @Override
     @Transactional
-    public DeleteRecommendResponseDto deleteRecommend(Long customerId, DeleteRecommendRequestDto request) {
+    public DeleteRecommendResponseDto deleteRecommend(Long customerId, Long reviewId) {
         Customer customer = customerRepository.findById(customerId)
                 .orElseThrow(() -> NotFoundException.entityNotFound("회원"));
 
-        Reviews review = reviewRepository.findById(request.getReviewId())
+        Reviews review = reviewRepository.findById(reviewId)
                 .orElseThrow(() -> NotFoundException.entityNotFound("리뷰"));
 
         RecommendId recommendId = new RecommendId(customer, review);
@@ -79,7 +79,7 @@ public class RecommendServiceImpl implements RecommendService {
         recommendRepository.deleteById(recommendId);
 
         return DeleteRecommendResponseDto.builder()
-                .reviewId(request.getReviewId())
+                .reviewId(reviewId)
                 .build();
     }
 }
