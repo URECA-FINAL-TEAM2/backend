@@ -127,23 +127,6 @@ public class CustomOAuth2UserServiceImpl extends DefaultOAuth2UserService implem
         responseData.put("accessToken", tokenInfo.get("access_token"));
         responseData.put("user", userDTO);
 
-        // 신규 사용자인 경우
-        if (!user.isRegister()) {
-            responseData.put("redirectUrl", "http://localhost:5173/selectRole");
-            responseData.put("role", "GUEST");
-        }
-        // 기존 사용자인 경우
-        else {
-            String role = user.getRoles().iterator().next().toString();
-            responseData.put("role", role);
-
-            if (role.equals("CUSTOMER")) {
-                responseData.put("redirectUrl", "http://localhost:5173/customer/home");
-            } else {
-                responseData.put("redirectUrl", "http://localhost:5173/groomer/home");
-            }
-        }
-
         return responseData;
     }
 }
