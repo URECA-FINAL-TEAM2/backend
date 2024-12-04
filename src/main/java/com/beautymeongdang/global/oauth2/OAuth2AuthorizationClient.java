@@ -48,10 +48,10 @@ public class OAuth2AuthorizationClient {
         params.add("code", code);
 
         HttpHeaders headers = new HttpHeaders();
-        headers.add("Content-Type", "application/x-www-form-urlencoded;charset=utf-8");
+//        headers.add("Content-Type", "application/x-www-form-urlencoded");
 
 //        HttpHeaders headers = new HttpHeaders();
-//        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
 
 //        HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(params, headers);
 
