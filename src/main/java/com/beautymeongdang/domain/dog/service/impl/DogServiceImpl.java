@@ -100,7 +100,7 @@ public class DogServiceImpl implements DogService {
 
 
     /**
-     * 반려견 프로필 삭제
+     * 반려견 프로필 수정
      */
     @Override
     public UpdateDogResponseDto updateDog(Long dogId, Long customerId, UpdateDogRequestDto requestDto, MultipartFile dogProfile) {
@@ -152,6 +152,9 @@ public class DogServiceImpl implements DogService {
     }
 
 
+    /**
+     * 반려견 프로필 삭제
+     */
     @Override
     public DeleteDogResponseDto deleteDog(Long dogId,Long customerId) {
         Dog dog = dogRepository.findById(dogId)
