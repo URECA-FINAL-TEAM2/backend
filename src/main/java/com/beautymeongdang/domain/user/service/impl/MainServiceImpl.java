@@ -1,4 +1,4 @@
-package com.beautymeongdang.domain.user.service.impl;
+package com.beautymeongdang.domain.user.service.Impl;
 
 import com.beautymeongdang.domain.quote.repository.QuoteRequestRepository;
 import com.beautymeongdang.domain.quote.repository.SelectedQuoteRepository;
