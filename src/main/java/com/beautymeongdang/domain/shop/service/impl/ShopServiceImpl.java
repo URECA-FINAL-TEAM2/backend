@@ -97,6 +97,33 @@ public class ShopServiceImpl implements ShopService {
     }
 
 
+
+    /**
+     * 미용사 매장 조회(마이페이지 - 매장 수정)
+     */
+    @Override
+    public GetGroomerShopResponseDto getGroomerShop(Long shopId, Long groomerId) {
+        Shop shop = shopRepository.findById(shopId)
+                .orElseThrow(() -> NotFoundException.entityNotFound("매장"));
+
+        if (!shop.getGroomerId().getGroomerId().equals(groomerId)) {
+            throw new BadRequestException("해당 매장에 대한 접근 권한이 없습니다.");
+        }
+
+        return GetGroomerShopResponseDto.builder()
+                .shopId(shop.getShopId())
+                .shopName(shop.getShopName())
+                .description(shop.getDescription())
+                .businessTime(shop.getBusinessTime())
+                .sidoName(shop.getSigunguId().getSidoId().getSidoName())
+                .sigunguName(shop.getSigunguId().getSigunguName())
+                .address(shop.getAddress())
+                .shopLogo(shop.getImageUrl())
+                .build();
+    }
+
+
+
     /**
      * 매장 상세 조회
      */
