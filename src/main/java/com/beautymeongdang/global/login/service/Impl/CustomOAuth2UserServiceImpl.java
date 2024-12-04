@@ -143,7 +143,6 @@ public class CustomOAuth2UserServiceImpl extends DefaultOAuth2UserService implem
         responseData.put("user", userDTO);                              // 사용자 정보
         responseData.put("role", user.getRoles().iterator().next().toString()); // 사용자 권한
         responseData.put("isNewUser", !user.isRegister());             // 신규 사용자 여부
-        log.debug("응답 데이터 구성 완료: {}", responseData);
 
         // 7. 최종 응답 데이터 반환
         return responseData;
