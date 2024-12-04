@@ -52,7 +52,7 @@ public class SecurityConfig {
                         .authorizationEndpoint(endpoint -> endpoint.baseUri("/oauth2/authorization/**"))
                         .redirectionEndpoint(endpoint -> endpoint.baseUri("/login/oauth2/code/**"))
                         .userInfoEndpoint(userInfo -> userInfo.userService(customOAuth2UserService))
-                        .successHandler(customSuccessHandler)
+                        .defaultSuccessUrl("/login/oauth2/code/kakao", true)
                 )
 
                 // 로그아웃 설정
