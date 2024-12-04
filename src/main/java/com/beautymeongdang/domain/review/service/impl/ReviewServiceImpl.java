@@ -42,7 +42,7 @@ public class ReviewServiceImpl implements ReviewService {
     @Override
     @Transactional
     public CreateUpdateReviewResponseDto createReview(CreateReviewRequestDto requestDto, List<MultipartFile> images) {
-        if (images.size() > 3) {
+        if (images!= null && images.size() > 3) {
             throw new BadRequestException("등록 가능한 리뷰 이미지 수를 초과하였습니다.");
         }
 
@@ -97,6 +97,10 @@ public class ReviewServiceImpl implements ReviewService {
     @Override
     @Transactional
     public CreateUpdateReviewResponseDto updateReview(Long reviewId, UpdateReviewRequestDto requestDto, List<MultipartFile> images) {
+        if (images!= null && images.size() > 3) {
+            throw new BadRequestException("등록 가능한 리뷰 이미지 수를 초과하였습니다.");
+        }
+
         Reviews reviews = reviewRepository.findById(reviewId)
                 .orElseThrow(() -> NotFoundException.entityNotFound("리뷰"));
 
@@ -111,6 +115,8 @@ public class ReviewServiceImpl implements ReviewService {
 
         Reviews savedReview = reviewRepository.save(updateReview);
 
+        System.out.println("리뷰 수정");
+
         // 이미지 삭제 및 추가
         List<ReviewsImage> reviewsImageList = reviewsImageRepository.findReviewImagesByReviewId(reviewId);
 
@@ -121,6 +127,8 @@ public class ReviewServiceImpl implements ReviewService {
 
         // 이미지 DB 삭제
         reviewsImageRepository.deleteAllByReviewId(savedReview);
+
+        System.out.println("이미지 삭제");
 
         List<ReviewsImage> savedImages = new ArrayList<>();
         if (images != null && !images.isEmpty()) {

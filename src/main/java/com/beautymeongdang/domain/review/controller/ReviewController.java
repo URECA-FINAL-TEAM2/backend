@@ -34,7 +34,7 @@ public class ReviewController {
     }
 
     // 리뷰 논리적 삭제
-    @DeleteMapping("/{reviewId}")
+    @PutMapping("/delete/{reviewId}")
     public ResponseEntity<?> deleteReviews(@PathVariable(name = "reviewId") Long reviewId) {
         return ApiResponse.ok(200, reviewService.deleteReview(reviewId), "리뷰 삭제 성공하였습니다.");
     }
