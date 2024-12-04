@@ -24,7 +24,6 @@ public class User extends DeletableBaseTimeEntity {
     @Column(nullable = false)
     private String email;
 
-    @Column(unique = true)
     private String nickname;
 
     // User.java의 roles 부분만
