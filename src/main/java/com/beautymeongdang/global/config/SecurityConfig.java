@@ -46,13 +46,7 @@ public class SecurityConfig {
                 // 기본 로그인 방식 비활성화
                 .formLogin((auth) -> auth.disable())
                 .httpBasic((auth) -> auth.disable())
-
-                // OAuth2 로그인 설정
-                .oauth2Login(oauth2 -> oauth2
-                        .userInfoEndpoint(userInfo -> userInfo
-                                .userService(customOAuth2UserService))
-                        .successHandler(customSuccessHandler)
-                )
+                .oauth2Login((auth) -> auth.disable())
 
                 // 로그아웃 설정
                 .logout(logout -> logout
@@ -66,12 +60,11 @@ public class SecurityConfig {
 
                 // URL 접근 권한 설정
                 .authorizeHttpRequests((auth) -> auth
-                        // OAuth2 관련 URL을 먼저 명시
-                        .requestMatchers("/oauth2/**", "/login/oauth2/code/**").permitAll()
 
                         // 인증이 필요없는 public 접근 경로
                         .requestMatchers(
                                 "/api/users/register/**",
+                                "/login/oauth2/code/**",
                                 "/selectRole.html",
                                 "/login.html",
                                 "/InfoRequired.jsx",
@@ -79,9 +72,9 @@ public class SecurityConfig {
                                 "/index.html",
                                 "/index1.html",
                                 "/login/**",
-                                "/api/auth/**"
+                                "/api/auth/**",
+                                "/oauth2/**"
                         ).permitAll()
-
                         // API 및 Swagger 관련 경로
                         .requestMatchers(
                                 "/api/**",
@@ -91,10 +84,10 @@ public class SecurityConfig {
                                 "/swagger-resources/**",
                                 "/webjars/**"
                         ).permitAll()
-
                         // 그 외 모든 요청은 인증 필요
                         .anyRequest().authenticated()
                 )
+
 
                 .sessionManagement((session) -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
