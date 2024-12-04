@@ -49,14 +49,27 @@ public class QuoteRequestController {
     }
 
 
+
+    /**
+     * 고객의 반려견 리스트 조회
+     */
+    @GetMapping("/dog")
+    public ResponseEntity<ApiResponse<List<GetDogListResponseDto>>> getDogList(
+            @RequestParam Long customerId) {
+        List<GetDogListResponseDto> responseDtoList = quoteRequestService.getDogList(customerId);
+        return ApiResponse.ok(200, responseDtoList, "고객의 반려견 리스트 조회 성공");
+    }
+
+
+
     /**
      * 선택한 반려견 정보 조회
      */
-    @GetMapping("/dog/info")
+    @GetMapping("/dog/{dogId}")
     public ResponseEntity<ApiResponse<GetDogInfoResponseDto>> getDogInfo(
-            @RequestParam Long customerId,
-            @RequestBody GetDogInfoRequestDto requestDto) {
-        GetDogInfoResponseDto responseDto = quoteRequestService.getDogInfo(requestDto.getDogId(), customerId);
+            @PathVariable Long dogId,
+            @RequestParam Long customerId) {
+        GetDogInfoResponseDto responseDto = quoteRequestService.getDogInfo(dogId, customerId);
         return ApiResponse.ok(200, responseDto, "선택한 반려견 조회 성공");
     }
 

@@ -1,4 +1,4 @@
-package com.beautymeongdang.global.region.service.Impl;
+package com.beautymeongdang.global.region.service.impl;
 
 import com.beautymeongdang.global.region.dto.SigunguDto;
 import com.beautymeongdang.global.region.entity.Sigungu;

@@ -1,4 +1,4 @@
-package com.beautymeongdang.domain.user.service.Impl;
+package com.beautymeongdang.domain.user.service.impl;
 
 import com.beautymeongdang.domain.shop.entity.Shop;
 import com.beautymeongdang.domain.shop.repository.ShopRepository;
