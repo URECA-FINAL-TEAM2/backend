@@ -2,12 +2,14 @@ package com.beautymeongdang.domain.dog.service.impl;
 
 import com.beautymeongdang.domain.dog.dto.CreateDogRequestDto;
 import com.beautymeongdang.domain.dog.dto.CreateDogResponseDto;
+import com.beautymeongdang.domain.dog.dto.GetDogResponseDto;
 import com.beautymeongdang.domain.dog.entity.Dog;
 import com.beautymeongdang.domain.dog.repository.DogRepository;
 import com.beautymeongdang.domain.dog.service.DogService;
 import com.beautymeongdang.domain.user.entity.Customer;
 import com.beautymeongdang.domain.user.repository.CustomerRepository;
 import com.beautymeongdang.global.common.entity.UploadedFile;
+import com.beautymeongdang.global.exception.handler.BadRequestException;
 import com.beautymeongdang.global.exception.handler.NotFoundException;
 import com.beautymeongdang.infra.s3.FileStore;
 import lombok.RequiredArgsConstructor;
@@ -51,7 +53,6 @@ public class DogServiceImpl implements DogService {
                 .profileImage(profileImageUrl)
                 .build());
 
-        // 4. 응답 DTO 생성 및 반환
         return CreateDogResponseDto.builder()
                 .customerId(savedDog.getCustomerId().getCustomerId())
                 .dogId(savedDog.getDogId())
@@ -64,6 +65,36 @@ public class DogServiceImpl implements DogService {
                 .experience(savedDog.getExperience())
                 .significant(savedDog.getSignificant())
                 .dogProfileImage(savedDog.getProfileImage())
+                .build();
+    }
+
+
+    /**
+     * 반려견 프로필 조회
+     */
+    @Override
+    @Transactional(readOnly = true)
+    public GetDogResponseDto getDog(Long dogId, Long customerId) {
+        Dog dog = dogRepository.findById(dogId)
+                .orElseThrow(() -> NotFoundException.entityNotFound("반려견"));
+
+
+        if (!dog.getCustomerId().getCustomerId().equals(customerId)) {
+            throw BadRequestException.invalidRequest("해당 반려견의 소유자");
+        }
+
+        return GetDogResponseDto.builder()
+                .customerId(dog.getCustomerId().getCustomerId())
+                .dogId(dog.getDogId())
+                .dogName(dog.getDogName())
+                .breed(dog.getDogBreed())
+                .dogWeight(dog.getDogWeight())
+                .dogBirth(dog.getDogBirth())
+                .dogGender(dog.getDogGender().name())
+                .neutering(dog.getNeutering())
+                .experience(dog.getExperience())
+                .significant(dog.getSignificant())
+                .dogProfileImage(dog.getProfileImage())
                 .build();
     }
 }
