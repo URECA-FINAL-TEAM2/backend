@@ -40,7 +40,7 @@ public class SecurityConfig {
                 // CORS 설정
                 .cors(corsCustomizer -> corsCustomizer.configurationSource(corsConfigurationSource()))
 
-                // CSRF 비활성화
+                // CSRF 비활성
                 .csrf((auth) -> auth.disable())
 
                 // 기본 로그인 방식 비활성화
