@@ -1,8 +1,6 @@
 package com.beautymeongdang.domain.dog.service;
 
-import com.beautymeongdang.domain.dog.dto.CreateDogRequestDto;
-import com.beautymeongdang.domain.dog.dto.CreateDogResponseDto;
-import com.beautymeongdang.domain.dog.dto.GetDogResponseDto;
+import com.beautymeongdang.domain.dog.dto.*;
 import org.springframework.web.multipart.MultipartFile;
 
 public interface DogService {
@@ -12,4 +10,10 @@ public interface DogService {
 
     // 반려견 프로필 조회
     GetDogResponseDto getDog(Long dogId, Long customerId);
+
+    // 반려견 프로필 수정
+    UpdateDogResponseDto updateDog(Long dogId, Long customerId, UpdateDogRequestDto requestDto, MultipartFile dogProfile);
+
+    // 반려견 프로필 삭제
+    DeleteDogResponseDto deleteDog(Long dogId, Long customerId);
 }
