@@ -26,14 +26,18 @@ public class OAuth2Controller {
             log.info("카카오 인가 코드 수신: {}", code);
 
             Map<String, Object> responseData = oauth2Service.processKakaoLogin(code);
-            log.info("responseData 데이터 확인 ", responseData);
+            log.debug("responseData 데이터 확인: {}", responseData);
+
             UserDTO userDTO = (UserDTO) responseData.get("user");
+            log.debug("userDTO 데이터 확인: {}", userDTO);
 
             if (!userDTO.isRegister()) {
+                log.warn("추가 정보 입력이 필요한 사용자입니다. userDTO: {}", userDTO);
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                         .body(ApiResponse.badRequest(400, "추가 정보 입력이 필요한 사용자입니다."));
             }
-            log.info("데이터 확인 ", responseData);
+
+            log.info("로그인 성공. 사용자 정보: {}", userDTO);
             return ResponseEntity.ok(ApiResponse.ok(200, responseData, "로그인 성공"));
 
         } catch (Exception e) {
