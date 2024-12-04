@@ -37,10 +37,22 @@ public interface ReviewRepository extends JpaRepository<Reviews, Long> {
     List<Reviews> findTop2BestReviewsBySigungu(@Param("customerId") Long customerId);
 
 
+    @Query("SELECT AVG(r.starRating) FROM Reviews r WHERE r.groomerId.groomerId = :groomerId AND r.isDeleted = false")
+    Double getAverageStarRatingByGroomerId(@Param("groomerId") Long groomerId);
+
+
     //각 미용사의 리뷰 개수
     @Query("SELECT COUNT(r) FROM Reviews r WHERE r.groomerId.groomerId = :groomerId AND r.isDeleted = false")
     Integer countGroomerReviews(@Param("groomerId") Long groomerId);
 
+    // 특정 고객의 논리적 삭제되지 않은 모든 리뷰 조회
+    @Query("""
+    SELECT r FROM Reviews r
+    JOIN FETCH r.groomerId g
+    JOIN FETCH Shop s ON s.groomerId = g
+    WHERE r.customerId.customerId = :customerId AND r.isDeleted = false
+""")
+    List<Reviews> findCustomerReviews(@Param("customerId") Long customerId);
 
 }
 

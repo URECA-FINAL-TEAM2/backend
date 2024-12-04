@@ -33,6 +33,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 
@@ -56,11 +57,11 @@ public class ShopServiceImpl implements ShopService {
      */
     @Override
     @Transactional
-    public CreateShopResponseDto createShop(CreateShopRequestDto requestDto, MultipartFile shopLogo) {
+    public CreateShopResponseDto createShop(Long groomerId, CreateShopRequestDto requestDto, MultipartFile shopLogo) {
         List<UploadedFile> uploadedFiles = fileStore.storeFiles(List.of(shopLogo), FileStore.SHOP_LOGO);
         String LogoUrl = uploadedFiles.get(0).getFileUrl();
 
-        Groomer groomer = groomerRepository.findById(requestDto.getGroomerId())
+        Groomer groomer = groomerRepository.findById(groomerId)
                 .orElseThrow(() -> NotFoundException.entityNotFound("미용사"));
 
         Sigungu sigungu = sigunguRepository.findBySidoId_SidoNameAndSigunguName(
@@ -85,8 +86,43 @@ public class ShopServiceImpl implements ShopService {
         return CreateShopResponseDto.builder()
                 .shopId(savedShop.getShopId())
                 .shopName(savedShop.getShopName())
+                .description(savedShop.getDescription())
+                .businessTime(savedShop.getBusinessTime())
+                .sidoName(sigungu.getSidoId().getSidoName())
+                .sigunguName(sigungu.getSigunguName())
+                .address(savedShop.getAddress())
+                .latitude(savedShop.getLatitude())
+                .longitude(savedShop.getLongitude())
                 .build();
     }
+
+
+
+    /**
+     * 미용사 매장 조회(마이페이지 - 매장 수정)
+     */
+    @Override
+    public GetGroomerShopResponseDto getGroomerShop(Long shopId, Long groomerId) {
+        Shop shop = shopRepository.findById(shopId)
+                .orElseThrow(() -> NotFoundException.entityNotFound("매장"));
+
+        if (!shop.getGroomerId().getGroomerId().equals(groomerId)) {
+            throw new BadRequestException("해당 매장에 대한 접근 권한이 없습니다.");
+        }
+
+        return GetGroomerShopResponseDto.builder()
+                .shopId(shop.getShopId())
+                .shopName(shop.getShopName())
+                .description(shop.getDescription())
+                .businessTime(shop.getBusinessTime())
+                .sidoName(shop.getSigunguId().getSidoId().getSidoName())
+                .sigunguName(shop.getSigunguId().getSigunguName())
+                .address(shop.getAddress())
+                .shopLogo(shop.getImageUrl())
+                .build();
+    }
+
+
 
     /**
      * 매장 상세 조회
@@ -157,15 +193,19 @@ public class ShopServiceImpl implements ShopService {
 
 
     /**
-     * 매장 삭제
+     * 매장 논리적 삭제
      */
     @Override
     @Transactional
-    public DeleteShopResponseDto deleteShop(Long shopId) {
+    public DeleteShopResponseDto deleteShop(Long shopId, Long groomerId) {
         Shop shop = shopRepository.findById(shopId)
                 .orElseThrow(() -> NotFoundException.entityNotFound("매장"));
 
-        // 매장에 리뷰 논리적 삭제
+        if (shop.isDeleted()) {
+            throw new BadRequestException("이미 삭제된 매장입니다.");
+        }
+
+        // 매장 리뷰 논리적 삭제
         List<Reviews> reviews = shopRepository.findReviewsByGroomer(shop.getGroomerId());
         reviews.forEach(Reviews::delete);
 
@@ -173,7 +213,7 @@ public class ShopServiceImpl implements ShopService {
         List<Favorite> favorites = shopRepository.findFavoritesByShop(shop);
         favoriteRepository.deleteAll(favorites);
 
-        // 매장 논리적 삭제
+        // 매장 논리적 삭제 처리
         shop.delete();
 
         return DeleteShopResponseDto.builder()
@@ -274,4 +314,37 @@ public class ShopServiceImpl implements ShopService {
                 .shopId(savedFavorite.getFavoriteId().getShopId().getShopId())
                 .build();
     }
+
+    @Override
+    public List<GetFavoriteShopListResponseDto> getFavoriteShops(Long customerId) {
+        // Favorite 조회
+        List<Favorite> favorites = favoriteRepository.findByFavoriteIdCustomerId(customerId);
+
+        return favorites.stream()
+                .map(favorite -> {
+                    Shop shop = favorite.getFavoriteId().getShopId(); // Shop 확인
+                    Groomer groomer = shop.getGroomerId(); // Groomer 확인
+
+                    // 별점 평균 및 리뷰 개수 계산
+                    Double starScoreAvg = Optional.ofNullable(reviewRepository.getAverageStarRatingByGroomerId(groomer.getGroomerId()))
+                            .orElse(0.0);
+                    Integer reviewCount = Optional.ofNullable(reviewRepository.countGroomerReviews(groomer.getGroomerId()))
+                            .orElse(0);
+
+                    return GetFavoriteShopListResponseDto.builder()
+                            .groomerId(groomer.getGroomerId())
+                            .shopId(shop.getShopId())
+                            .shopLogo(shop.getImageUrl())
+                            .shopName(shop.getShopName())
+                            .address(shop.getAddress())
+                            .businessTime(shop.getBusinessTime())
+                            .skill(groomer.getSkill())
+                            .starScoreAvg(starScoreAvg)
+                            .reviewCount(reviewCount)
+                            .build();
+                })
+                .collect(Collectors.toList());
+    }
+
+
 }

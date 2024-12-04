@@ -3,16 +3,21 @@ package com.beautymeongdang.domain.shop.service;
 import com.beautymeongdang.domain.shop.dto.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.List;
+
 public interface ShopService {
 
     // 매장 생성
-    CreateShopResponseDto createShop(CreateShopRequestDto requestDto, MultipartFile shopLogo);
+    CreateShopResponseDto createShop(Long groomerId, CreateShopRequestDto requestDto, MultipartFile shopLogo);
 
     // 매장 상세 조회
     GetShopDetailResponseDto getShopDetail(Long shopId, Long customerId);
 
+    // 미용사 매장 조회(마이페이지 - 매장 수정)
+    GetGroomerShopResponseDto getGroomerShop(Long shopId, Long groomerId);
+
     // 매장 삭제
-    DeleteShopResponseDto deleteShop(Long shopId);
+    DeleteShopResponseDto deleteShop(Long shopId,Long groomerId);
 
     // 미용사 찾기 매장 리스트 조회
     GetGroomerShopListResponseDto.ShopListResponse getShopList(Long customerId);
@@ -23,5 +28,6 @@ public interface ShopService {
     // 매장 찜 등록
     CreateFavoriteResponseDto createFavorite(CreateFavoriteRequestDto requestDto);
 
-
+    // 찜한 매장 리스트 조회
+    List<GetFavoriteShopListResponseDto> getFavoriteShops(Long customerId);
 }

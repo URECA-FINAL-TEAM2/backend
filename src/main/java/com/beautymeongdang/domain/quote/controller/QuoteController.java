@@ -21,7 +21,7 @@ public class QuoteController {
      */
     @GetMapping("requests/my/groomer")
     public ResponseEntity<ApiResponse<GetQuotesGroomerResponseDto>> getMyGroomerQuotes(
-            @RequestParam Long customerId) {  // 나중에 이 부분을 로그인 유저 정보로 변경
+            @RequestParam Long customerId) {
         GetQuotesGroomerResponseDto responseDto = quoteService.getQuotesGroomer(customerId);
         return ApiResponse.ok(200, responseDto, "견적서(1:1) 요청 목록 조회 성공");
     }
@@ -32,7 +32,7 @@ public class QuoteController {
      */
     @GetMapping("requests/my/all")
     public ResponseEntity<ApiResponse<GetQuotesAllResponseDto>> getMyAllQuotes(
-            @RequestParam Long customerId) {  // 나중에 이 부분을 로그인 유저 정보로 변경
+            @RequestParam Long customerId) {
         GetQuotesAllResponseDto responseDto = quoteService.getQuotesAll(customerId);
         return ApiResponse.ok(200, responseDto, "견적서(전체) 요청 목록 조회 성공");
     }

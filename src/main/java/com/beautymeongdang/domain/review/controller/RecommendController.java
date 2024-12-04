@@ -14,24 +14,24 @@ public class RecommendController {
     private final RecommendService recommendService;
 
     /**
-     * 좋아요 생성
+     * 리뷰 추천 생성
      */
     @PostMapping
     public ResponseEntity<ApiResponse<CreateRecommendResponseDto>> createLike(
             @RequestParam Long customerId,
-            @RequestBody CreateRecommendRequestDto request) {
-        CreateRecommendResponseDto response = recommendService.createRecommend(customerId, request);
+            @RequestParam Long reviewId) {
+        CreateRecommendResponseDto response = recommendService.createRecommend(customerId, reviewId);
         return ApiResponse.ok(200, response, "리뷰 추천 성공하였습니다.");
     }
 
     /**
-     * 좋아요 삭제
+     * 리뷰 추천 삭제
      */
     @DeleteMapping
     public ResponseEntity<ApiResponse<DeleteRecommendResponseDto>> deleteLike(
             @RequestParam Long customerId,
-            @RequestBody DeleteRecommendRequestDto request) {
-        DeleteRecommendResponseDto response = recommendService.deleteRecommend(customerId, request);
+            @RequestParam Long reviewId) {
+        DeleteRecommendResponseDto response = recommendService.deleteRecommend(customerId, reviewId);
         return ApiResponse.ok(200, response, "리뷰 추천 취소 성공하였습니다.");
     }
 
