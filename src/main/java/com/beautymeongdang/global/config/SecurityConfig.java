@@ -46,14 +46,7 @@ public class SecurityConfig {
                 // 기본 로그인 방식 비활성화
                 .formLogin((auth) -> auth.disable())
                 .httpBasic((auth) -> auth.disable())
-
-                // OAuth2 로그인 설정
-                .oauth2Login(oauth2 -> oauth2
-                        .authorizationEndpoint(endpoint -> endpoint.baseUri("/oauth2/authorization/**"))
-                        .redirectionEndpoint(endpoint -> endpoint.baseUri("/login/oauth2/code/**"))
-                        .userInfoEndpoint(userInfo -> userInfo.userService(customOAuth2UserService))
-                        .successHandler(customSuccessHandler)
-                )
+                .oauth2Login((auth) -> auth.disable())
 
                 // 로그아웃 설정
                 .logout(logout -> logout
@@ -72,7 +65,6 @@ public class SecurityConfig {
                         .requestMatchers(
                                 "/api/users/register/**",
                                 "/login/oauth2/code/**",
-                                "/**",
                                 "/selectRole.html",
                                 "/login.html",
                                 "/InfoRequired.jsx",
@@ -80,6 +72,7 @@ public class SecurityConfig {
                                 "/index.html",
                                 "/index1.html",
                                 "/login/**",
+                                "/api/auth/**",
                                 "/oauth2/**"
                         ).permitAll()
                         // API 및 Swagger 관련 경로
