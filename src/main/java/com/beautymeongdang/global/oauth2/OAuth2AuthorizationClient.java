@@ -38,6 +38,9 @@ public class OAuth2AuthorizationClient {
     public KakaoToken getKakaoAccessToken(String code) {
         String tokenUrl = "https://kauth.kakao.com/oauth/token";
 
+        // 요청 파라미터 로깅
+        log.debug("login-log Kakao token request parameters - clientId: {}, redirectUri: {}", clientId, redirectUri);
+
         MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
         params.add("grant_type", "authorization_code");
         params.add("client_id", clientId);
@@ -56,16 +59,16 @@ public class OAuth2AuthorizationClient {
                     request,
                     KakaoToken.class
             );
-            log.info("✅ 카카오 토큰 발급 성공");
+            log.info("login-log ✅ 카카오 토큰 발급 성공");
             return response.getBody();
         } catch (Exception e) {
-            log.error("카카오 토큰 요청 실패", e);
-            throw new RuntimeException("카카오 토큰 발급 실패", e);
+            log.error("login-log 카카오 토큰 요청 실패", e);
+            throw new RuntimeException("login-log 카카오 토큰 발급 실패", e);
         }
     }
 
     public KakaoUserInfo getKakaoUserInfo(String accessToken) {
-        log.info("👤 카카오 사용자 정보 요청 시작");
+        log.info("login-log 👤 카카오 사용자 정보 요청 시작");
         String userInfoUrl = "https://kapi.kakao.com/v2/user/me";
 
         HttpHeaders headers = new HttpHeaders();
@@ -83,15 +86,15 @@ public class OAuth2AuthorizationClient {
             );
 
             JsonNode jsonNode = objectMapper.readTree(response.getBody());
-            log.info("📄 카카오 응답 데이터: {}", response.getBody());
+            log.info("login-log📄 카카오 응답 데이터: {}", response.getBody());
             return KakaoUserInfo.builder()
                     .id(jsonNode.get("id").asLong())
                     .email(jsonNode.get("kakao_account").get("email").asText())
                     .name(jsonNode.get("properties").get("nickname").asText())
                     .build();
         } catch (Exception e) {
-            log.error("카카오 사용자 정보 요청 실패", e);
-            throw new RuntimeException("카카오 사용자 정보 조회 실패", e);
+            log.error("login-log 카카오 사용자 정보 요청 실패", e);
+            throw new RuntimeException("login-log 카카오 사용자 정보 조회 실패", e);
         }
     }
 }
