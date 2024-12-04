@@ -99,7 +99,9 @@ public class DogServiceImpl implements DogService {
     }
 
 
-
+    /**
+     * 반려견 프로필 수정
+     */
     @Override
     public UpdateDogResponseDto updateDog(Long dogId, Long customerId, UpdateDogRequestDto requestDto, MultipartFile dogProfile) {
         Dog dog = dogRepository.findById(dogId)
@@ -146,6 +148,24 @@ public class DogServiceImpl implements DogService {
                 .experience(updatedDog.getExperience())
                 .significant(updatedDog.getSignificant())
                 .dogProfileImage(updatedDog.getProfileImage())
+                .build();
+    }
+
+
+    /**
+     * 반려견 프로필 삭제
+     */
+    @Override
+    public DeleteDogResponseDto deleteDog(Long dogId,Long customerId) {
+        Dog dog = dogRepository.findById(dogId)
+                .orElseThrow(() -> NotFoundException.entityNotFound("반려견"));
+
+        dog.delete();
+
+        dogRepository.save(dog);
+
+        return DeleteDogResponseDto.builder()
+                .dogId(dog.getDogId())
                 .build();
     }
 }
