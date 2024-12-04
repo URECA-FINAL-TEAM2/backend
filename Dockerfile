@@ -1,5 +1,7 @@
 FROM openjdk:17-jdk-slim
-RUN apk add --no-cache tzdata
+RUN apt-get update && \
+    apt-get install -y tzdata && \
+    rm -rf /var/lib/apt/lists/*
 ENV TZ=Asia/Seoul
 ARG JAR_FILE=build/libs/*.jar
 COPY ${JAR_FILE} app.jar
