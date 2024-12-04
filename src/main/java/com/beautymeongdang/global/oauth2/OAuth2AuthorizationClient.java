@@ -39,8 +39,7 @@ public class OAuth2AuthorizationClient {
         String tokenUrl = "https://kauth.kakao.com/oauth/token";
 
         // 요청 파라미터 로깅
-        log.info("login-log Kakao token request parameters - clientId: {}, redirectUri: {}", clientId, redirectUri);
-
+        log.info("login-log Kakao token request parameters - clientId: {}, clientSecret: {} , redirectUri: {}", clientId, clientSecret, redirectUri);
         MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
         params.add("grant_type", "authorization_code");
         params.add("client_id", clientId);
