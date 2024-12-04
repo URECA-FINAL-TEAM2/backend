@@ -86,8 +86,16 @@ public class ShopServiceImpl implements ShopService {
         return CreateShopResponseDto.builder()
                 .shopId(savedShop.getShopId())
                 .shopName(savedShop.getShopName())
+                .description(savedShop.getDescription())
+                .businessTime(savedShop.getBusinessTime())
+                .sidoName(sigungu.getSidoId().getSidoName())
+                .sigunguName(sigungu.getSigunguName())
+                .address(savedShop.getAddress())
+                .latitude(savedShop.getLatitude())
+                .longitude(savedShop.getLongitude())
                 .build();
     }
+
 
     /**
      * 매장 상세 조회
