@@ -142,10 +142,6 @@ public class PaymentServiceImpl implements PaymentService {
     }
 
 
-
-
-
-
     // 결제 취소 및 예약 취소
     @Override
     @Transactional

@@ -1,6 +1,6 @@
 package com.beautymeongdang.global.config;
 
-import com.beautymeongdang.global.login.service.Impl.CustomOAuth2UserServiceImpl;
+import com.beautymeongdang.global.login.service.impl.CustomOAuth2UserServiceImpl;
 import com.beautymeongdang.domain.user.repository.UserRepository;
 import com.beautymeongdang.global.jwt.JWTFilter;
 import com.beautymeongdang.global.jwt.JWTUtil;
@@ -60,6 +60,7 @@ public class SecurityConfig {
 
                 // URL 접근 권한 설정
                 .authorizeHttpRequests((auth) -> auth
+                                       
                         // 인증이 필요없는 public 접근 경로
                         .requestMatchers(
                                 "/api/users/register/**",
@@ -87,7 +88,7 @@ public class SecurityConfig {
                         .anyRequest().authenticated()
                 )
 
-                // 세션 관리 설정
+
                 .sessionManagement((session) -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 

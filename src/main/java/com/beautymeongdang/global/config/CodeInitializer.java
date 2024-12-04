@@ -52,8 +52,8 @@ public class CodeInitializer implements CommandLineRunner {
 
         // 예약 상태
         em.persist(new CommonCode(new CommonCodeId("010", "250"), reservationGroup, "예약 완료", true));
-        em.persist(new CommonCode(new CommonCodeId("030", "250"), reservationGroup, "예약 취소", true));
-        em.persist(new CommonCode(new CommonCodeId("040", "250"), reservationGroup, "미용 완료", true));
+        em.persist(new CommonCode(new CommonCodeId("020", "250"), reservationGroup, "예약 취소", true));
+        em.persist(new CommonCode(new CommonCodeId("030", "250"), reservationGroup, "미용 완료", true));
 
         // 결제 관련 그룹
         GroupCode paymentGroup = new GroupCode("300", "결제 관리");
