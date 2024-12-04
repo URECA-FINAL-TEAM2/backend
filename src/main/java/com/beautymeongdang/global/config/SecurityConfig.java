@@ -47,6 +47,7 @@ public class SecurityConfig {
                 .formLogin((auth) -> auth.disable())
                 .httpBasic((auth) -> auth.disable())
                 .oauth2Login((auth) -> auth.disable()) // 커스텀 방식(프론트 인가 코드)을 사용하기 떄문에 사용 X 
+          
                 // 로그아웃 설정
                 .logout(logout -> logout
                         .logoutUrl("/api/auth/logout")
