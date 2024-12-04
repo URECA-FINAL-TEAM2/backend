@@ -11,5 +11,5 @@ public interface DogService {
     CreateDogResponseDto createDog(Long customerId, CreateDogRequestDto requestDto, MultipartFile dogProfile);
 
     // 반려견 프로필 조회
-    GetDogResponseDto getDog(Long dogId, Long customerId);    // customerId 파라미터 추가
+    GetDogResponseDto getDog(Long dogId, Long customerId);
 }

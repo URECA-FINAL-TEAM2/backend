@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 public class CreateDogRequestDto {
     private Long customerId;
     private String dogName;
-    private String breed;
+    private String dogBreed;
     private String dogWeight;
     private String dogBirth;
     private String dogGender;

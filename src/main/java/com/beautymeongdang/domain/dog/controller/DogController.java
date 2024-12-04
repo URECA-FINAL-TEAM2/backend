@@ -39,7 +39,7 @@ public class DogController {
     @GetMapping("/{dogId}")
     public ResponseEntity<ApiResponse<GetDogResponseDto>> getDog(
             @PathVariable Long dogId,
-            @RequestParam Long customerId) {    // customerId 파라미터 추가
+            @RequestParam Long customerId) {
         GetDogResponseDto response = dogService.getDog(dogId, customerId);
         return ApiResponse.ok(200, response, "반려견 정보 조회 성공");
     }

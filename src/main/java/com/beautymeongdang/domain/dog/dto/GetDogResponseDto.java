@@ -9,7 +9,7 @@ public class GetDogResponseDto {
     private Long customerId;
     private Long dogId;
     private String dogName;
-    private String breed;
+    private String dogBreed;
     private String dogWeight;
     private String dogBirth;
     private String dogGender;
