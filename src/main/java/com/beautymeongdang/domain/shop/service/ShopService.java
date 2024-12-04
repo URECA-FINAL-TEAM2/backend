@@ -8,13 +8,12 @@ import java.util.List;
 public interface ShopService {
 
     // 매장 생성
-    CreateShopResponseDto createShop(CreateShopRequestDto requestDto, MultipartFile shopLogo);
-
+    CreateShopResponseDto createShop(Long groomerId, CreateShopRequestDto requestDto, MultipartFile shopLogo);
     // 매장 상세 조회
     GetShopDetailResponseDto getShopDetail(Long shopId, Long customerId);
 
     // 매장 삭제
-    DeleteShopResponseDto deleteShop(Long shopId);
+    DeleteShopResponseDto deleteShop(Long shopId,Long groomerId);
 
     // 미용사 찾기 매장 리스트 조회
     GetGroomerShopListResponseDto.ShopListResponse getShopList(Long customerId);

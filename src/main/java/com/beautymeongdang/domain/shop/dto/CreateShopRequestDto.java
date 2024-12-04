@@ -9,7 +9,6 @@ import java.math.BigDecimal;
 @AllArgsConstructor
 @Builder
 public class CreateShopRequestDto {
-    private final Long groomerId;
     private final String shopName;
     private final String description;
     private final String businessTime;

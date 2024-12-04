@@ -24,9 +24,10 @@ public class ShopController {
      */
     @PostMapping(value = "/groomer/shop", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ApiResponse<CreateShopResponseDto>> createShop(
+            @RequestParam Long groomerId,
             @RequestPart CreateShopRequestDto requestDto,
             @RequestPart MultipartFile shopLogo) {
-        CreateShopResponseDto response = shopService.createShop(requestDto, shopLogo);
+        CreateShopResponseDto response = shopService.createShop(groomerId, requestDto, shopLogo);
         return ApiResponse.ok(200, response, "매장 등록 성공");
     }
 
@@ -43,11 +44,13 @@ public class ShopController {
     }
 
     /**
-     * 매장 삭제
+     * 매장 논리적 삭제
      */
-    @DeleteMapping("/groomer/shop/{shopId}")
-    public ResponseEntity<ApiResponse<DeleteShopResponseDto>> deleteShop(@PathVariable Long shopId) {
-        DeleteShopResponseDto response = shopService.deleteShop(shopId);
+    @PutMapping("/groomer/shop/{shopId}")
+    public ResponseEntity<ApiResponse<DeleteShopResponseDto>> deleteShop(
+            @PathVariable Long shopId,
+            @RequestParam Long groomerId) {
+        DeleteShopResponseDto response = shopService.deleteShop(shopId, groomerId);
         return ApiResponse.ok(200, response, "매장 삭제 성공");
     }
 
@@ -73,10 +76,9 @@ public class ShopController {
      */
     @DeleteMapping("/groomer/shop/favorite")
     public ResponseEntity<ApiResponse<DeleteFavoriteResponseDto>> deleteFavorite(
-            @RequestBody DeleteFavoriteRequestDto requestDto) {
-        DeleteFavoriteResponseDto response = shopService.deleteFavorite(
-                requestDto.getCustomerId(),
-                requestDto.getShopId());
+            @RequestParam Long customerId,
+            @RequestParam Long shopId) {
+        DeleteFavoriteResponseDto response = shopService.deleteFavorite(customerId, shopId);
         return ApiResponse.ok(200, response, "매장 찜 삭제 성공하였습니다.");
     }
 
