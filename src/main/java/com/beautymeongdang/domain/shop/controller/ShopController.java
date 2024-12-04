@@ -73,10 +73,9 @@ public class ShopController {
      */
     @DeleteMapping("/groomer/shop/favorite")
     public ResponseEntity<ApiResponse<DeleteFavoriteResponseDto>> deleteFavorite(
-            @RequestBody DeleteFavoriteRequestDto requestDto) {
-        DeleteFavoriteResponseDto response = shopService.deleteFavorite(
-                requestDto.getCustomerId(),
-                requestDto.getShopId());
+            @RequestParam Long customerId,
+            @RequestParam Long shopId) {
+        DeleteFavoriteResponseDto response = shopService.deleteFavorite(customerId, shopId);
         return ApiResponse.ok(200, response, "매장 찜 삭제 성공하였습니다.");
     }
 }
