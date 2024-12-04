@@ -31,33 +31,31 @@ public class SecurityConfig {
     private final UserRepository userRepository;
     private final JwtProvider jwtProvider;
 
-
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        http.cors(corsCustomizer -> corsCustomizer.configurationSource(corsConfigurationSource()))
+        // JWT 필터 인스턴스를 한 번만 생성
+        JWTFilter jwtFilter = new JWTFilter(jwtUtil, userRepository, jwtProvider);
 
-                //csrf disable
+        http
+                // CORS 설정
+                .cors(corsCustomizer -> corsCustomizer.configurationSource(corsConfigurationSource()))
+
+                // CSRF 비활성화
                 .csrf((auth) -> auth.disable())
 
-                //Form 로그인 방식 disable
+                // 기본 로그인 방식 비활성화
                 .formLogin((auth) -> auth.disable())
-
-                //HTTP Basic 인증 방식 disable
                 .httpBasic((auth) -> auth.disable())
 
-                //oauth2 설정 수정
+                // OAuth2 로그인 설정
                 .oauth2Login(oauth2 -> oauth2
-                        .authorizationEndpoint(endpoint -> {
-                            endpoint.baseUri("/oauth2/authorization/**");
-                        })
-                        .redirectionEndpoint(endpoint -> {
-                            endpoint.baseUri("/login/oauth2/code/**");
-                        })
-                        .userInfoEndpoint(userInfo -> userInfo
-                                .userService(customOAuth2UserService))
+                        .authorizationEndpoint(endpoint -> endpoint.baseUri("/oauth2/authorization/**"))
+                        .redirectionEndpoint(endpoint -> endpoint.baseUri("/login/oauth2/code/**"))
+                        .userInfoEndpoint(userInfo -> userInfo.userService(customOAuth2UserService))
                         .successHandler(customSuccessHandler)
                 )
-                //로그아웃 설정 추가
+
+                // 로그아웃 설정
                 .logout(logout -> logout
                         .logoutUrl("/api/auth/logout")
                         .logoutSuccessUrl("/login.html")
@@ -66,54 +64,74 @@ public class SecurityConfig {
                         .invalidateHttpSession(true)
                         .permitAll()
                 )
-                //경로별 인가 작업
-                .authorizeHttpRequests((auth) -> auth
-                        .requestMatchers("/api/users/register/**").permitAll()
-                        .requestMatchers("/login/oauth2/code/**").permitAll()
-                        .requestMatchers("/**","/selectRole.html").permitAll()
-                        .requestMatchers("/selectRole").permitAll()          // 추가
-                        .requestMatchers("/customer/home").permitAll()       // 추가
-                        .requestMatchers("/groomer/home").permitAll()        // 추가
-                        .requestMatchers("/login.html","/InfoRequired.jsx","/login.jsx", "/index.html", "/index1.html").permitAll()
-                        .requestMatchers("/login/**", "/oauth2/**", "/login/oauth2/code/**").permitAll()
-                        .requestMatchers("/api/**", "/swagger-ui/**", "/v3/api-docs/**",
-                                "/configuration/ui", "/swagger-resources/**", "/webjars/**").permitAll()
-                        .anyRequest().authenticated())
 
-                //세션 설정 : STATELESS
+                // URL 접근 권한 설정
+                .authorizeHttpRequests((auth) -> auth
+                                       
+                        // 인증이 필요없는 public 접근 경로
+                        .requestMatchers(
+                                "/api/users/register/**",
+                                "/login/oauth2/code/**",
+                                "/**",
+                                "/selectRole.html",
+                                "/login.html",
+                                "/InfoRequired.jsx",
+                                "/login.jsx",
+                                "/index.html",
+                                "/index1.html",
+                                "/login/**",
+                                "/oauth2/**"
+                        ).permitAll()
+                        // API 및 Swagger 관련 경로
+                        .requestMatchers(
+                                "/api/**",
+                                "/swagger-ui/**",
+                                "/v3/api-docs/**",
+                                "/configuration/ui",
+                                "/swagger-resources/**",
+                                "/webjars/**"
+                        ).permitAll()
+                        // 그 외 모든 요청은 인증 필요
+                        .anyRequest().authenticated()
+                )
+
+
                 .sessionManagement((session) -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 
-                // JWT 필터 추가
-                .addFilterBefore(new JWTFilter(jwtUtil, userRepository,jwtProvider),
-                        UsernamePasswordAuthenticationFilter.class);
+                // JWT 필터 추가 (한 번만 추가)
+                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
 
-    // CORS(Cross-Origin Resource Sharing) 설정을 위한 Bean
+    // CORS 설정
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
+
+        // 허용할 오리진 설정
         configuration.setAllowedOrigins(Arrays.asList(
                 "http://localhost:5173",
                 "https://beautymeongdang.com",
                 "https://www.beautymeongdang.com"
         ));
-        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-        configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "x-auth-token"));
-        configuration.setExposedHeaders(Arrays.asList("Authorization")); // JWT 토큰 노출
+
+        // 허용할 HTTP 메서드 설정
+        configuration.setAllowedMethods(Arrays.asList(
+                "GET", "POST", "PUT", "DELETE", "OPTIONS"
+        ));
+
+        // 허용할 헤더 설정
         configuration.setAllowedHeaders(Arrays.asList("*"));
+        configuration.setExposedHeaders(Arrays.asList("Authorization"));
+
+        // 자격증명 허용
         configuration.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
+
         return source;
-    }
-
-
-    @Bean
-    public JWTFilter jwtFilter(JWTUtil jwtUtil, UserRepository userRepository, JwtProvider jwtProvider) {
-        return new JWTFilter(jwtUtil, userRepository, jwtProvider);
     }
 }
