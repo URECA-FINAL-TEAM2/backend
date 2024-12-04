@@ -14,9 +14,9 @@ public interface GroomerPortfolioImageRepository extends JpaRepository<GroomerPo
     @Query("SELECT gpi.imageUrl FROM GroomerPortfolioImage gpi WHERE gpi.groomerId.groomerId = :groomerId")
     List<String> findImageUrlsByGroomerId(@Param("groomerId") Long groomerId);
 
-    // 미용사 포트폴리오 수정
+    // 미용사 포트폴리오 수정 - 미용사 포트폴리오 이미지 조회
     List<GroomerPortfolioImage> findAllByGroomerId(Groomer groomerId);
 
-    // 미용사 포트폴리오 수정
+    // 미용사 포트폴리오 수정 - 미용사 포트폴리오 이미지 삭제
     void deleteAllByGroomerId(Groomer groomer);
 }
