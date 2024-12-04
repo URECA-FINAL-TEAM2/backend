@@ -41,11 +41,13 @@ public class ShopController {
     }
 
     /**
-     * 매장 삭제
+     * 매장 논리적 삭제
      */
-    @DeleteMapping("/groomer/shop/{shopId}")
-    public ResponseEntity<ApiResponse<DeleteShopResponseDto>> deleteShop(@PathVariable Long shopId) {
-        DeleteShopResponseDto response = shopService.deleteShop(shopId);
+    @PutMapping("/groomer/shop/{shopId}")
+    public ResponseEntity<ApiResponse<DeleteShopResponseDto>> deleteShop(
+            @PathVariable Long shopId,
+            @RequestParam Long groomerId) {
+        DeleteShopResponseDto response = shopService.deleteShop(shopId, groomerId);
         return ApiResponse.ok(200, response, "매장 삭제 성공");
     }
 

@@ -12,7 +12,7 @@ public interface ShopService {
     GetShopDetailResponseDto getShopDetail(Long shopId, Long customerId);
 
     // 매장 삭제
-    DeleteShopResponseDto deleteShop(Long shopId);
+    DeleteShopResponseDto deleteShop(Long shopId,Long groomerId);
 
     // 미용사 찾기 매장 리스트 조회
     GetGroomerShopListResponseDto.ShopListResponse getShopList(Long customerId);

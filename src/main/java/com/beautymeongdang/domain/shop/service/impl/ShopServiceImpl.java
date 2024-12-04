@@ -157,15 +157,19 @@ public class ShopServiceImpl implements ShopService {
 
 
     /**
-     * 매장 삭제
+     * 매장 논리적 삭제
      */
     @Override
     @Transactional
-    public DeleteShopResponseDto deleteShop(Long shopId) {
+    public DeleteShopResponseDto deleteShop(Long shopId, Long groomerId) {
         Shop shop = shopRepository.findById(shopId)
                 .orElseThrow(() -> NotFoundException.entityNotFound("매장"));
 
-        // 매장에 리뷰 논리적 삭제
+        if (shop.isDeleted()) {
+            throw new BadRequestException("이미 삭제된 매장입니다.");
+        }
+
+        // 매장 리뷰 논리적 삭제
         List<Reviews> reviews = shopRepository.findReviewsByGroomer(shop.getGroomerId());
         reviews.forEach(Reviews::delete);
 
@@ -173,7 +177,7 @@ public class ShopServiceImpl implements ShopService {
         List<Favorite> favorites = shopRepository.findFavoritesByShop(shop);
         favoriteRepository.deleteAll(favorites);
 
-        // 매장 논리적 삭제
+        // 매장 논리적 삭제 처리
         shop.delete();
 
         return DeleteShopResponseDto.builder()
