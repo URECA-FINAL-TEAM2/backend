@@ -83,6 +83,7 @@ public class CustomOAuth2UserServiceImpl extends DefaultOAuth2UserService implem
     @Override
     public Map<String, Object> processKakaoLogin(String code) {
         // 1. 인가 코드로 카카오 액세스 토큰 받기
+
         KakaoToken kakaoToken = oauth2Client.getKakaoAccessToken(code);
 
         // 2. 액세스 토큰으로 카카오 사용자 정보 가져오기
@@ -126,6 +127,8 @@ public class CustomOAuth2UserServiceImpl extends DefaultOAuth2UserService implem
         Map<String, Object> responseData = new HashMap<>();
         responseData.put("accessToken", tokenInfo.get("access_token"));
         responseData.put("user", userDTO);
+        responseData.put("role", user.getRoles().iterator().next().toString());
+        responseData.put("isNewUser", !user.isRegister());
 
         return responseData;
     }
