@@ -56,11 +56,11 @@ public class ShopServiceImpl implements ShopService {
      */
     @Override
     @Transactional
-    public CreateShopResponseDto createShop(CreateShopRequestDto requestDto, MultipartFile shopLogo) {
+    public CreateShopResponseDto createShop(Long groomerId, CreateShopRequestDto requestDto, MultipartFile shopLogo) {
         List<UploadedFile> uploadedFiles = fileStore.storeFiles(List.of(shopLogo), FileStore.SHOP_LOGO);
         String LogoUrl = uploadedFiles.get(0).getFileUrl();
 
-        Groomer groomer = groomerRepository.findById(requestDto.getGroomerId())
+        Groomer groomer = groomerRepository.findById(groomerId)
                 .orElseThrow(() -> NotFoundException.entityNotFound("미용사"));
 
         Sigungu sigungu = sigunguRepository.findBySidoId_SidoNameAndSigunguName(

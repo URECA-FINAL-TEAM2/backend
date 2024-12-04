@@ -6,8 +6,7 @@ import org.springframework.web.multipart.MultipartFile;
 public interface ShopService {
 
     // 매장 생성
-    CreateShopResponseDto createShop(CreateShopRequestDto requestDto, MultipartFile shopLogo);
-
+    CreateShopResponseDto createShop(Long groomerId, CreateShopRequestDto requestDto, MultipartFile shopLogo);
     // 매장 상세 조회
     GetShopDetailResponseDto getShopDetail(Long shopId, Long customerId);
 
