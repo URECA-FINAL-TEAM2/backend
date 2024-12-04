@@ -169,6 +169,25 @@ public class QuoteRequestServiceImpl implements QuoteRequestService {
 
     }
 
+
+    /**
+     * 고객의 반려견 리스트 조회
+     */
+    @Override
+    @Transactional(readOnly = true)
+    public List<GetDogListResponseDto> getDogList(Long customerId) {
+        Customer customer = customerRepository.findById(customerId)
+                .orElseThrow(() -> NotFoundException.entityNotFound("고객"));
+
+        List<Dog> dogs = dogRepository.findByCustomerIdAndIsDeletedFalseOrderByCreatedAtDesc(customer);
+
+        return dogs.stream()
+                .map(GetDogListResponseDto::of)
+                .collect(Collectors.toList());
+    }
+
+
+
     /**
      * 고객이 선택한 반려견 정보 조회
      */

@@ -14,6 +14,9 @@ public interface QuoteRequestService {
     // 1:1 견적서 요청하기
     CreateInsertRequestGroomerResponseDto createInsertRequestGroomer(Long customerId, CreateInsertRequestGroomerRequestDto requestDto, List<MultipartFile> images);
 
+    // 고객의 반려견 리스트 조회
+    List<GetDogListResponseDto> getDogList(Long customerId);
+
     // 고객이 선택한 반려견 정보 조회
     GetDogInfoResponseDto getDogInfo(Long dogId, Long customerId);
 
