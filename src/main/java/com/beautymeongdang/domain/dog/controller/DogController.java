@@ -56,4 +56,15 @@ public class DogController {
         return ApiResponse.ok(200, response, "반려견 정보 수정 성공");
     }
 
+    /**
+     * 반려견 프로필 삭제
+     */
+    @PutMapping("/{dogId}/delete")
+    public ResponseEntity<ApiResponse<DeleteDogResponseDto>> deleteDog(
+            @PathVariable Long dogId,
+            @RequestParam Long customerId) {
+        DeleteDogResponseDto response = dogService.deleteDog(dogId, customerId);
+        return ApiResponse.ok(200, response, "반려견 삭제 성공");
+    }
+
 }

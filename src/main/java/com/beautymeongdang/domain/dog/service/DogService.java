@@ -14,5 +14,6 @@ public interface DogService {
     // 반려견 프로필 수정
     UpdateDogResponseDto updateDog(Long dogId, Long customerId, UpdateDogRequestDto requestDto, MultipartFile dogProfile);
 
-
+    // 반려견 프로필 삭제
+    DeleteDogResponseDto deleteDog(Long dogId, Long customerId);
 }
