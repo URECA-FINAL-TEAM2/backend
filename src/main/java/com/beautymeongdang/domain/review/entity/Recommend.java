@@ -1,7 +1,7 @@
 package com.beautymeongdang.domain.review.entity;
 
 
-import com.beautymeongdang.global.common.entity.DeletableBaseTimeEntity;
+import com.beautymeongdang.global.common.entity.BaseTimeEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -10,7 +10,7 @@ import lombok.*;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
-public class Recommend extends DeletableBaseTimeEntity {
+public class Recommend extends BaseTimeEntity {
 
     @EmbeddedId
     private RecommendId recommendId;

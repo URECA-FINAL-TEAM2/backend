@@ -33,10 +33,10 @@ public class ShopController {
      * 매장 상세 조회
      */
     @GetMapping("/groomer/shop/detail")
-    public ResponseEntity<ApiResponse<GetShopDetailResponseDto.ShopDetailResponseDto>> getShopDetail(
-            @RequestParam Long groomerId,
+    public ResponseEntity<ApiResponse<GetShopDetailResponseDto>> getShopDetail(
+            @RequestParam Long shopId,
             @RequestParam Long customerId) {
-        GetShopDetailResponseDto.ShopDetailResponseDto response = shopService.getShopDetail(groomerId, customerId);
+        GetShopDetailResponseDto response = shopService.getShopDetail(shopId, customerId);
         return ApiResponse.ok(200, response, "매장 상세 조회 성공");
     }
 
@@ -60,5 +60,21 @@ public class ShopController {
         return ApiResponse.ok(200, response, "매장 목록 조회 성공");
     }
 
+    // 매장 찜 등록
+    @PostMapping("/groomer/shop/favorite")
+    public ResponseEntity<?> createFavoriteShop(@RequestBody CreateFavoriteRequestDto requestDto) {
+        return ApiResponse.ok(200, shopService.createFavorite(requestDto), "매장 추천 성공하였습니다.");
+    }
 
+    /**
+     * 매장 찜 삭제
+     */
+    @DeleteMapping("/groomer/shop/favorite")
+    public ResponseEntity<ApiResponse<DeleteFavoriteResponseDto>> deleteFavorite(
+            @RequestBody DeleteFavoriteRequestDto requestDto) {
+        DeleteFavoriteResponseDto response = shopService.deleteFavorite(
+                requestDto.getCustomerId(),
+                requestDto.getShopId());
+        return ApiResponse.ok(200, response, "매장 찜 삭제 성공하였습니다.");
+    }
 }

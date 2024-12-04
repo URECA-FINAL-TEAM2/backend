@@ -4,8 +4,8 @@ import lombok.*;
 
 @Getter
 @Builder
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@NoArgsConstructor
 @AllArgsConstructor
-public class DeleteLikeResponseDto {
+public class DeleteReviewResponseDto {
     private Long reviewId;
 }

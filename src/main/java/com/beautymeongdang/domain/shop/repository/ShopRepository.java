@@ -60,7 +60,7 @@ public interface ShopRepository extends JpaRepository<Shop, Long> {
     List<Shop> findShopsByCustomerSigunguOrderByStarScore(@Param("customerId") Long customerId);
 
     // 매장 찜 개수
-    @Query("SELECT COUNT(f) FROM Favorite f WHERE f.favoriteId.shopId = :shop AND f.isDeleted = false")
+    @Query("SELECT COUNT(f) FROM Favorite f WHERE f.favoriteId.shopId = :shop")
     Integer countFavoritesByShop(@Param("shop") Shop shop);
 
 
@@ -71,7 +71,7 @@ public interface ShopRepository extends JpaRepository<Shop, Long> {
     @Query("SELECT r FROM Reviews r WHERE r.groomerId = :groomer AND r.isDeleted = false")
     List<Reviews> findReviewsByGroomer(@Param("groomer") Groomer groomer);
 
-    @Query("SELECT f FROM Favorite f WHERE f.favoriteId.shopId = :shop AND f.isDeleted = false")
+    @Query("SELECT f FROM Favorite f WHERE f.favoriteId.shopId = :shop")
     List<Favorite> findFavoritesByShop(@Param("shop") Shop shop);
 
 

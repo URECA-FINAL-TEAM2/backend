@@ -12,7 +12,8 @@ public interface RecommendRepository extends JpaRepository<Recommend, RecommendI
 
     //특정 고객(customerId)이 좋아요를 누른 목록을 조회
     @Query("SELECT r.recommendId.reviewId.reviewId FROM Recommend r " +
-            "WHERE r.recommendId.customerId.customerId = :customerId AND r.isDeleted = false")
+            "WHERE r.recommendId.customerId.customerId = :customerId")
     List<Long> findReviewIdsByCustomerId(@Param("customerId") Long customerId);
+
 
 }
