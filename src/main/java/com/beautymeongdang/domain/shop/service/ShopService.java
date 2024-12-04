@@ -3,6 +3,8 @@ package com.beautymeongdang.domain.shop.service;
 import com.beautymeongdang.domain.shop.dto.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.List;
+
 public interface ShopService {
 
     // 매장 생성
@@ -23,5 +25,6 @@ public interface ShopService {
     // 매장 찜 등록
     CreateFavoriteResponseDto createFavorite(CreateFavoriteRequestDto requestDto);
 
-
+    // 찜한 매장 리스트 조회
+    List<GetFavoriteShopListResponseDto> getFavoriteShops(Long customerId);
 }
