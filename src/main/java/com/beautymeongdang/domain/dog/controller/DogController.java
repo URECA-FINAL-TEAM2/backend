@@ -26,7 +26,7 @@ public class DogController {
     public ResponseEntity<ApiResponse<CreateDogResponseDto>> createDog(
             @RequestParam Long customerId,
             @RequestPart CreateDogRequestDto requestDto,
-            @RequestPart MultipartFile dogProfile) {
+            @RequestPart(required = false) MultipartFile dogProfile) {
         CreateDogResponseDto response = dogService.createDog(customerId, requestDto, dogProfile);
         return ApiResponse.ok(200, response, "반려견 등록 성공");
     }
