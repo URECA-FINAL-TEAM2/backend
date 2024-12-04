@@ -96,4 +96,17 @@ public class JWTFilter extends OncePerRequestFilter {
         );
         SecurityContextHolder.getContext().setAuthentication(authToken);
     }
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
+        String path = request.getRequestURI();
+
+        return path.startsWith("/swagger-ui/") ||
+                path.startsWith("/v3/api-docs/") ||
+                path.startsWith("/oauth2/") ||
+                path.startsWith("/login/oauth2/") ||
+                path.startsWith("/wp-admin/") ||  // 워드프레스 스캐닝 차단
+                path.startsWith("/wordpress/") ||  // 워드프레스 스캐닝 차단
+                path.equals("/") ||
+                (path.contains(".") && !path.endsWith(".html")); // 정적 리소스 제외
+    }
 }
