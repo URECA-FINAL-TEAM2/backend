@@ -2,6 +2,8 @@ package com.beautymeongdang.global.login.service.impl;
 
 import com.beautymeongdang.domain.user.dto.UserDTO;
 import com.beautymeongdang.global.jwt.JwtProvider;
+import com.beautymeongdang.global.login.entity.GoogleToken;
+import com.beautymeongdang.global.login.entity.GoogleUserInfo;
 import com.beautymeongdang.global.login.entity.KakaoToken;
 import com.beautymeongdang.global.login.entity.KakaoUserInfo;
 import com.beautymeongdang.global.login.service.OAuth2Service;
@@ -50,6 +52,7 @@ public class CustomOAuth2UserServiceImpl extends DefaultOAuth2UserService implem
             log.info("login-log🟡 카카오 응답 처리 중...");
         } else if (registrationId.equals("google")) {
             oAuth2Response = new GoogleResponse(oAuth2User.getAttributes());
+            log.info("login-log🟡 구글 응답 처리 중...");
         } else {
             return null;
         }
@@ -145,6 +148,61 @@ public class CustomOAuth2UserServiceImpl extends DefaultOAuth2UserService implem
         responseData.put("isNewUser", !user.isRegister());             // 신규 사용자 여부
 
         // 7. 최종 응답 데이터 반환
+        return responseData;
+    }
+
+    @Override
+    public Map<String, Object> processGoogleLogin(String code, HttpServletResponse response) {
+        log.info("login-log 🔵 구글 로그인 프로세스 시작 - 인가 코드: {}", code);
+
+        // 1. 구글 액세스 토큰 요청
+        GoogleToken googleToken = oauth2Client.getGoogleAccessToken(code);
+        log.info("login-log 🎫 구글 액세스 토큰 발급 완료");
+
+        // 2. 사용자 정보 조회
+        GoogleUserInfo userInfo = oauth2Client.getGoogleUserInfo(googleToken.getAccess_token());
+        log.info("login-log 👤 구글 유저 정보 조회 완료 - ID: {}, Email: {}", userInfo.getId(), userInfo.getEmail());
+
+        // 3. DB에서 사용자 조회
+        Optional<User> existingUser = userRepository.findByProviderIdAndSocialProvider(
+                String.valueOf(userInfo.getId()),
+                "GOOGLE"
+        );
+
+        User user;
+        if (existingUser.isEmpty()) {
+            // 신규 사용자 생성
+            user = User.builder()
+                    .userName(userInfo.getName())
+                    .email(userInfo.getEmail())
+                    .providerId(String.valueOf(userInfo.getId()))
+                    .socialProvider("GOOGLE")
+                    .profileImage(userInfo.getProfileImage())
+                    .isRegister(false)
+                    .build();
+            userRepository.save(user);
+        } else {
+            user = existingUser.get();
+        }
+
+        // 4. JWT 토큰 생성
+        Map<String, Object> tokenInfo = jwtProvider.createTokens(user, response);
+
+        // 5. UserDTO 생성
+        UserDTO userDTO = UserDTO.builder()
+                .id(user.getUserId())
+                .username(user.getUserName())
+                .nickname(user.getNickname())
+                .profileImage(user.getProfileImage())
+                .isRegister(user.isRegister())
+                .build();
+
+        // 6. 응답 데이터 구성
+        Map<String, Object> responseData = new HashMap<>();
+        responseData.put("accessToken", tokenInfo.get("access_token"));
+        responseData.put("user", userDTO);
+        responseData.put("isNewUser", !user.isRegister());
+
         return responseData;
     }
 }

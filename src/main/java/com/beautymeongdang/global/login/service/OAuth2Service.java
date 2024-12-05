@@ -10,4 +10,5 @@ import java.util.Map;
 public interface  OAuth2Service {
     OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException;
     Map<String, Object> processKakaoLogin(String code, HttpServletResponse response);
+    Map<String, Object> processGoogleLogin(String code, HttpServletResponse response);
 }

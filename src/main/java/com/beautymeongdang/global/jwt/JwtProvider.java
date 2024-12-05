@@ -23,7 +23,6 @@ public class JwtProvider {
         // Access Token 생성 (userId, nickname만 포함)
         String accessToken = jwtUtil.createAccessToken(
                 user.getUserId().toString(),
-                user.getNickname(),
                 ACCESS_TOKEN_EXPIRE_TIME
         );
 
