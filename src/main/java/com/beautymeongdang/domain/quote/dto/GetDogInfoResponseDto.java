@@ -10,10 +10,11 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder
 public class GetDogInfoResponseDto {
-    private String name;
+    private Long dogId;
+    private String dogName;
     private String image;
-    private String weight;
-    private Integer age;
+    private String dogWeight;
+    private Integer dogAge;
     private String dogGender;
     private Boolean neutering;
     private Boolean experience;

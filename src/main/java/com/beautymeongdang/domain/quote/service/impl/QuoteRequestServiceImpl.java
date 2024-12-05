@@ -198,10 +198,11 @@ public class QuoteRequestServiceImpl implements QuoteRequestService {
                 .orElseThrow(() -> NotFoundException.entityNotFound("강아지"));
 
         return GetDogInfoResponseDto.builder()
-                .name(dog.getDogName())
+                .dogId(dog.getDogId())
+                .dogName(dog.getDogName())
                 .image(dog.getProfileImage())
-                .weight(dog.getDogWeight())
-                .age(dog.getDogAge())
+                .dogWeight(dog.getDogWeight())
+                .dogAge(dog.getDogAge())
                 .dogGender(dog.getDogGender().name())
                 .neutering(dog.getNeutering())
                 .experience(dog.getExperience())
