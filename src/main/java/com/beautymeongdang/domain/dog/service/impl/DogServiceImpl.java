@@ -36,7 +36,7 @@ public class DogServiceImpl implements DogService {
         Customer customer = customerRepository.findById(customerId)
                 .orElseThrow(() -> NotFoundException.entityNotFound("고객"));
 
-        long currentDogCount = dogRepository.countByCustomerIdAndIsDeletedFalse(customer);
+        Long currentDogCount = dogRepository.countByCustomerIdAndIsDeletedFalse(customer);
         if (currentDogCount >= MAX_DOGS_PER_CUSTOMER) {
             throw new BadRequestException("반려견은 최대 5마리까지만 등록할 수 있습니다");
         }
