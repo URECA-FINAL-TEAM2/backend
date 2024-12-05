@@ -45,10 +45,9 @@ public class JWTUtil {
         }
     }
 
-    public String createAccessToken(String userId, String nickname, Long expiredMs) {
+    public String createAccessToken(String userId, Long expiredMs) {
         return Jwts.builder()
                 .claim("userId", userId)
-                .claim("nickname", nickname)
                 .issuedAt(new Date(System.currentTimeMillis()))
                 .expiration(new Date(System.currentTimeMillis() + expiredMs))
                 .signWith(secretKey)
