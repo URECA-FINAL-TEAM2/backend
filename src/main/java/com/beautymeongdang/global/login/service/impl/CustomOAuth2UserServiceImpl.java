@@ -13,6 +13,7 @@ import com.beautymeongdang.global.login.service.OAuth2ResponseService;
 import com.beautymeongdang.domain.user.entity.User;
 import com.beautymeongdang.domain.user.repository.UserRepository;
 import com.beautymeongdang.global.oauth2.OAuth2AuthorizationClient;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
@@ -90,7 +91,7 @@ public class CustomOAuth2UserServiceImpl extends DefaultOAuth2UserService implem
 
 
     @Override
-    public Map<String, Object> processKakaoLogin(String code) {
+    public Map<String, Object> processKakaoLogin(String code, HttpServletResponse response) {
         log.info("login-log 🟡 카카오 로그인 프로세스 시작 - 인가 코드: {}", code);
         // 1. 프론트엔드에서 받은 인가 코드로 카카오 액세스 토큰을 요청하고 받아옴
         KakaoToken kakaoToken = oauth2Client.getKakaoAccessToken(code);
@@ -125,7 +126,7 @@ public class CustomOAuth2UserServiceImpl extends DefaultOAuth2UserService implem
         }
 
         // 4. 사용자 인증을 위한 JWT 토큰을 생성 (접근 토큰, 리프레시 토큰 등)
-        Map<String, Object> tokenInfo = jwtProvider.createTokens(user, null);
+        Map<String, Object> tokenInfo = jwtProvider.createTokens(user, response);
 
         // 5. 클라이언트에 전달할 사용자 정보를 DTO 객체로 변환
         UserDTO userDTO = UserDTO.builder()

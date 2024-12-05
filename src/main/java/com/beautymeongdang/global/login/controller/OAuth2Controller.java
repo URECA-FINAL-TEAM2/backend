@@ -3,6 +3,7 @@ package com.beautymeongdang.global.login.controller;
 import com.beautymeongdang.domain.user.dto.UserDTO;
 import com.beautymeongdang.global.common.dto.ApiResponse;
 import com.beautymeongdang.global.login.service.OAuth2Service;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -21,11 +22,11 @@ public class OAuth2Controller {
     private final OAuth2Service oauth2Service;
 
     @GetMapping("/login/oauth2/code/kakao")
-    public ResponseEntity<?> handleKakaoCallback(@RequestParam String code) {
+    public ResponseEntity<?> handleKakaoCallback(@RequestParam String code, HttpServletResponse response) {
         try {
             log.info("login-log 카카오 인가 코드 수신: {}", code);
 
-            Map<String, Object> responseData = oauth2Service.processKakaoLogin(code);
+            Map<String, Object> responseData = oauth2Service.processKakaoLogin(code, response);
             log.debug("login-log responseData 데이터 확인: {}", responseData);
 
             UserDTO userDTO = (UserDTO) responseData.get("user");
