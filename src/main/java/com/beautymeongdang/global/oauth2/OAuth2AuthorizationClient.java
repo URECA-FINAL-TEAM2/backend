@@ -1,6 +1,7 @@
 package com.beautymeongdang.global.oauth2;
 
 import com.beautymeongdang.global.login.entity.GoogleToken;
+import com.beautymeongdang.global.login.entity.GoogleUserInfo;
 import com.beautymeongdang.global.login.entity.KakaoToken;
 import com.beautymeongdang.global.login.entity.KakaoUserInfo;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -103,5 +104,69 @@ public class OAuth2AuthorizationClient {
             throw new RuntimeException("login-log 카카오 사용자 정보 조회 실패", e);
         }
     }
+    public GoogleToken getGoogleAccessToken(String code) {
+        String tokenUrl = "https://oauth2.googleapis.com/token";
 
+        log.info("login-log Google token request parameters - clientId: {}, clientSecret: {}, redirectUri: {}",
+                googleClientId, googleClientSecret, googleRedirectUri);
+
+        MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
+        params.add("grant_type", "authorization_code");
+        params.add("client_id", googleClientId);
+        params.add("client_secret", googleClientSecret);
+        params.add("redirect_uri", googleRedirectUri);
+        params.add("code", code);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Content-Type", "application/x-www-form-urlencoded;charset=utf-8");
+
+        HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(params, headers);
+
+        try {
+            ResponseEntity<GoogleToken> response = restTemplate.postForEntity(
+                    tokenUrl,
+                    request,
+                    GoogleToken.class
+            );
+            log.info("login-log ✅ 구글 토큰 발급 성공");
+            return response.getBody();
+        } catch (Exception e) {
+            log.error("login-log 구글 토큰 요청 실패", e);
+            throw new RuntimeException("구글 토큰 발급 실패", e);
+        }
+    }
+
+    public GoogleUserInfo getGoogleUserInfo(String accessToken) {
+        log.info("login-log 👤 구글 사용자 정보 요청 시작");
+        String userInfoUrl = "https://www.googleapis.com/oauth2/v3/userinfo";
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setBearerAuth(accessToken);
+        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+
+        HttpEntity<String> request = new HttpEntity<>(headers);
+
+        try {
+            ResponseEntity<String> response = restTemplate.exchange(
+                    userInfoUrl,
+                    HttpMethod.GET,
+                    request,
+                    String.class
+            );
+
+            JsonNode jsonNode = objectMapper.readTree(response.getBody());
+            log.info("login-log📄 구글 응답 데이터: {}", response.getBody());
+            return GoogleUserInfo.builder()
+                    .id(jsonNode.get("sub").asText())
+                    .email(jsonNode.get("email").asText())
+                    .name(jsonNode.get("name").asText())
+                    .profileImage(jsonNode.get("picture").asText())
+                    .emailVerified(jsonNode.get("email_verified").asBoolean())
+                    .locale(jsonNode.get("locale").asText())
+                    .build();
+        } catch (Exception e) {
+            log.error("login-log 구글 사용자 정보 요청 실패", e);
+            throw new RuntimeException("login-log 구글 사용자 정보 조회 실패", e);
+        }
+    }
 }
