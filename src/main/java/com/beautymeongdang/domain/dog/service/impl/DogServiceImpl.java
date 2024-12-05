@@ -24,16 +24,22 @@ public class DogServiceImpl implements DogService {
     private final DogRepository dogRepository;
     private final CustomerRepository customerRepository;
 
-    private static final String DEFAULT_DOG_PROFILE_IMAGE = "https://s3-beauty-meongdang.s3.ap-northeast-2.amazonaws.com/%EB%B0%98%EB%A0%A4%EA%B2%AC+%ED%94%84%EB%A1%9C%ED%95%84+%EC%9D%B4%EB%AF%B8%EC%A7%80/%EB%AF%B8%EC%9A%A9%EC%82%AC%ED%94%84%EB%A1%9C%ED%95%84%EA%B8%B0%EB%B3%B8.jpg";
+    private static final String DEFAULT_DOG_PROFILE_IMAGE = "https://s3-beauty-meongdang.s3.ap-northeast-2.amazonaws.com/%EB%A7%A4%EC%9E%A5+%EB%A1%9C%EA%B3%A0+%EC%9D%B4%EB%AF%B8%EC%A7%80/43936c99-66cd-4cf3-a600-782527c30ab6.jpg";
+    private static final int MAX_DOGS_PER_CUSTOMER = 5;
+
 
     /**
      * 반려견 프로필 생성
      */
     @Override
     public CreateDogResponseDto createDog(Long customerId, CreateDogRequestDto requestDto, MultipartFile dogProfile) {
-
         Customer customer = customerRepository.findById(customerId)
                 .orElseThrow(() -> NotFoundException.entityNotFound("고객"));
+
+        long currentDogCount = dogRepository.countByCustomerIdAndIsDeletedFalse(customer);
+        if (currentDogCount >= MAX_DOGS_PER_CUSTOMER) {
+            throw new BadRequestException("반려견은 최대 5마리까지만 등록할 수 있습니다");
+        }
 
         String profileImageUrl = DEFAULT_DOG_PROFILE_IMAGE;
         if (dogProfile != null && !dogProfile.isEmpty()) {
