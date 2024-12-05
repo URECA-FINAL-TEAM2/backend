@@ -68,7 +68,7 @@ public class QuoteServiceImpl implements QuoteService {
                             .petImage(request.getDogId().getProfileImage())
                             .status(request.getStatus())
                             .shopName(shop.getShopName())
-                            .groomerName(groomer.getUserId().getUserName())
+                            .groomerName(groomer.getUserId().getNickname())
                             .beautyDate(request.getBeautyDate())
                             .requestContent(request.getContent())
                             .build();
@@ -138,7 +138,7 @@ public class QuoteServiceImpl implements QuoteService {
         return GetQuoteDetailResponseDto.builder()
                 .groomer(GetQuoteDetailResponseDto.GroomerInfo.builder()
                         .shopLogo(shop.getImageUrl())
-                        .groomerName(quote.getGroomerId().getUserId().getUserName())
+                        .groomerName(quote.getGroomerId().getUserId().getNickname())
                         .shopName(shop.getShopName())
                         .address(shop.getAddress())
                         .phone(quote.getGroomerId().getUserId().getPhone())
