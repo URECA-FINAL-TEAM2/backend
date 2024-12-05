@@ -19,4 +19,5 @@ public class CreateShopResponseDto {
     private final String address;
     private final BigDecimal latitude;
     private final BigDecimal longitude;
+    private String shopLogo;
 }
