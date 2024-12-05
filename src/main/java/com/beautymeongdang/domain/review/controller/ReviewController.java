@@ -1,6 +1,7 @@
 package com.beautymeongdang.domain.review.controller;
 
 import com.beautymeongdang.domain.review.dto.*;
+import com.beautymeongdang.domain.review.entity.Reviews;
 import com.beautymeongdang.domain.review.service.ReviewService;
 import com.beautymeongdang.global.common.dto.ApiResponse;
 import lombok.RequiredArgsConstructor;
@@ -34,9 +35,16 @@ public class ReviewController {
     }
 
     // 리뷰 논리적 삭제
-    @DeleteMapping("/{reviewId}")
+    @PutMapping("/delete/{reviewId}")
     public ResponseEntity<?> deleteReviews(@PathVariable(name = "reviewId") Long reviewId) {
         return ApiResponse.ok(200, reviewService.deleteReview(reviewId), "리뷰 삭제 성공하였습니다.");
+    }
+    
+    // 특정 고객 리뷰 리스트 조회
+    @GetMapping("/customer/{customerId}")
+    public ResponseEntity<ApiResponse<List<GetCustomerReviewListResponseDto>>> getCustomerReviews(@PathVariable(name = "customerId") Long customerId) {
+        List<GetCustomerReviewListResponseDto> reviews = reviewService.getCustomerReviews(customerId);
+        return ApiResponse.ok(200, reviews, "고객 리뷰 리스트 조회에 성공하였습니다.");
     }
 
 }

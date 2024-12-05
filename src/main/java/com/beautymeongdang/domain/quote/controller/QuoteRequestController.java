@@ -30,7 +30,7 @@ public class QuoteRequestController {
     public ResponseEntity<ApiResponse<CreateInsertRequestAllResponseDto>> createInsertRequestAll(
             @RequestParam Long customerId,
             @RequestPart CreateInsertRequestAllRequestDto requestDto,
-            @RequestPart(required = false) List<MultipartFile> images) {
+            @RequestPart List<MultipartFile> images) {
         CreateInsertRequestAllResponseDto responseDto = quoteRequestService.createInsertRequestAll(customerId, requestDto, images);
         return ApiResponse.ok(200, responseDto, "전체 견적서 요청 성공");
     }
@@ -43,7 +43,7 @@ public class QuoteRequestController {
     public ResponseEntity<ApiResponse<CreateInsertRequestGroomerResponseDto>> createInsertRequestGroomer(
             @RequestParam Long customerId,
             @RequestPart CreateInsertRequestGroomerRequestDto requestDto,
-            @RequestPart(required = false) List<MultipartFile> images) {
+            @RequestPart List<MultipartFile> images) {
         CreateInsertRequestGroomerResponseDto responseDto = quoteRequestService.createInsertRequestGroomer(customerId, requestDto, images);
         return ApiResponse.ok(200, responseDto, "1:1 견적서 요청 성공");
     }

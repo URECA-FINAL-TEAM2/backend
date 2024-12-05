@@ -4,12 +4,10 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 
-import java.math.BigDecimal;
-
 @Getter
 @AllArgsConstructor
 @Builder
-public class CreateShopResponseDto {
+public class GetGroomerShopResponseDto {
     private final Long shopId;
     private final String shopName;
     private final String description;
@@ -17,6 +15,5 @@ public class CreateShopResponseDto {
     private final String sidoName;
     private final String sigunguName;
     private final String address;
-    private final BigDecimal latitude;
-    private final BigDecimal longitude;
+    private final String shopLogo;
 }

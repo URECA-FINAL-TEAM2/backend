@@ -1,6 +1,5 @@
 package com.beautymeongdang.domain.review.service.impl;
 
-import com.beautymeongdang.domain.quote.entity.QuoteRequestImage;
 import com.beautymeongdang.domain.quote.entity.SelectedQuote;
 import com.beautymeongdang.domain.quote.repository.SelectedQuoteRepository;
 import com.beautymeongdang.domain.review.dto.*;
@@ -9,6 +8,8 @@ import com.beautymeongdang.domain.review.entity.ReviewsImage;
 import com.beautymeongdang.domain.review.repository.ReviewRepository;
 import com.beautymeongdang.domain.review.repository.ReviewsImageRepository;
 import com.beautymeongdang.domain.review.service.ReviewService;
+import com.beautymeongdang.domain.shop.entity.Shop;
+import com.beautymeongdang.domain.shop.repository.ShopRepository;
 import com.beautymeongdang.domain.user.entity.Customer;
 import com.beautymeongdang.domain.user.entity.Groomer;
 import com.beautymeongdang.domain.user.repository.CustomerRepository;
@@ -21,7 +22,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+import software.amazon.ion.Decimal;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -33,6 +36,7 @@ public class ReviewServiceImpl implements ReviewService {
     private final ReviewRepository reviewRepository;
     private final CustomerRepository customerRepository;
     private final GroomerRepository groomerRepository;
+    private final ShopRepository shopRepository;
     private final SelectedQuoteRepository selectedQuoteRepository;
     private final FileStore fileStore;
     private final ReviewsImageRepository reviewsImageRepository;
@@ -42,7 +46,7 @@ public class ReviewServiceImpl implements ReviewService {
     @Override
     @Transactional
     public CreateUpdateReviewResponseDto createReview(CreateReviewRequestDto requestDto, List<MultipartFile> images) {
-        if (images.size() > 3) {
+        if (images!= null && images.size() > 3) {
             throw new BadRequestException("등록 가능한 리뷰 이미지 수를 초과하였습니다.");
         }
 
@@ -97,6 +101,10 @@ public class ReviewServiceImpl implements ReviewService {
     @Override
     @Transactional
     public CreateUpdateReviewResponseDto updateReview(Long reviewId, UpdateReviewRequestDto requestDto, List<MultipartFile> images) {
+        if (images!= null && images.size() > 3) {
+            throw new BadRequestException("등록 가능한 리뷰 이미지 수를 초과하였습니다.");
+        }
+
         Reviews reviews = reviewRepository.findById(reviewId)
                 .orElseThrow(() -> NotFoundException.entityNotFound("리뷰"));
 
@@ -161,6 +169,32 @@ public class ReviewServiceImpl implements ReviewService {
         return DeleteReviewResponseDto.builder()
                 .reviewId(reviews.getReviewId())
                 .build();
+    }
+
+    @Override
+    public List<GetCustomerReviewListResponseDto> getCustomerReviews(Long customerId) {
+        List<Reviews> reviews = reviewRepository.findCustomerReviews(customerId);
+
+        return reviews.stream()
+                .map(review -> {
+                    Groomer groomer = review.getGroomerId();
+                    Shop shop = shopRepository.findByGroomerId(groomer.getGroomerId())
+                            .orElseThrow(() -> new NotFoundException("매장을 찾을 수 없습니다: " + groomer.getGroomerId()));
+                    Double averageStarRating = shopRepository.getAverageStarRatingByGroomerId(groomer.getGroomerId());
+
+                    return GetCustomerReviewListResponseDto.builder()
+                            .reviewId(review.getReviewId())
+                            .content(review.getContent())
+                            .shopName(shop.getShopName()) // Shop 이름
+                            .groomerName(groomer.getUserId().getNickname())
+                            .reviewCount(reviewRepository.countGroomerReviews(groomer.getGroomerId())) // 리뷰 수
+                            .starRating(BigDecimal.valueOf(averageStarRating)) // 평균 별점
+                            .reviewDate(review.getCreatedAt().toLocalDate())
+                            .groomerId(groomer.getGroomerId())
+                            .customerId(review.getCustomerId().getCustomerId())
+                            .build();
+                })
+                .collect(Collectors.toList());
     }
 }
 

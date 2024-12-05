@@ -1,9 +1,7 @@
 package com.beautymeongdang.domain.dog.controller;
 
 
-import com.beautymeongdang.domain.dog.dto.CreateDogRequestDto;
-import com.beautymeongdang.domain.dog.dto.CreateDogResponseDto;
-import com.beautymeongdang.domain.dog.dto.GetDogResponseDto;
+import com.beautymeongdang.domain.dog.dto.*;
 import com.beautymeongdang.domain.dog.service.DogService;
 import com.beautymeongdang.global.common.dto.ApiResponse;
 import lombok.RequiredArgsConstructor;
@@ -28,7 +26,7 @@ public class DogController {
     public ResponseEntity<ApiResponse<CreateDogResponseDto>> createDog(
             @RequestParam Long customerId,
             @RequestPart CreateDogRequestDto requestDto,
-            @RequestPart MultipartFile dogProfile) {
+            @RequestPart(required = false) MultipartFile dogProfile) {
         CreateDogResponseDto response = dogService.createDog(customerId, requestDto, dogProfile);
         return ApiResponse.ok(200, response, "반려견 등록 성공");
     }
@@ -43,4 +41,30 @@ public class DogController {
         GetDogResponseDto response = dogService.getDog(dogId, customerId);
         return ApiResponse.ok(200, response, "반려견 정보 조회 성공");
     }
+
+
+    /**
+     * 반려견 프로필 수정
+     */
+    @PutMapping(value = "/{dogId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<ApiResponse<UpdateDogResponseDto>> updateDog(
+            @PathVariable Long dogId,
+            @RequestParam Long customerId,
+            @RequestPart UpdateDogRequestDto requestDto,
+            @RequestPart(required = false) MultipartFile dogProfile) {
+        UpdateDogResponseDto response = dogService.updateDog(dogId, customerId, requestDto, dogProfile);
+        return ApiResponse.ok(200, response, "반려견 정보 수정 성공");
+    }
+
+    /**
+     * 반려견 프로필 삭제
+     */
+    @PutMapping("/{dogId}/delete")
+    public ResponseEntity<ApiResponse<DeleteDogResponseDto>> deleteDog(
+            @PathVariable Long dogId,
+            @RequestParam Long customerId) {
+        DeleteDogResponseDto response = dogService.deleteDog(dogId, customerId);
+        return ApiResponse.ok(200, response, "반려견 삭제 성공");
+    }
+
 }
