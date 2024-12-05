@@ -65,7 +65,27 @@ public interface SelectedQuoteRepository extends JpaRepository<SelectedQuote, Lo
     """)
     Integer countTodayReservations(@Param("groomerId") Long groomerId, @Param("todayDate") LocalDateTime todayDate);
 
+    // 미용사 마이페이지 - 미용완료 건수
+    @Query(value = """
+        SELECT COUNT(sq) as completedServices
+        FROM SelectedQuote sq
+        JOIN sq.quoteId q
+        WHERE sq.status = '030'
+          AND sq.isDeleted = false
+          AND q.groomerId.groomerId = :groomerId
+    """)
+    Integer countCompletedServices(@Param("groomerId") Long groomerId);
 
+    // 미용사 마이페이지 - 확정된 예약 건수
+    @Query(value = """
+        SELECT COUNT(sq) as confirmedReservations
+        FROM SelectedQuote sq
+        JOIN sq.quoteId q
+        WHERE sq.status = '010'
+          AND sq.isDeleted = false
+          AND q.groomerId.groomerId = :groomerId
+    """)
+    Integer countConfirmedReservations(@Param("groomerId") Long groomerId);
 
 
 
