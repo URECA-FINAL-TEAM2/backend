@@ -7,7 +7,7 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 @Builder
-public class GetGroomerShopResponseDto {
+public class GetShopResponseDto {
     private final Long shopId;
     private final String shopName;
     private final String description;

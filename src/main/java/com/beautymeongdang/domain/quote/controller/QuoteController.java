@@ -39,13 +39,13 @@ public class QuoteController {
 
 
     /**
-     * 미용사가 보낸 견적서 상세 조회
+     * 고객이 받은 견적서 상세 조회 (요청+견적서)
      */
     @GetMapping("/detail/{quoteId}")
     public ResponseEntity<ApiResponse<GetQuoteDetailResponseDto>> getQuoteDetail(
-            @PathVariable Long quoteId) {
-        GetQuoteDetailRequestDto requestDto = new GetQuoteDetailRequestDto(quoteId);
-        GetQuoteDetailResponseDto responseDto = quoteService.getQuoteDetail(requestDto);
+            @PathVariable Long quoteId,
+            @RequestParam Long customerId) {
+        GetQuoteDetailResponseDto responseDto = quoteService.getQuoteDetail(quoteId,customerId);
         return ApiResponse.ok(200, responseDto, "견적서 상세 조회 성공");
     }
 
