@@ -25,7 +25,7 @@ public class CustomerController {
     }
 
     // 프로필 삭제
-    @PatchMapping("/{customerId}")
+    @PutMapping("/{customerId}")
     public ResponseEntity<ApiResponse<Void>> deleteCustomerProfile(@PathVariable Long customerId) {
         customerService.deleteCustomerProfile(customerId);
         return ApiResponse.ok(204, null, "고객 프로필 삭제 성공");
