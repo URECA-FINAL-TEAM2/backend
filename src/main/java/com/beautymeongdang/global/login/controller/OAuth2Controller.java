@@ -3,6 +3,7 @@ package com.beautymeongdang.global.login.controller;
 import com.beautymeongdang.domain.user.dto.UserDTO;
 import com.beautymeongdang.global.common.dto.ApiResponse;
 import com.beautymeongdang.global.login.service.OAuth2Service;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -32,10 +33,19 @@ public class OAuth2Controller {
             UserDTO userDTO = (UserDTO) responseData.get("user");
             log.debug("login-log userDTO 데이터 확인: {}", userDTO);
 
+            // 쿠키 설정
+            Cookie cookie = new Cookie("refreshToken", (String) responseData.get("refreshToken"));
+            cookie.setPath("/");
+            cookie.setDomain(".beautymeongdang.com"); // 도메인 설정
+            cookie.setHttpOnly(true);
+            cookie.setMaxAge(60 * 60 * 24 * 7); // 쿠키 만료시간 1주일
+            response.addCookie(cookie);
+
             if (!userDTO.isRegister()) {
                 log.warn("login-log 추가 정보 입력이 필요한 사용자입니다. userDTO: {}", userDTO);
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                         .body(ApiResponse.badRequest(400, "login-log 추가 정보 입력이 필요한 사용자입니다."));
+
             }
 
             log.info("login-log 로그인 성공. 사용자 정보: {}", userDTO);
