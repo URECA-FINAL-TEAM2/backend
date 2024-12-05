@@ -33,14 +33,15 @@ public class OAuth2Controller {
             log.debug("login-log userDTO 데이터 확인: {}", userDTO);
 
             if (!userDTO.isRegister()) {
-                response.sendRedirect("http://localhost:5173/selectRole?userId=" + userDTO.getId());
+                log.warn("login-log 추가 정보 입력이 필요한 사용자입니다. userDTO: {}", userDTO);
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                         .body(ApiResponse.badRequest(400, "login-log 추가 정보 입력이 필요한 사용자입니다."));
+
             }
+
             log.info("login-log 로그인 성공. 사용자 정보: {}", userDTO);
-            String redirectUrl = "http://localhost:5173/customer/home?accessToken=" + responseData.get("accessToken");
-            response.sendRedirect(redirectUrl);
             return ResponseEntity.ok(ApiResponse.ok(200, responseData, "login-log 로그인 성공"));
+
         } catch (Exception e) {
             log.error("login-log OAuth2 인증 실패", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
