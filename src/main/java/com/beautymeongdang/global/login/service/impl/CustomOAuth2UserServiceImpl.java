@@ -142,7 +142,6 @@ public class CustomOAuth2UserServiceImpl extends DefaultOAuth2UserService implem
         Map<String, Object> responseData = new HashMap<>();
         responseData.put("accessToken", tokenInfo.get("access_token")); // JWT 접근 토큰
         responseData.put("user", userDTO);                              // 사용자 정보
-        responseData.put("role", user.getRoles().iterator().next().toString()); // 사용자 권한
         responseData.put("isNewUser", !user.isRegister());             // 신규 사용자 여부
 
         // 7. 최종 응답 데이터 반환
