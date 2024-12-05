@@ -30,4 +30,10 @@ public class GroomerController {
         return ApiResponse.ok(200, groomerService.updateGroomerPortfolio(requestDto, images), "Update GroomerPortfolio Success");
     }
 
+    // 미용사 프로필 논리적 삭제
+    @PutMapping("/delete/{groomerId}")
+    public ResponseEntity<?> deleteGroomer(@PathVariable Long groomerId) {
+        return ApiResponse.ok(200, groomerService.deleteGroomerProfile(groomerId), "Delete Groomer Success");
+    }
+
 }
