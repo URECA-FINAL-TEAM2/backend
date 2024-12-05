@@ -7,15 +7,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
-import org.springframework.http.HttpHeaders;
 
 
 @Service
@@ -54,20 +50,27 @@ public class OAuth2AuthorizationClient {
         HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(params, headers);
 
         try {
-            ResponseEntity<KakaoToken> response = restTemplate.postForEntity(
+            ResponseEntity<String> response = restTemplate.postForEntity(
                     tokenUrl,
                     request,
-                    KakaoToken.class
+                    String.class  // KakaoToken.class 대신 String.class로 변경
             );
-            log.info("login-log ✅ 카카오 토큰 발급 성공");
-            return response.getBody();
+            log.info("login-log 카카오 토큰 응답: {}", response.getBody());
 
+            if (response.getStatusCode() == HttpStatus.OK) {
+                ObjectMapper mapper = new ObjectMapper();
+                return mapper.readValue(response.getBody(), KakaoToken.class);
+            } else {
+                log.error("login-log 카카오 토큰 요청 실패 - 상태 코드: {}, 응답: {}",
+                        response.getStatusCode(),
+                        response.getBody());
+                throw new RuntimeException("카카오 토큰 발급 실패: " + response.getBody());
+            }
         } catch (Exception e) {
             log.error("login-log 카카오 토큰 요청 실패", e);
-            throw new RuntimeException("login-log 카카오 토큰 발급 실패", e);
+            throw new RuntimeException("카카오 토큰 발급 실패", e);
         }
     }
-
     public KakaoUserInfo getKakaoUserInfo(String accessToken) {
         log.info("login-log 👤 카카오 사용자 정보 요청 시작");
         String userInfoUrl = "https://kapi.kakao.com/v2/user/me";
