@@ -61,7 +61,7 @@ public class UserController {
 
     @PostMapping("/logout")
     public ResponseEntity<ApiResponse<Map<String, String>>> logout(HttpServletRequest request,
-            HttpServletResponse response) {
+                                                                   HttpServletResponse response) {
         try {
             userService.logout(request, response);
             Map<String, String> result = new HashMap<>();
@@ -89,7 +89,7 @@ public class UserController {
     }
 
 
-// 테스트 용 (삭제 가능)
+    // 테스트 용 (삭제 가능)
     @PostMapping("/auth/login")
     public ResponseEntity<ApiResponse<Map<String, Object>>> login(@RequestParam Long userId, HttpServletResponse response) {
         try {
