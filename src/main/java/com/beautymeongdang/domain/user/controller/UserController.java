@@ -33,7 +33,7 @@ public class UserController {
     @PostMapping("/register/customer")
     public ResponseEntity<ApiResponse<Map<String, Object>>> registerCustomer(
             @AuthenticationPrincipal CustomOAuth2User oauth2User,
-            @RequestPart("requestDto") Map<String, String> requestDto,
+            @RequestPart("requestDto") CustomerRegisterRequestDTO requestDto,
             @RequestPart(value = "profileImage", required = false) MultipartFile profileImage) {
         try {
             Map<String, Object> responseData = userService.registerCustomer(oauth2User.getUserId(), requestDto, profileImage);
@@ -47,7 +47,7 @@ public class UserController {
     @PostMapping("/register/groomer")
     public ResponseEntity<ApiResponse<Map<String, Object>>> registerGroomer(
             @AuthenticationPrincipal CustomOAuth2User oauth2User,
-            @RequestBody Map<String, String> requestDto) {
+            @RequestBody GroomerRegisterRequestDTO requestDto) {
         try {
             Map<String, Object> responseData = userService.registerGroomer(oauth2User.getUserId(), requestDto);
             return ApiResponse.ok(201, responseData, "미용사 회원가입 성공");
