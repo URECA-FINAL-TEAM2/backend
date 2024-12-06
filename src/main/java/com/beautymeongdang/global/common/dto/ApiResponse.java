@@ -41,6 +41,10 @@ public class ApiResponse<T> {
         return ResponseEntity.status(400).body(new ApiResponse<>(code, null, message));
     }
 
+    public static <T> ResponseEntity<ApiResponse<T>> badRequest2(Integer code, T data, String message) {
+        return ResponseEntity.status(400).body(new ApiResponse<>(code, data, message));
+    }
+
     public static <T> ResponseEntity<ApiResponse<T>> forbidden(Integer code, String message) {
         return ResponseEntity.status(403).body(new ApiResponse<>(code, null, message));
     }
