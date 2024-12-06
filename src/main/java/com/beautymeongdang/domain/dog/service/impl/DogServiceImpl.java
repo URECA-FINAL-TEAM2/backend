@@ -86,7 +86,7 @@ public class DogServiceImpl implements DogService {
                 .customerId(savedDog.getCustomerId().getCustomerId())
                 .dogId(savedDog.getDogId())
                 .dogName(savedDog.getDogName())
-                .dogBreedCodeId(requestDto.getDogBreedCodeId())
+                .dogBreedCodeId(breedCode.getId().getCodeId())
                 .dogBreed(dogBreed)
                 .dogWeight(savedDog.getDogWeight())
                 .dogBirth(savedDog.getDogBirth())
@@ -151,7 +151,6 @@ public class DogServiceImpl implements DogService {
         CommonCodeId commonCodeId = new CommonCodeId(requestDto.getDogBreedCodeId(), DOG_BREED_GROUP_CODE);
         CommonCode breedCode = commonCodeRepository.findById(commonCodeId)
                 .orElseThrow(() -> NotFoundException.entityNotFound("견종 코드"));
-
         String dogBreed = breedCode.getCommonName();
 
         String profileImageUrl = dog.getProfileImage();
@@ -182,7 +181,7 @@ public class DogServiceImpl implements DogService {
                 .customerId(updatedDog.getCustomerId().getCustomerId())
                 .dogId(updatedDog.getDogId())
                 .dogName(updatedDog.getDogName())
-                .dogBreedCodeId(requestDto.getDogBreedCodeId())
+                .dogBreedCodeId(breedCode.getId().getCodeId())
                 .dogBreed(dogBreed)
                 .dogWeight(updatedDog.getDogWeight())
                 .dogBirth(updatedDog.getDogBirth())
