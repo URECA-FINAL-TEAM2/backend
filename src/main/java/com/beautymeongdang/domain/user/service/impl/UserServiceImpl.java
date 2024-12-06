@@ -110,7 +110,11 @@ public class UserServiceImpl implements UserService {
                     "nickname", user.getNickname(),
                     "isRegister", user.isRegister()
             );
-            return responseData;
+            return Map.of(
+                    "userId", user.getUserId(),
+                    "nickname", user.getNickname(),
+                    "isRegister", user.isRegister()
+            );
         } catch (Exception e) {
             log.error("Groomer registration failed: {}", e.getMessage(), e);
             throw new RuntimeException("Groomer registration failed: " + e.getMessage());

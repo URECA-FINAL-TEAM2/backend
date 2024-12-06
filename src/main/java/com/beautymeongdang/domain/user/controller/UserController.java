@@ -45,11 +45,12 @@ public class UserController {
             return ApiResponse.badRequest(400, "고객 회원가입 실패: " + e.getMessage());
         }
     }
-    // 미용사 추가 회원가입 
+    // 미용사 추가 회원가입
     @PostMapping(value = "/register/groomer", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ApiResponse<Map<String, Object>>> registerGroomer(
             @AuthenticationPrincipal CustomOAuth2User oauth2User,
-            @ModelAttribute GroomerRegisterRequestDTO requestDto) {
+            @RequestPart("requestDto") GroomerRegisterRequestDTO requestDto,
+            @RequestPart(value = "profileImage", required = false) MultipartFile profileImage) {
         try {
             Map<String, Object> responseData = userService.registerGroomer(oauth2User.getUserId(), requestDto);
             return ApiResponse.ok(201, responseData, "미용사 회원가입 성공");
