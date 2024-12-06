@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 public class GetMainGroomerTotalRequestResponseDto {
     private Long requestId;
     private String profileImage;
-    private String nickname;
+    private String userName;
     private LocalDateTime closingDate;
     private LocalDateTime beautyDate;
     private String breed;
@@ -20,14 +20,14 @@ public class GetMainGroomerTotalRequestResponseDto {
     private String requestContent;
 
     @Builder
-    public GetMainGroomerTotalRequestResponseDto(Long requestId, String nickname, String profileImage, LocalDateTime createdAt,
-                           LocalDateTime beautyDate, String dogBreed, String dogGender, String dogWeight, String content) {
+    public GetMainGroomerTotalRequestResponseDto(Long requestId, String userName, String profileImage, LocalDateTime createdAt,
+                           LocalDateTime beautyDate, String commonName, String dogGender, String dogWeight, String content) {
         this.requestId = requestId;
-        this.nickname = nickname;
+        this.userName = userName;
         this.profileImage = profileImage;
         this.closingDate = createdAt.plusDays(2);
         this.beautyDate = beautyDate;
-        this.breed = dogBreed;
+        this.breed = commonName;
         this.dogWeight = dogWeight;
         this.dogGender = dogGender;
         this.requestContent = content;

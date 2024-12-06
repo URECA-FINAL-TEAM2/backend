@@ -7,7 +7,7 @@ import lombok.Getter;
 @AllArgsConstructor
 public class UpdateDogRequestDto {
     private String dogName;
-    private String dogBreed;
+    private String dogBreedCodeId;
     private String dogWeight;
     private String dogBirth;
     private String dogGender;
