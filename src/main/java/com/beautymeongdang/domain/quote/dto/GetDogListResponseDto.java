@@ -11,11 +11,13 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder
 public class GetDogListResponseDto {
+    private Long dogId;
     private String dogName;
     private String profileImage;
 
     public static GetDogListResponseDto of(Dog dog) {
         return GetDogListResponseDto.builder()
+                .dogId(dog.getDogId())
                 .dogName(dog.getDogName())
                 .profileImage(dog.getProfileImage())
                 .build();

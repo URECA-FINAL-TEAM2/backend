@@ -4,6 +4,9 @@ import com.beautymeongdang.domain.user.dto.CustomerProfileResponseDto;
 import com.beautymeongdang.domain.user.entity.Customer;
 import com.beautymeongdang.domain.user.repository.CustomerRepository;
 import com.beautymeongdang.domain.user.service.CustomerService;
+import com.beautymeongdang.global.region.entity.Sigungu;
+import com.beautymeongdang.global.region.repository.SigunguRepository;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -14,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class CustomerServiceImpl implements CustomerService {
 
     private final CustomerRepository customerRepository;
+    private final SigunguRepository sigunguRepository;
 
     @Override
     @Transactional
@@ -28,5 +32,17 @@ public class CustomerServiceImpl implements CustomerService {
 
         customer.delete();
         customerRepository.save(customer);
+    }
+
+    @Transactional
+    @Override
+    public void updateAddress(Long customerId, String sidoName, String sigunguName) {
+        Customer customer = customerRepository.findById(customerId)
+                .orElseThrow(() -> new EntityNotFoundException("고객을 찾을 수 없습니다."));
+
+        Sigungu sigungu = sigunguRepository.findBySidoId_SidoNameAndSigunguName(sidoName, sigunguName)
+                .orElseThrow(() -> new EntityNotFoundException("시군구를 찾을 수 없습니다."));
+
+        customer.updateSigungu(sigungu);
     }
 }

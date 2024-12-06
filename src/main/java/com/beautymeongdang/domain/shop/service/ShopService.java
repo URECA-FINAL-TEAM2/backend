@@ -13,8 +13,11 @@ public interface ShopService {
     // 매장 상세 조회
     GetShopDetailResponseDto getShopDetail(Long shopId, Long customerId);
 
-    // 미용사 매장 조회(마이페이지 - 매장 수정)
-    GetGroomerShopResponseDto getGroomerShop(Long shopId, Long groomerId);
+    // 매장 조회 (미용사 마이 페이지)
+    GetShopResponseDto getGroomerShop(Long shopId, Long groomerId);
+
+    // 매장 수정
+    UpdateShopResponseDto updateShop(Long shopId, Long groomerId, UpdateShopRequestDto requestDto, MultipartFile shopLogo);
 
     // 매장 삭제
     DeleteShopResponseDto deleteShop(Long shopId,Long groomerId);

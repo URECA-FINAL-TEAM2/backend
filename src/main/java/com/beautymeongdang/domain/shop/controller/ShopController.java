@@ -33,15 +33,31 @@ public class ShopController {
 
 
     /**
-     * 미용사 매장 조회
+     * 매장 조회 (미용사 마이 페이지)
      */
     @GetMapping("/groomer/shop/{shopId}")
-    public ResponseEntity<ApiResponse<GetGroomerShopResponseDto>> getGroomerShop(
+    public ResponseEntity<ApiResponse<GetShopResponseDto>> getGroomerShop(
             @PathVariable Long shopId,
             @RequestParam Long groomerId) {
-        GetGroomerShopResponseDto response = shopService.getGroomerShop(shopId, groomerId);
+        GetShopResponseDto response = shopService.getGroomerShop(shopId, groomerId);
         return ApiResponse.ok(200, response, "매장 조회 성공");
     }
+
+
+    /**
+     * 매장 수정
+     */
+    @PutMapping(value = "/groomer/shop/{shopId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<ApiResponse<UpdateShopResponseDto>> updateShop(
+            @PathVariable Long shopId,
+            @RequestParam Long groomerId,
+            @RequestPart UpdateShopRequestDto requestDto,
+            @RequestPart(required = false) MultipartFile shopLogo) {
+        UpdateShopResponseDto response = shopService.updateShop(shopId, groomerId, requestDto, shopLogo);
+        return ApiResponse.ok(200, response, "매장 수정 성공");
+    }
+
+
 
 
     /**

@@ -63,6 +63,10 @@ public class CodeInitializer implements CommandLineRunner {
         em.persist(new CommonCode(new CommonCodeId("010", "300"), paymentGroup, "결제 대기", true));
         em.persist(new CommonCode(new CommonCodeId("020", "300"), paymentGroup, "결제 완료", true));
         em.persist(new CommonCode(new CommonCodeId("030", "300"), paymentGroup, "결제 취소", true));
+        em.persist(new CommonCode(new CommonCodeId("040", "300"), paymentGroup, "결제 실패", true));
+        em.persist(new CommonCode(new CommonCodeId("050", "300"), paymentGroup, "결제 취소 실패", true));
+
+        
 
         // 견종 관련 그룹
         GroupCode dogBreedGroup = new GroupCode("400", "견종 관리");
@@ -140,7 +144,6 @@ public class CodeInitializer implements CommandLineRunner {
         GroupCode AllorGroomerGroup = new GroupCode("900", "요청 타입 구분");
         em.persist(AllorGroomerGroup);
 
-        // 고객 알림 구분
         em.persist(new CommonCode(new CommonCodeId("010", "900"), AllorGroomerGroup, "전체요청", true));
         em.persist(new CommonCode(new CommonCodeId("020", "900"), AllorGroomerGroup, "1:1요청", true));
 

@@ -10,4 +10,5 @@ import java.util.List;
 @Repository
 public interface DogRepository extends JpaRepository<Dog, Long> {
     List<Dog> findByCustomerIdAndIsDeletedFalseOrderByCreatedAtDesc(Customer customerId);
+    Long countByCustomerIdAndIsDeletedFalse(Customer customer);
 }

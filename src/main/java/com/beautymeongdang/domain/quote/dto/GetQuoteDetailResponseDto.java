@@ -22,6 +22,7 @@ public class GetQuoteDetailResponseDto {
     @AllArgsConstructor
     @NoArgsConstructor
     public static class GroomerInfo {
+        private String shopLogo;
         private String groomerName;
         private String shopName;
         private String address;
@@ -33,10 +34,10 @@ public class GetQuoteDetailResponseDto {
     @AllArgsConstructor
     @NoArgsConstructor
     public static class QuoteRequestInfo {
-        private String name;
-        private String image;
-        private String weight;
-        private String age;
+        private String dogName;
+        private String dogImage;
+        private String dogWeight;
+        private String dogAge;
         private String dogGender;
         private Boolean neutering;
         private Boolean experience;
