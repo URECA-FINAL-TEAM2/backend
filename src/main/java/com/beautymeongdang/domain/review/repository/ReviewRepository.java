@@ -54,5 +54,9 @@ public interface ReviewRepository extends JpaRepository<Reviews, Long> {
 """)
     List<Reviews> findCustomerReviews(@Param("customerId") Long customerId);
 
+    @Query("SELECT r FROM Reviews r WHERE r.customerId.customerId = :customerId AND r.isDeleted = false")
+    List<Reviews> findAllByCustomerId(@Param("customerId") Long customerId);
+
+
 }
 

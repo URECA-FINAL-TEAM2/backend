@@ -38,4 +38,8 @@ public interface QuoteRepository extends JpaRepository<Quote, Long> {
     // 미용사가 보낸 견적서 상세 조회
     Quote findByRequestIdAndGroomerId(QuoteRequest requestId, Groomer groomerId);
 
+    @Query("SELECT q FROM Quote q WHERE q.dogId.customerId.customerId = :customerId AND q.isDeleted = false")
+    List<Quote> findAllByCustomerDogs(@Param("customerId") Long customerId);
+
+
 }
