@@ -1,9 +1,6 @@
 package com.beautymeongdang.domain.shop.repository;
 
-import com.beautymeongdang.domain.review.entity.Reviews;
-import com.beautymeongdang.domain.shop.entity.Favorite;
 import com.beautymeongdang.domain.shop.entity.Shop;
-import com.beautymeongdang.domain.user.entity.Groomer;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -16,7 +13,7 @@ import java.util.Optional;
 public interface ShopRepository extends JpaRepository<Shop, Long> {
 
     // grommerId를 통해 shop정보 찾기
-    @Query("SELECT s FROM Shop s WHERE s.groomerId.groomerId = :groomerId")
+    @Query("SELECT s FROM Shop s WHERE s.groomerId.groomerId = :groomerId AND s.isDeleted = false ")
     Optional<Shop> findByGroomerId(@Param("groomerId") Long groomerId);
 
 
@@ -63,16 +60,6 @@ public interface ShopRepository extends JpaRepository<Shop, Long> {
     @Query("SELECT COUNT(f) FROM Favorite f WHERE f.favoriteId.shopId = :shop")
     Integer countFavoritesByShop(@Param("shop") Shop shop);
 
-
-    //매장 삭제 할 떄 관련된 정보들 논리적 삭제
-    @Query("SELECT s FROM Shop s WHERE s.shopId = :shopId AND s.isDeleted = false")
-    Optional<Shop> findById(@Param("shopId") Long shopId);
-
-    @Query("SELECT r FROM Reviews r WHERE r.groomerId = :groomer AND r.isDeleted = false")
-    List<Reviews> findReviewsByGroomer(@Param("groomer") Groomer groomer);
-
-    @Query("SELECT f FROM Favorite f WHERE f.favoriteId.shopId = :shop")
-    List<Favorite> findFavoritesByShop(@Param("shop") Shop shop);
 
 
 }
