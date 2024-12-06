@@ -113,7 +113,8 @@ public class SecurityConfig {
                 "http://localhost:5173",    // 프론트엔드 로컬
                 "http://localhost:8081",    // 백엔드 로컬
                 "https://beautymeongdang.com",
-                "https://www.beautymeongdang.com"
+                "https://www.beautymeongdang.com",
+                "https://beautymeongdang.vercel.app"
         ));
 
         // 허용할 HTTP 메서드 설정
