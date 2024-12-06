@@ -10,7 +10,6 @@ import java.util.List;
 import java.util.Optional;
 
 public interface FavoriteRepository extends JpaRepository<Favorite, FavoriteId> {
-
     @Query("SELECT f FROM Favorite f WHERE f.favoriteId = :favoriteId")
     Optional<Favorite> findById(@Param("favoriteId") FavoriteId favoriteId);
 
@@ -29,9 +28,5 @@ public interface FavoriteRepository extends JpaRepository<Favorite, FavoriteId> 
     AND s.isDeleted = false
 """)
     List<Favorite> findByFavoriteIdCustomerId(@Param("customerId") Long customerId);
-
-
-
-
 
 }
