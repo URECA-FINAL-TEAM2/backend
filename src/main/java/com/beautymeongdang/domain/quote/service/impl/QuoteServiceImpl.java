@@ -36,7 +36,6 @@ import java.util.stream.Collectors;
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
 public class QuoteServiceImpl implements QuoteService {
-
     private final QuoteRequestRepository quoteRequestRepository;
     private final QuoteRepository quoteRepository;
     private final QuoteRequestImageRepository quoteRequestImageRepository;
@@ -47,6 +46,11 @@ public class QuoteServiceImpl implements QuoteService {
     private final CustomerRepository customerRepository;
     private final UserRepository userRepository;
     private final CommonCodeRepository commonCodeRepository;
+
+    private static final String QUOTE_REQUEST_STATUS_GROUP_CODE = "100";
+    private static final String QUOTE_STATUS_GROUP_CODE = "200";
+    private static final String DOG_BREED_GROUP_CODE = "400";
+
 
     /**
      * 고객이 자기가 보낸 견적(1:1) 요청을 조회
@@ -94,25 +98,46 @@ public class QuoteServiceImpl implements QuoteService {
 
         List<GetQuotesAllResponseDto.QuoteRequestInfo> requestInfos = requests.stream()
                 .map(request -> {
+                    CommonCodeId requestStatusCodeId = new CommonCodeId(request.getStatus(), QUOTE_REQUEST_STATUS_GROUP_CODE);
+                    CommonCode requestStatusCode = commonCodeRepository.findById(requestStatusCodeId)
+                            .orElseThrow(() -> NotFoundException.entityNotFound("견적 요청 상태 코드"));
+                    String requestStatusName = requestStatusCode.getCommonName();
+
                     List<Quote> quotes = quoteRepository.findAllByRequestId(request.getRequestId());
                     List<GetQuotesAllResponseDto.QuoteInfo> quoteInfos = quotes.stream()
-                            .map(quote -> GetQuotesAllResponseDto.QuoteInfo.builder()
-                                    .quoteId(quote.getQuoteId())
-                                    .status(quote.getStatus())
-                                    .cost(quote.getCost())
-                                    .quoteContent(quote.getContent())
-                                    .createdAt(quote.getCreatedAt())
-                                    .build())
+                            .map(quote -> {
+                                CommonCodeId quoteStatusCodeId = new CommonCodeId(quote.getStatus(), QUOTE_STATUS_GROUP_CODE);
+                                CommonCode quoteStatusCode = commonCodeRepository.findById(quoteStatusCodeId)
+                                        .orElseThrow(() -> NotFoundException.entityNotFound("견적서 상태 코드"));
+                                String quoteStatusName = quoteStatusCode.getCommonName();
+
+                                return GetQuotesAllResponseDto.QuoteInfo.builder()
+                                        .quoteId(quote.getQuoteId())
+                                        .shopName(shopRepository.findByGroomerId(quote.getGroomerId().getGroomerId())
+                                                .orElseThrow(() -> NotFoundException.entityNotFound("미용실"))
+                                                .getShopName())
+                                        .groomerName(quote.getGroomerId().getUserId().getNickname())
+                                        .quoteStatus(quoteStatusName)
+                                        .cost(quote.getCost())
+                                        .quoteContent(quote.getContent())
+                                        .createdAt(quote.getCreatedAt())
+                                        .build();
+                            })
                             .collect(Collectors.toList());
+
+                    Dog dog = request.getDogId();
+                    CommonCodeId breedCodeId = new CommonCodeId(dog.getDogBreed(), DOG_BREED_GROUP_CODE);
+                    CommonCode breedCode = commonCodeRepository.findById(breedCodeId)
+                            .orElseThrow(() -> NotFoundException.entityNotFound("견종 코드"));
 
                     return GetQuotesAllResponseDto.QuoteRequestInfo.builder()
                             .quoteRequestId(request.getRequestId())
-                            .status(request.getStatus())
+                            .requestStatus(requestStatusName)
                             .beautyDate(request.getBeautyDate())
                             .dogName(request.getDogId().getDogName())
                             .image(request.getDogId().getProfileImage())
                             .dogWeight(request.getDogId().getDogWeight())
-                            .dogBreed(request.getDogId().getDogBreed())
+                            .dogBreed(breedCode.getCommonName())
                             .dogAge(String.valueOf(request.getDogId().getDogAge()))
                             .requestContent(request.getContent())
                             .quotes(quoteInfos)
@@ -124,6 +149,7 @@ public class QuoteServiceImpl implements QuoteService {
                 .quoteRequests(requestInfos)
                 .build();
     }
+
 
     /**
      고객이 받은 견적서 상세 조회 (요청+견적서)

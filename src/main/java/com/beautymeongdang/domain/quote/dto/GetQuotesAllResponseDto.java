@@ -26,7 +26,7 @@ public class GetQuotesAllResponseDto {
     @NoArgsConstructor
     public static class QuoteRequestInfo {
         private Long quoteRequestId;
-        private String status;
+        private String requestStatus;
         private LocalDateTime beautyDate;
         private String dogName;
         private String image;
@@ -46,7 +46,7 @@ public class GetQuotesAllResponseDto {
         private Long quoteId;
         private String shopName;
         private String groomerName;
-        private String status;
+        private String quoteStatus;
         private Integer cost;
         private String quoteContent;
         private LocalDateTime createdAt;
