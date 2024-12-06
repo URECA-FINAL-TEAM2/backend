@@ -1,6 +1,7 @@
 package com.beautymeongdang.domain.user.controller;
 
 import com.beautymeongdang.domain.user.dto.CustomerProfileResponseDto;
+import com.beautymeongdang.domain.user.dto.UpdateAddressRequestDto;
 import com.beautymeongdang.domain.user.service.CustomerService;
 import com.beautymeongdang.global.common.dto.ApiResponse;
 import lombok.RequiredArgsConstructor;
@@ -28,5 +29,14 @@ public class CustomerController {
     public ResponseEntity<ApiResponse<Void>> deleteCustomerProfile(@PathVariable Long customerId) {
         customerService.deleteCustomerProfile(customerId);
         return ApiResponse.ok(204, null, "고객 프로필 삭제 성공");
+    }
+
+    // 고객 주소 수정
+    @PutMapping("/{customerId}/address")
+    public ResponseEntity<ApiResponse<Void>> updateAddress(
+            @PathVariable Long customerId,
+            @RequestBody UpdateAddressRequestDto request) {
+        customerService.updateAddress(customerId, request.getSidoName(), request.getSigunguName());
+        return ApiResponse.ok(200, null, "고객 주소 업데이트 성공");
     }
 }

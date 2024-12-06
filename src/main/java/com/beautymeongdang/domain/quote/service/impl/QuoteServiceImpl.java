@@ -21,7 +21,6 @@ import com.beautymeongdang.domain.user.repository.CustomerRepository;
 import com.beautymeongdang.domain.user.repository.GroomerRepository;
 import com.beautymeongdang.domain.user.repository.UserRepository;
 import com.beautymeongdang.global.exception.handler.NotFoundException;
-import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -123,32 +122,32 @@ public class QuoteServiceImpl implements QuoteService {
     }
 
     /**
-     견적서 상세 조회
+     고객이 받은 견적서 상세 조회 (요청+견적서)
      */
     @Override
-    public GetQuoteDetailResponseDto getQuoteDetail(GetQuoteDetailRequestDto requestDto) {
-        Quote quote = quoteRepository.findQuoteDetailById(requestDto.getQuoteId())
-                .orElseThrow(() -> new EntityNotFoundException("견적서를 찾을 수 없습니다."));
+    public GetQuoteDetailResponseDto getQuoteDetail(Long quoteId, Long customerId) {
+        Quote quote = quoteRepository.findQuoteDetailById(quoteId)
+                .orElseThrow(() -> NotFoundException.entityNotFound("견적서"));
 
-        // Shop 정보 조회
         Shop shop = shopRepository.findByGroomerId(quote.getGroomerId().getGroomerId())
-                .orElseThrow(() -> new EntityNotFoundException("샵 정보를 찾을 수 없습니다."));
+                .orElseThrow(() -> NotFoundException.entityNotFound("샵 정보"));
 
         List<QuoteRequestImage> requestImages = quoteRequestImageRepository
                 .findAllByRequestId(quote.getRequestId().getRequestId());
 
         return GetQuoteDetailResponseDto.builder()
                 .groomer(GetQuoteDetailResponseDto.GroomerInfo.builder()
+                        .shopLogo(shop.getImageUrl())
                         .groomerName(quote.getGroomerId().getUserId().getUserName())
                         .shopName(shop.getShopName())
                         .address(shop.getAddress())
                         .phone(quote.getGroomerId().getUserId().getPhone())
                         .build())
                 .quoteRequest(GetQuoteDetailResponseDto.QuoteRequestInfo.builder()
-                        .name(quote.getDogId().getDogName())
-                        .image(quote.getDogId().getProfileImage())
-                        .weight(quote.getDogId().getDogWeight())
-                        .age(String.valueOf(quote.getDogId().getDogAge()))
+                        .dogName(quote.getDogId().getDogName())
+                        .dogImage(quote.getDogId().getProfileImage())
+                        .dogWeight(quote.getDogId().getDogWeight())
+                        .dogAge(String.valueOf(quote.getDogId().getDogAge()))
                         .dogGender(quote.getDogId().getDogGender().toString())
                         .neutering(quote.getDogId().getNeutering())
                         .experience(quote.getDogId().getExperience())
@@ -166,6 +165,7 @@ public class QuoteServiceImpl implements QuoteService {
                         .build())
                 .build();
     }
+
 
     // 미용사 견적서 작성
     @Override

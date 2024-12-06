@@ -93,16 +93,17 @@ public class ShopServiceImpl implements ShopService {
                 .address(savedShop.getAddress())
                 .latitude(savedShop.getLatitude())
                 .longitude(savedShop.getLongitude())
+                .shopLogo(savedShop.getImageUrl())
                 .build();
     }
 
 
 
     /**
-     * 미용사 매장 조회(마이페이지 - 매장 수정)
+     * 매장 조회 (미용사 마이 페이지)
      */
     @Override
-    public GetGroomerShopResponseDto getGroomerShop(Long shopId, Long groomerId) {
+    public GetShopResponseDto getGroomerShop(Long shopId, Long groomerId) {
         Shop shop = shopRepository.findById(shopId)
                 .orElseThrow(() -> NotFoundException.entityNotFound("매장"));
 
@@ -110,7 +111,7 @@ public class ShopServiceImpl implements ShopService {
             throw new BadRequestException("해당 매장에 대한 접근 권한이 없습니다.");
         }
 
-        return GetGroomerShopResponseDto.builder()
+        return GetShopResponseDto.builder()
                 .shopId(shop.getShopId())
                 .shopName(shop.getShopName())
                 .description(shop.getDescription())
@@ -119,6 +120,63 @@ public class ShopServiceImpl implements ShopService {
                 .sigunguName(shop.getSigunguId().getSigunguName())
                 .address(shop.getAddress())
                 .shopLogo(shop.getImageUrl())
+                .build();
+    }
+
+
+
+    /**
+     * 매장 수정
+     */
+    @Override
+    @Transactional
+    public UpdateShopResponseDto updateShop(Long shopId, Long groomerId, UpdateShopRequestDto requestDto, MultipartFile shopLogo) {
+        Shop shop = shopRepository.findById(shopId)
+                .orElseThrow(() -> NotFoundException.entityNotFound("매장"));
+
+        if (!shop.getGroomerId().getGroomerId().equals(groomerId)) {
+            throw BadRequestException.invalidRequest("매장 수정 권한");
+        }
+
+        Sigungu sigungu = sigunguRepository.findBySidoId_SidoNameAndSigunguName(
+                        requestDto.getSidoName(),
+                        requestDto.getSigunguName())
+                .orElseThrow(() -> NotFoundException.entityNotFound("시군구"));
+
+        String logoUrl = shop.getImageUrl();
+        if (shopLogo != null && !shopLogo.isEmpty()) {
+            // 기존 이미지 삭제
+            fileStore.deleteFile(logoUrl);
+
+            // 새로운 이미지 업로드
+            List<UploadedFile> uploadedFiles = fileStore.storeFiles(List.of(shopLogo), FileStore.SHOP_LOGO);
+            logoUrl = uploadedFiles.get(0).getFileUrl();
+        }
+
+        shop.updateShopInfo(
+                sigungu,
+                requestDto.getShopName(),
+                requestDto.getDescription(),
+                requestDto.getAddress(),
+                requestDto.getLatitude(),
+                requestDto.getLongitude(),
+                requestDto.getBusinessTime(),
+                logoUrl
+        );
+
+        Shop updatedShop = shopRepository.save(shop);
+
+        return UpdateShopResponseDto.builder()
+                .shopId(updatedShop.getShopId())
+                .shopName(updatedShop.getShopName())
+                .description(updatedShop.getDescription())
+                .businessTime(updatedShop.getBusinessTime())
+                .sidoName(sigungu.getSidoId().getSidoName())
+                .sigunguName(sigungu.getSigunguName())
+                .address(updatedShop.getAddress())
+                .latitude(updatedShop.getLatitude())
+                .longitude(updatedShop.getLongitude())
+                .shopLogo(logoUrl)
                 .build();
     }
 
@@ -182,7 +240,7 @@ public class ShopServiceImpl implements ShopService {
                 .favorite(shopRepository.countFavoritesByShop(shop))
                 .isFavorite(isFavorite)
                 .description(shop.getDescription())
-                .shopImage(shop.getImageUrl())
+                .shopLogo(shop.getImageUrl())
                 .groomerPortfolioImages(portfolioImages)
                 .groomerUsername(groomer.getUserId().getNickname())
                 .groomerProfileImage(groomer.getUserId().getProfileImage())
