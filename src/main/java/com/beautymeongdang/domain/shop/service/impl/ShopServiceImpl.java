@@ -281,14 +281,11 @@ public class ShopServiceImpl implements ShopService {
 
         Groomer groomer = shop.getGroomerId();
 
-        List<Favorite> favorites = favoriteRepository.findByShopId(shop.getShopId());
-        favoriteRepository.deleteAll(favorites);
-
+        paymentRepository.findAllBySelectedQuoteIdQuoteIdGroomerIdAndIsDeletedFalse(groomer).forEach(Payment::delete);
+        selectedQuoteRepository.findAllByQuoteIdGroomerIdAndIsDeletedFalse(groomer).forEach(SelectedQuote::delete);
         reviewRepository.findGroomerReviews(groomer.getGroomerId()).forEach(Reviews::delete);
-        paymentRepository.findByGroomerId(groomer.getGroomerId()).forEach(Payment::delete);
-        selectedQuoteRepository.findByGroomerId(groomer.getGroomerId()).forEach(SelectedQuote::delete);
-        quoteRequestRepository.findByGroomerId(groomer.getGroomerId()).forEach(QuoteRequest::delete);
-        quoteRepository.findByGroomerId(groomer.getGroomerId()).forEach(Quote::delete);
+        quoteRepository.findAllByGroomerIdAndIsDeletedFalse(groomer).forEach(Quote::delete);
+        quoteRequestRepository.findAllByGroomerIdAndIsDeletedFalse(groomer).forEach(QuoteRequest::delete);
 
         // 매장 논리적 삭제
         shop.delete();

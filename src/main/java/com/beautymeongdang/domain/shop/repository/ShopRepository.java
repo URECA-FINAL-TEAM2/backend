@@ -1,9 +1,6 @@
 package com.beautymeongdang.domain.shop.repository;
 
-import com.beautymeongdang.domain.review.entity.Reviews;
-import com.beautymeongdang.domain.shop.entity.Favorite;
 import com.beautymeongdang.domain.shop.entity.Shop;
-import com.beautymeongdang.domain.user.entity.Groomer;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
