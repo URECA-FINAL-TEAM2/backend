@@ -16,6 +16,9 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.ArrayList;
+import java.util.List;
+
 
 @Service
 @RequiredArgsConstructor
@@ -167,10 +170,11 @@ public class OAuth2AuthorizationClient {
             JsonNode jsonNode = objectMapper.readTree(responseBody);
             log.info("login-log📄 JSON 파싱 결과: {}", jsonNode);
 
-            // 각 필드 존재 여부 확인
-            log.info("login-log📄 필드 체크 - sub: {}, email: {}, name: {}, picture: {}, email_verified: {}, locale: {}",
-                    jsonNode.has("sub"), jsonNode.has("email"), jsonNode.has("name"),
-                    jsonNode.has("picture"), jsonNode.has("email_verified"), jsonNode.has("locale"));
+            // 필수 필드 검증
+            validateRequiredFields(jsonNode);
+
+            // locale은 선택적 필드로 처리
+            String locale = jsonNode.has("locale") ? jsonNode.get("locale").asText() : "ko";  // 기본값 "ko" 설정
 
             return GoogleUserInfo.builder()
                     .id(jsonNode.get("sub").asText())
@@ -178,12 +182,28 @@ public class OAuth2AuthorizationClient {
                     .name(jsonNode.get("name").asText())
                     .profileImage(jsonNode.get("picture").asText())
                     .emailVerified(jsonNode.get("email_verified").asBoolean())
-                    .locale(jsonNode.get("locale").asText())
+                    .locale(locale)
                     .build();
         } catch (Exception e) {
             log.error("login-log 구글 사용자 정보 요청 실패 - 에러 타입: {}, 메시지: {}",
                     e.getClass().getName(), e.getMessage(), e);
             throw new RuntimeException("구글 사용자 정보 조회 실패: " + e.getMessage(), e);
+        }
+    }
+
+    // 필수 필드 검증 메소드 추가
+    private void validateRequiredFields(JsonNode jsonNode) {
+        List<String> missingFields = new ArrayList<>();
+
+        String[] requiredFields = {"sub", "email", "name", "picture", "email_verified"};
+        for (String field : requiredFields) {
+            if (jsonNode.get(field) == null) {
+                missingFields.add(field);
+            }
+        }
+
+        if (!missingFields.isEmpty()) {
+            throw new RuntimeException("필수 필드 누락: " + String.join(", ", missingFields));
         }
     }
 }
