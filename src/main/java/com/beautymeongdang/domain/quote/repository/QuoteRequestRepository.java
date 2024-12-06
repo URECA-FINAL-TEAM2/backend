@@ -1,6 +1,7 @@
 package com.beautymeongdang.domain.quote.repository;
 
 
+import com.beautymeongdang.domain.dog.entity.Dog;
 import com.beautymeongdang.domain.quote.dto.GetGroomerQuoteRequestResponseDto;
 import com.beautymeongdang.domain.quote.dto.GetGroomerSendQuoteRequestResponseDto;
 import com.beautymeongdang.domain.quote.entity.QuoteRequest;
@@ -228,6 +229,9 @@ public interface QuoteRequestRepository extends JpaRepository<QuoteRequest, Long
     """)
     List<GetMainGroomerTotalRequestResponseDto> findTop3LatestRequestsBySigunguId(@Param("sigunguId") Long sigunguId);
 
+    @Query("SELECT qr FROM QuoteRequest qr WHERE qr.dogId.customerId.customerId = :customerId AND qr.isDeleted = false")
+    List<QuoteRequest> findAllByCustomerDogs(@Param("customerId") Long customerId);
+           
     // 매장 논리적 삭제
     @Query("""
     SELECT qr FROM QuoteRequest qr
@@ -240,4 +244,6 @@ public interface QuoteRequestRepository extends JpaRepository<QuoteRequest, Long
     // 미용사 프로필 논리적 삭제
     List<QuoteRequest> findAllByRequestType(String requestType);
 
+    // 반려견 프로필 논리적 삭제
+    List<QuoteRequest> findAllByDogId(Dog dog);
 }

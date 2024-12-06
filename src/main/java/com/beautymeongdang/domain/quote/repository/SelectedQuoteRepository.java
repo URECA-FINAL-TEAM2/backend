@@ -1,5 +1,6 @@
 package com.beautymeongdang.domain.quote.repository;
 
+import com.beautymeongdang.domain.dog.entity.Dog;
 import com.beautymeongdang.domain.quote.dto.GetCustomerSelectedQuoteResponseDto;
 import com.beautymeongdang.domain.quote.dto.GetSelectedQuoteDetailResponseDto;
 import com.beautymeongdang.domain.quote.dto.GetGroomerSelectedQuoteResponseDto;
@@ -89,6 +90,8 @@ public interface SelectedQuoteRepository extends JpaRepository<SelectedQuote, Lo
     """)
     Integer countConfirmedReservations(@Param("groomerId") Long groomerId);
 
+    @Query("SELECT sq FROM SelectedQuote sq WHERE sq.customerId.customerId = :customerId AND sq.isDeleted = false")
+    List<SelectedQuote> findAllByCustomerId(@Param("customerId") Long customerId);
 
     // 매장 논리적 삭제
     List<SelectedQuote> findAllByQuoteIdGroomerIdAndIsDeletedFalse(Groomer groomerId);
@@ -96,4 +99,6 @@ public interface SelectedQuoteRepository extends JpaRepository<SelectedQuote, Lo
     // 미용사 프로필 논리적 삭제
     SelectedQuote findByQuoteId(Quote quote);
 
+    // 반려견 프로필 논리적 삭제
+    List<SelectedQuote> findAllByQuoteIdDogId(Dog dog);
 }
