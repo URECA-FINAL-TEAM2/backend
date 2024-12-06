@@ -4,7 +4,6 @@ package com.beautymeongdang.domain.quote.repository;
 import com.beautymeongdang.domain.quote.dto.GetGroomerQuoteRequestResponseDto;
 import com.beautymeongdang.domain.quote.dto.GetGroomerSendQuoteRequestResponseDto;
 import com.beautymeongdang.domain.quote.entity.QuoteRequest;
-import com.beautymeongdang.domain.user.dto.GetMainGroomerResponseDto;
 import com.beautymeongdang.domain.user.dto.GetMainGroomerTotalRequestResponseDto;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
