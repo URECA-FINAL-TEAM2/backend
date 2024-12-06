@@ -4,8 +4,8 @@ package com.beautymeongdang.domain.quote.repository;
 import com.beautymeongdang.domain.quote.dto.GetGroomerQuoteRequestResponseDto;
 import com.beautymeongdang.domain.quote.dto.GetGroomerSendQuoteRequestResponseDto;
 import com.beautymeongdang.domain.quote.entity.QuoteRequest;
-import com.beautymeongdang.domain.user.dto.GetMainGroomerResponseDto;
 import com.beautymeongdang.domain.user.dto.GetMainGroomerTotalRequestResponseDto;
+import com.beautymeongdang.domain.user.entity.Groomer;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -228,6 +228,16 @@ public interface QuoteRequestRepository extends JpaRepository<QuoteRequest, Long
     """)
     List<GetMainGroomerTotalRequestResponseDto> findTop3LatestRequestsBySigunguId(@Param("sigunguId") Long sigunguId);
 
+    // 매장 논리적 삭제
+    @Query("""
+    SELECT qr FROM QuoteRequest qr
+    JOIN DirectQuoteRequest dqr ON dqr.directQuoteRequestId.requestId = qr
+    WHERE dqr.directQuoteRequestId.groomerId = :groomer
+    AND qr.isDeleted = false
+    """)
+    List<QuoteRequest> findAllByGroomerIdAndIsDeletedFalse(Groomer groomer);
+
     // 미용사 프로필 논리적 삭제
     List<QuoteRequest> findAllByRequestType(String requestType);
+
 }

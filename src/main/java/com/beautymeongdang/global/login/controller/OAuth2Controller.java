@@ -35,7 +35,7 @@ public class OAuth2Controller {
             if (!userDTO.isRegister()) {
                 log.warn("login-log 추가 정보 입력이 필요한 사용자입니다. userDTO: {}", userDTO);
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                        .body(ApiResponse.badRequest(400, "login-log 추가 정보 입력이 필요한 사용자입니다."));
+                        .body(ApiResponse.badRequest2(400 ,responseData, "login-log 추가 정보 입력이 필요한 사용자입니다."));
 
             }
 
