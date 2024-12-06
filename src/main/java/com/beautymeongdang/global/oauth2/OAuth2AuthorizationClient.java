@@ -13,6 +13,7 @@ import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 
@@ -107,8 +108,8 @@ public class OAuth2AuthorizationClient {
     public GoogleToken getGoogleAccessToken(String code) {
         String tokenUrl = "https://oauth2.googleapis.com/token";
 
-        log.info("login-log Google token request parameters - clientId: {}, clientSecret: {}, redirectUri: {}",
-                googleClientId, googleClientSecret, googleRedirectUri);
+        log.info("login-log Google token request parameters - clientId: {}, redirectUri: {}",
+                googleClientId, googleRedirectUri);
 
         MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
         params.add("grant_type", "authorization_code");
@@ -123,15 +124,25 @@ public class OAuth2AuthorizationClient {
         HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(params, headers);
 
         try {
-            ResponseEntity<GoogleToken> response = restTemplate.postForEntity(
+            // 먼저 String으로 응답을 받아 로깅
+            ResponseEntity<String> rawResponse = restTemplate.postForEntity(
                     tokenUrl,
                     request,
-                    GoogleToken.class
+                    String.class
             );
+
+            log.debug("login-log Google raw token response: {}", rawResponse.getBody());
+
+            // 응답을 GoogleToken 객체로 변환
+            GoogleToken token = objectMapper.readValue(rawResponse.getBody(), GoogleToken.class);
             log.info("login-log ✅ 구글 토큰 발급 성공");
-            return response.getBody();
+            return token;
+        } catch (HttpClientErrorException e) {
+            log.error("login-log 구글 토큰 요청 실패. Status: {}, Response: {}",
+                    e.getStatusCode(), e.getResponseBodyAsString());
+            throw new RuntimeException("구글 토큰 발급 실패: " + e.getResponseBodyAsString());
         } catch (Exception e) {
-            log.error("login-log 구글 토큰 요청 실패", e);
+            log.error("login-log 구글 토큰 요청 실패: {}", e.getMessage(), e);
             throw new RuntimeException("구글 토큰 발급 실패", e);
         }
     }
