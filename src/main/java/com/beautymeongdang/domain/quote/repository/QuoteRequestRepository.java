@@ -236,4 +236,8 @@ public interface QuoteRequestRepository extends JpaRepository<QuoteRequest, Long
     AND qr.isDeleted = false
     """)
     List<QuoteRequest> findAllByGroomerIdAndIsDeletedFalse(Groomer groomer);
+
+    // 미용사 프로필 논리적 삭제
+    List<QuoteRequest> findAllByRequestType(String requestType);
+
 }

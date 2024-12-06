@@ -73,7 +73,12 @@ public class SecurityConfig {
                                 "/index1.html",
                                 "/login/**",
                                 "/api/auth/**",
-                                "/oauth2/**"
+                                "/oauth2/**",
+                                // 프론트엔드 라우트들
+                                "/",                    // 루트 경로
+                                "/selectRole",         // 역할 선택 페이지
+                                "/login",             // 로그인 페이지
+                                "/oauth2/**"          // OAuth2 관련 모든 경로
                         ).permitAll()
                         // API 및 Swagger 관련 경로
                         .requestMatchers(
@@ -105,7 +110,8 @@ public class SecurityConfig {
 
         // 허용할 오리진 설정
         configuration.setAllowedOrigins(Arrays.asList(
-                "http://localhost:5173",
+                "http://localhost:5173",    // 프론트엔드 로컬
+                "http://localhost:8081",    // 백엔드 로컬
                 "https://beautymeongdang.com",
                 "https://www.beautymeongdang.com"
         ));

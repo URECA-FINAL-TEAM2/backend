@@ -38,6 +38,11 @@ public interface QuoteRepository extends JpaRepository<Quote, Long> {
     // 미용사가 보낸 견적서 상세 조회
     Quote findByRequestIdAndGroomerId(QuoteRequest requestId, Groomer groomerId);
 
+
     // 매장 논리적 삭제
     List<Quote> findAllByGroomerIdAndIsDeletedFalse(Groomer groomerId);
+
+    // 미용사 프로필 논리적 삭제
+    List<Quote> findAllByGroomerId(Groomer groomer);
+
 }

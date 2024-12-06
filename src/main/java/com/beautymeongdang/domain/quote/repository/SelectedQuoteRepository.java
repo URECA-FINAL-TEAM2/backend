@@ -3,6 +3,7 @@ package com.beautymeongdang.domain.quote.repository;
 import com.beautymeongdang.domain.quote.dto.GetCustomerSelectedQuoteResponseDto;
 import com.beautymeongdang.domain.quote.dto.GetSelectedQuoteDetailResponseDto;
 import com.beautymeongdang.domain.quote.dto.GetGroomerSelectedQuoteResponseDto;
+import com.beautymeongdang.domain.quote.entity.Quote;
 import com.beautymeongdang.domain.quote.entity.SelectedQuote;
 import com.beautymeongdang.domain.user.entity.Groomer;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -18,7 +19,7 @@ public interface SelectedQuoteRepository extends JpaRepository<SelectedQuote, Lo
 
     @Query("SELECT new com.beautymeongdang.domain.quote.dto.GetCustomerSelectedQuoteResponseDto(" +
             "sq.selectedQuoteId, q.quoteId, d.profileImage, s.shopName, " +
-            "g.userId.userName, q.beautyDate, d.dogName, sq.status) " +
+            "g.userId.nickname, q.beautyDate, d.dogName, sq.status) " +
             "FROM SelectedQuote sq " +
             "JOIN sq.quoteId q " +
             "JOIN q.dogId d " +
@@ -39,7 +40,7 @@ public interface SelectedQuoteRepository extends JpaRepository<SelectedQuote, Lo
     List<GetGroomerSelectedQuoteResponseDto> findGroomerSelectedQuotes(@Param("groomerId") Long groomerId);
 
     @Query("SELECT new com.beautymeongdang.domain.quote.dto.GetSelectedQuoteDetailResponseDto(" +
-            "c.userId.userName, g.userId.userName, s.shopName, s.address, g.userId.phone, " +
+            "c.userId.userName, g.userId.nickname, s.shopName, s.address, g.userId.phone, " +
             "d.dogName, d.profileImage, d.dogBreed, d.dogWeight, d.dogAge, " +
             "CAST(d.dogGender AS string), " +
             "d.neutering, d.experience, d.significant, " +
@@ -88,7 +89,11 @@ public interface SelectedQuoteRepository extends JpaRepository<SelectedQuote, Lo
     """)
     Integer countConfirmedReservations(@Param("groomerId") Long groomerId);
 
+
     // 매장 논리적 삭제
     List<SelectedQuote> findAllByQuoteIdGroomerIdAndIsDeletedFalse(Groomer groomerId);
+
+    // 미용사 프로필 논리적 삭제
+    SelectedQuote findByQuoteId(Quote quote);
 
 }

@@ -13,7 +13,7 @@ import java.util.Optional;
 public interface ShopRepository extends JpaRepository<Shop, Long> {
 
     // grommerId를 통해 shop정보 찾기
-    @Query("SELECT s FROM Shop s WHERE s.groomerId.groomerId = :groomerId")
+    @Query("SELECT s FROM Shop s WHERE s.groomerId.groomerId = :groomerId AND s.isDeleted = false ")
     Optional<Shop> findByGroomerId(@Param("groomerId") Long groomerId);
 
 

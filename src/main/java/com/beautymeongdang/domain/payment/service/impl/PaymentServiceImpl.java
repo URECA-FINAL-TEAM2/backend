@@ -14,6 +14,7 @@ import com.beautymeongdang.domain.quote.repository.SelectedQuoteRepository;
 import com.beautymeongdang.domain.shop.repository.ShopRepository;
 import com.beautymeongdang.domain.user.entity.Customer;
 import com.beautymeongdang.domain.user.repository.CustomerRepository;
+import com.beautymeongdang.global.common.repository.CommonCodeRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -40,6 +41,7 @@ public class PaymentServiceImpl implements PaymentService {
     private final QuoteRepository quoteRepository;
     private final CustomerRepository customerRepository;
     private final WebClient webClient;
+    private final CommonCodeRepository commonCodeRepository;
 
     private static final String TOSS_PAYMENTS_CONFIRM_URL = "https://api.tosspayments.com/v1/payments/confirm";
 
@@ -71,6 +73,14 @@ public class PaymentServiceImpl implements PaymentService {
                 LocalDateTime approvedAt = approvedAtOffset.toLocalDateTime();
                 String method = response.get("method").toString();
 
+                String reservationCompleted = commonCodeRepository.findByCodeAndGroupCode("010", "250")
+                        .orElseThrow(() -> new IllegalArgumentException("예약 완료 상태 코드가 존재하지 않습니다."))
+                        .getCommonName();
+
+                String paymentCompleted = commonCodeRepository.findByCodeAndGroupCode("020", "300")
+                        .orElseThrow(() -> new IllegalArgumentException("결제 완료 상태 코드가 존재하지 않습니다."))
+                        .getCommonName();
+
                 Quote quote = quoteRepository.findById(request.getQuoteId())
                         .orElseThrow(() -> new IllegalArgumentException("견적 데이터를 찾을 수 없습니다."));
                 Customer customer = customerRepository.findById(request.getCustomerId())
@@ -84,7 +94,7 @@ public class PaymentServiceImpl implements PaymentService {
                 SelectedQuote selectedQuote = SelectedQuote.builder()
                         .quoteId(quote)
                         .customerId(customer)
-                        .status("예약 완료")
+                        .status(reservationCompleted)
                         .build();
 
                 selectedQuote = selectedQuoteRepository.save(selectedQuote);
@@ -94,7 +104,7 @@ public class PaymentServiceImpl implements PaymentService {
                         .orderId(request.getOrderId())
                         .amount(request.getAmount())
                         .method(method)
-                        .status("결제 완료")
+                        .status(paymentCompleted)
                         .approvedAt(approvedAt)
                         .paymentTitle(shopName)
                         .selectedQuoteId(selectedQuote)
@@ -105,7 +115,7 @@ public class PaymentServiceImpl implements PaymentService {
                 return PaymentResponseDto.builder()
                         .paymentKey(request.getPaymentKey())
                         .orderId(request.getOrderId())
-                        .status("결제 완료")
+                        .status(paymentCompleted)
                         .method(method)
                         .approvedAt(approvedAtOffset)
                         .amount(request.getAmount())
@@ -114,13 +124,21 @@ public class PaymentServiceImpl implements PaymentService {
                         .paymentTitle(shopName)
                         .build();
             } else {
+                String paymentFailed = commonCodeRepository.findByCodeAndGroupCode("040", "300")
+                        .orElseThrow(() -> new IllegalArgumentException("결제 실패 상태 코드가 존재하지 않습니다."))
+                        .getCommonName();
+
                 return PaymentResponseDto.builder()
                         .paymentKey(request.getPaymentKey())
-                        .status("FAILED")
+                        .status(paymentFailed)
                         .message("결제 승인 실패: 응답이 유효하지 않습니다.")
                         .build();
             }
         } catch (Exception e) {
+            String paymentFailed = commonCodeRepository.findByCodeAndGroupCode("040", "300")
+                    .orElseThrow(() -> new IllegalArgumentException("결제 실패 상태 코드가 존재하지 않습니다."))
+                    .getCommonName();
+
             if (e instanceof org.springframework.web.reactive.function.client.WebClientResponseException) {
                 org.springframework.web.reactive.function.client.WebClientResponseException we =
                         (org.springframework.web.reactive.function.client.WebClientResponseException) e;
@@ -128,14 +146,14 @@ public class PaymentServiceImpl implements PaymentService {
                 String errorBody = we.getResponseBodyAsString();
                 return PaymentResponseDto.builder()
                         .paymentKey(request.getPaymentKey())
-                        .status("ERROR")
+                        .status(paymentFailed)
                         .message("결제 승인 중 오류 발생: " + we.getStatusCode() + ", 응답 본문: " + errorBody)
                         .build();
             }
 
             return PaymentResponseDto.builder()
                     .paymentKey(request.getPaymentKey())
-                    .status("ERROR")
+                    .status(paymentFailed)
                     .message("결제 승인 중 예상치 못한 오류 발생: " + e.getMessage())
                     .build();
         }
@@ -166,32 +184,44 @@ public class PaymentServiceImpl implements PaymentService {
                     .block();
 
             if (response != null) {
+                String paymentCancelled = commonCodeRepository.findByCodeAndGroupCode("030", "300")
+                        .orElseThrow(() -> new IllegalArgumentException("결제 취소 상태 코드가 존재하지 않습니다."))
+                        .getCommonName();
+
+                String reservationCancelled = commonCodeRepository.findByCodeAndGroupCode("020", "250")
+                        .orElseThrow(() -> new IllegalArgumentException("예약 취소 상태 코드가 존재하지 않습니다."))
+                        .getCommonName();
+
                 Payment payment = paymentRepository.findByPaymentKey(request.getPaymentKey())
                         .orElseThrow(() -> new IllegalArgumentException("결제 정보를 찾을 수 없습니다."));
 
                 payment = payment.toBuilder()
-                        .status("결제 취소")
+                        .status(paymentCancelled)
                         .cancelReason(request.getCancelReason())
                         .build();
 
                 paymentRepository.save(payment);
 
                 SelectedQuote selectedQuote = payment.getSelectedQuoteId();
-                selectedQuote = selectedQuote.updateStatus("예약 취소");
+                selectedQuote = selectedQuote.updateStatus(reservationCancelled);
                 selectedQuoteRepository.save(selectedQuote);
 
                 return PaymentCancelResponseDto.builder()
                         .paymentKey(request.getPaymentKey())
-                        .status("결제 취소")
+                        .status(paymentCancelled)
                         .method(payment.getMethod())
                         .cancelReason(request.getCancelReason())
                         .selectedQuoteId(payment.getSelectedQuoteId().getSelectedQuoteId())
                         .message("결제 취소 성공")
                         .build();
             } else {
+                String paymentCancleFailed = commonCodeRepository.findByCodeAndGroupCode("050", "300")
+                        .orElseThrow(() -> new IllegalArgumentException("결제 취소 실패 상태 코드가 존재하지 않습니다."))
+                        .getCommonName();
+
                 return PaymentCancelResponseDto.builder()
                         .paymentKey(request.getPaymentKey())
-                        .status("FAILED")
+                        .status(paymentCancleFailed)
                         .message("결제 취소 실패: 응답이 유효하지 않습니다.")
                         .build();
             }
@@ -201,16 +231,25 @@ public class PaymentServiceImpl implements PaymentService {
                         (org.springframework.web.reactive.function.client.WebClientResponseException) e;
 
                 String errorBody = we.getResponseBodyAsString();
+
+                String paymentCancleFailed = commonCodeRepository.findByCodeAndGroupCode("050", "300")
+                        .orElseThrow(() -> new IllegalArgumentException("결제 취소 실패 상태 코드가 존재하지 않습니다."))
+                        .getCommonName();
+
                 return PaymentCancelResponseDto.builder()
                         .paymentKey(request.getPaymentKey())
-                        .status("ERROR")
+                        .status(paymentCancleFailed)
                         .message("결제 취소 중 오류 발생: " + we.getStatusCode() + ", 응답 본문: " + errorBody)
                         .build();
             }
 
+            String paymentCancleFailed = commonCodeRepository.findByCodeAndGroupCode("050", "300")
+                    .orElseThrow(() -> new IllegalArgumentException("결제 취소 실패 상태 코드가 존재하지 않습니다."))
+                    .getCommonName();
+
             return PaymentCancelResponseDto.builder()
                     .paymentKey(request.getPaymentKey())
-                    .status("ERROR")
+                    .status(paymentCancleFailed)
                     .message("결제 취소 중 오류 발생: " + e.getMessage())
                     .build();
         }
