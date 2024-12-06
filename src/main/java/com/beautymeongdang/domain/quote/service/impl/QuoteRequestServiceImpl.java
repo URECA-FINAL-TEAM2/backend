@@ -19,6 +19,7 @@ import com.beautymeongdang.domain.user.repository.CustomerRepository;
 import com.beautymeongdang.domain.user.repository.GroomerRepository;
 import com.beautymeongdang.domain.user.repository.UserRepository;
 import com.beautymeongdang.global.common.entity.UploadedFile;
+import com.beautymeongdang.global.exception.handler.BadRequestException;
 import com.beautymeongdang.global.exception.handler.NotFoundException;
 import com.beautymeongdang.global.region.entity.Sigungu;
 import com.beautymeongdang.global.region.repository.SigunguRepository;
@@ -56,6 +57,10 @@ public class QuoteRequestServiceImpl implements QuoteRequestService {
     @Override
     @Transactional
     public CreateInsertRequestAllResponseDto createInsertRequestAll(Long customerId,CreateInsertRequestAllRequestDto requestDto,List<MultipartFile> images) {
+        if (!requestDto.getRequestType().equals("010")) {
+            throw BadRequestException.invalidRequest("전체요청 타입");
+        }
+
         Dog dog = dogRepository.findById(requestDto.getDogId())
                 .orElseThrow(() -> NotFoundException.entityNotFound("강아지"));
 
@@ -115,6 +120,9 @@ public class QuoteRequestServiceImpl implements QuoteRequestService {
     @Override
     @Transactional
     public CreateInsertRequestGroomerResponseDto createInsertRequestGroomer(Long customerId, CreateInsertRequestGroomerRequestDto requestDto,List<MultipartFile> images) {
+        if (!requestDto.getRequestType().equals("020")) {
+            throw BadRequestException.invalidRequest("1:1요청 타입");
+        }
 
         Dog dog = dogRepository.findById(requestDto.getDogId())
                 .orElseThrow(() -> NotFoundException.entityNotFound("강아지"));

@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class GetGroomerMypageResponseDto {
     private Long groomerId;
-    private String nickname;
+    private String userName;
     private String email;
     private String phoneNumber;
     private String profileImage;
@@ -27,10 +27,10 @@ public class GetGroomerMypageResponseDto {
     }
 
     @Builder
-    public GetGroomerMypageResponseDto(Long groomerId, String nickname, String email,
+    public GetGroomerMypageResponseDto(Long groomerId, String userName, String email,
                                        String phoneNumber, String profileImage, GroomerMypageCountsDto counts) {
         this.groomerId = groomerId;
-        this.nickname = nickname;
+        this.userName = userName;
         this.email = email;
         this.phoneNumber = phoneNumber;
         this.profileImage = profileImage;
