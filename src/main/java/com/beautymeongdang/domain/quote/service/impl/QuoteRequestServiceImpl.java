@@ -332,6 +332,16 @@ public class QuoteRequestServiceImpl implements QuoteRequestService {
 
         QuoteRequest savedQuoteRequest = quoteRequestRepository.save(updateQuoteRequest);
 
+        CommonCodeId requestStatusCodeId = new CommonCodeId(savedQuoteRequest.getStatus(), "100");
+        CommonCode requestStatusCode = commonCodeRepository.findById(requestStatusCodeId)
+                .orElseThrow(() -> NotFoundException.entityNotFound("견적서 요청 진행 상태 코드"));
+        String requestStatus = requestStatusCode.getCommonName();
+
+        CommonCodeId requestTypeCodeId = new CommonCodeId(savedQuoteRequest.getRequestType(), "900");
+        CommonCode requestTypeCode = commonCodeRepository.findById(requestTypeCodeId)
+                .orElseThrow(() -> NotFoundException.entityNotFound(" 진견적서 요청 타입 구분 코드"));
+        String requestType = requestTypeCode.getCommonName();
+
         Groomer groomer = groomerRepository.findById(requestDto.getGroomerId())
                 .orElseThrow(() -> NotFoundException.entityNotFound("미용사"));
 
@@ -352,9 +362,9 @@ public class QuoteRequestServiceImpl implements QuoteRequestService {
                 .dogId(savedQuoteRequest.getDogId().getDogId())
                 .beautyDate(savedQuoteRequest.getBeautyDate())
                 .content(savedQuoteRequest.getContent())
-                .status(savedQuoteRequest.getStatus())
-                .requestType(savedQuoteRequest.getRequestType())
-                .groomerId(savedDirectQuoteRequest.getDirectQuoteRequestId().getRequestId().getRequestId())
+                .status(requestStatus)
+                .requestType(requestType)
+                .groomerId(savedDirectQuoteRequest.getDirectQuoteRequestId().getGroomerId().getGroomerId())
                 .reasonForRejection(savedDirectQuoteRequest.getReasonForRejection())
                 .build();
     }
