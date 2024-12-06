@@ -1,5 +1,13 @@
 package com.beautymeongdang.domain.shop.service.impl;
 
+import com.beautymeongdang.domain.payment.entity.Payment;
+import com.beautymeongdang.domain.payment.repository.PaymentRepository;
+import com.beautymeongdang.domain.quote.entity.Quote;
+import com.beautymeongdang.domain.quote.entity.QuoteRequest;
+import com.beautymeongdang.domain.quote.entity.SelectedQuote;
+import com.beautymeongdang.domain.quote.repository.QuoteRepository;
+import com.beautymeongdang.domain.quote.repository.QuoteRequestRepository;
+import com.beautymeongdang.domain.quote.repository.SelectedQuoteRepository;
 import com.beautymeongdang.domain.review.entity.Reviews;
 import com.beautymeongdang.domain.review.entity.ReviewsImage;
 import com.beautymeongdang.domain.review.repository.RecommendRepository;
@@ -51,6 +59,10 @@ public class ShopServiceImpl implements ShopService {
     private final SigunguRepository sigunguRepository;
     private final FileStore fileStore;
     private final FavoriteRepository favoriteRepository;
+    private final QuoteRepository quoteRepository;
+    private final QuoteRequestRepository quoteRequestRepository;
+    private final SelectedQuoteRepository selectedQuoteRepository;
+    private final PaymentRepository paymentRepository;
 
     /**
      * 매장 등록
@@ -260,26 +272,33 @@ public class ShopServiceImpl implements ShopService {
                 .orElseThrow(() -> NotFoundException.entityNotFound("매장"));
 
         if (shop.isDeleted()) {
-            throw new BadRequestException("이미 삭제된 매장입니다.");
+            throw BadRequestException.invalidRequest("이미 삭제된 매장");
         }
 
-        // 매장 리뷰 논리적 삭제
-        List<Reviews> reviews = shopRepository.findReviewsByGroomer(shop.getGroomerId());
-        reviews.forEach(Reviews::delete);
+        if (!shop.getGroomerId().getGroomerId().equals(groomerId)) {
+            throw BadRequestException.invalidRequest("매장 삭제 권한");
+        }
 
-        // 매장 찜 삭제
-        List<Favorite> favorites = shopRepository.findFavoritesByShop(shop);
+        Groomer groomer = shop.getGroomerId();
+
+        List<Favorite> favorites = favoriteRepository.findByShopId(shop.getShopId());
         favoriteRepository.deleteAll(favorites);
 
-        // 매장 논리적 삭제 처리
+        reviewRepository.findGroomerReviews(groomer.getGroomerId()).forEach(Reviews::delete);
+        paymentRepository.findByGroomerId(groomer.getGroomerId()).forEach(Payment::delete);
+        selectedQuoteRepository.findByGroomerId(groomer.getGroomerId()).forEach(SelectedQuote::delete);
+        quoteRequestRepository.findByGroomerId(groomer.getGroomerId()).forEach(QuoteRequest::delete);
+        quoteRepository.findByGroomerId(groomer.getGroomerId()).forEach(Quote::delete);
+
+        // 매장 논리적 삭제
         shop.delete();
+        shopRepository.save(shop);
 
         return DeleteShopResponseDto.builder()
                 .shopId(shop.getShopId())
                 .shopName(shop.getShopName())
                 .build();
     }
-
 
 
     /**

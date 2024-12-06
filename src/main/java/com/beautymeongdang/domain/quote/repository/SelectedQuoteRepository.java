@@ -88,7 +88,8 @@ public interface SelectedQuoteRepository extends JpaRepository<SelectedQuote, Lo
     Integer countConfirmedReservations(@Param("groomerId") Long groomerId);
 
 
-
+    @Query("SELECT sq FROM SelectedQuote sq WHERE sq.quoteId.groomerId.groomerId = :groomerId AND sq.isDeleted = false")
+    List<SelectedQuote> findByGroomerId(@Param("groomerId") Long groomerId);
 
 
 }

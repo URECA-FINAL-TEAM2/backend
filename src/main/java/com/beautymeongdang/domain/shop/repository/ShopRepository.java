@@ -64,15 +64,5 @@ public interface ShopRepository extends JpaRepository<Shop, Long> {
     Integer countFavoritesByShop(@Param("shop") Shop shop);
 
 
-    //매장 삭제 할 떄 관련된 정보들 논리적 삭제
-    @Query("SELECT s FROM Shop s WHERE s.shopId = :shopId AND s.isDeleted = false")
-    Optional<Shop> findById(@Param("shopId") Long shopId);
-
-    @Query("SELECT r FROM Reviews r WHERE r.groomerId = :groomer AND r.isDeleted = false")
-    List<Reviews> findReviewsByGroomer(@Param("groomer") Groomer groomer);
-
-    @Query("SELECT f FROM Favorite f WHERE f.favoriteId.shopId = :shop")
-    List<Favorite> findFavoritesByShop(@Param("shop") Shop shop);
-
 
 }

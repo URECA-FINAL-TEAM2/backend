@@ -228,4 +228,7 @@ public interface QuoteRequestRepository extends JpaRepository<QuoteRequest, Long
     """)
     List<GetMainGroomerTotalRequestResponseDto> findTop3LatestRequestsBySigunguId(@Param("sigunguId") Long sigunguId);
 
+
+    @Query("SELECT qr FROM QuoteRequest qr WHERE qr.isDeleted = false AND qr.dogId.customerId.customerId = :groomerId")
+    List<QuoteRequest> findByGroomerId(@Param("groomerId") Long groomerId);
 }
