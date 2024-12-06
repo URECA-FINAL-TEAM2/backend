@@ -1,6 +1,7 @@
 package com.beautymeongdang.domain.user.dto;
 
 import lombok.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.math.BigDecimal;
 
@@ -20,4 +21,5 @@ public class GroomerRegisterRequestDTO {
     private String imageUrl;
     private BigDecimal latitude;
     private BigDecimal longitude;
+    private MultipartFile profileImage;
 }

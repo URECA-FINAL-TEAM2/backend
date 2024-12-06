@@ -47,7 +47,7 @@ public class UserController {
     @PostMapping("/register/groomer")
     public ResponseEntity<ApiResponse<Map<String, Object>>> registerGroomer(
             @AuthenticationPrincipal CustomOAuth2User oauth2User,
-            @RequestBody GroomerRegisterRequestDTO requestDto) {
+            @ModelAttribute GroomerRegisterRequestDTO requestDto) {
         try {
             Map<String, Object> responseData = userService.registerGroomer(oauth2User.getUserId(), requestDto);
             return ApiResponse.ok(201, responseData, "미용사 회원가입 성공");

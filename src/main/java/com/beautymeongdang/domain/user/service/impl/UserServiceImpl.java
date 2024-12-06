@@ -38,7 +38,7 @@ public class UserServiceImpl implements UserService {
     private final FileStore fileStore;
 
     @Override
-    public Map<String, Object> registerCustomer(Long userId, Map<String, String> requestDto, MultipartFile profileImage) {
+    public Map<String, Object> registerCustomer(Long userId, CustomerRegisterRequestDTO requestDto, MultipartFile profileImage) {
         try {
             User user = userRepository.findById(userId)
                     .orElseThrow(() -> new EntityNotFoundException("User not found with id: " + userId));
@@ -51,15 +51,13 @@ public class UserServiceImpl implements UserService {
             handleProfileImage(user, profileImage);
 
             user.getRoles().add(Role.고객);
-            user.updateUserInfo(requestDto.get("phone"), requestDto.get("nickname"));
+            user.updateUserInfo(requestDto.getPhone(), requestDto.getNickName());
             user.completeRegistration();
             userRepository.save(user);
 
             // Customer 정보 저장
-            Sigungu sigungu = sigunguRepository.findBySidoId_SidoNameAndSigunguName(
-                            requestDto.get("sido"),
-                            requestDto.get("sigungo"))
-                    .orElseThrow(() -> new EntityNotFoundException("Sigungu not found"));
+            Sigungu sigungu = sigunguRepository.findById(requestDto.getSigunguId())
+                    .orElseThrow(() -> new EntityNotFoundException("Sigungu not found with id: " + requestDto.getSigunguId()));
 
             Customer customer = Customer.builder()
                     .userId(user)
@@ -82,7 +80,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Map<String, Object> registerGroomer(Long userId, Map<String, String> requestDto) {
+    public Map<String, Object> registerGroomer(Long userId, GroomerRegisterRequestDTO requestDto) {
         try {
             User user = userRepository.findById(userId)
                     .orElseThrow(() -> new EntityNotFoundException("User not found with id: " + userId));
@@ -91,14 +89,17 @@ public class UserServiceImpl implements UserService {
                 throw new RuntimeException("User is already registered as a groomer");
             }
 
+            // 프로필 이미지 처리
+            handleProfileImage(user, requestDto.getProfileImage());
+
             user.getRoles().add(Role.미용사);
-            user.updateUserInfo(requestDto.get("phone"), requestDto.get("nickname"));
+            user.updateUserInfo(requestDto.getPhone(), requestDto.getNickName());
             user.completeRegistration();
             userRepository.save(user);
 
             Groomer groomer = Groomer.builder()
                     .userId(user)
-                    .skill(requestDto.get("skills"))
+                    .skill(requestDto.getSkill())
                     .build();
 
             groomerRepository.save(groomer);
