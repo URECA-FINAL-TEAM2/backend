@@ -55,13 +55,16 @@ public class UserServiceImpl implements UserService {
             user.completeRegistration();
             userRepository.save(user);
 
-            // Customer 정보 저장
-            Sigungu sigungu = sigunguRepository.findById(requestDto.getSigunguId())
-                    .orElseThrow(() -> new EntityNotFoundException("Sigungu not found with id: " + requestDto.getSigunguId()));
+            // 시군구 정보 조회
+            Sigungu sigungu = sigunguRepository.findById(requestDto.getSigungoId())
+                    .orElseThrow(() -> new EntityNotFoundException("Sigungu not found with id: " + requestDto.getSigungoId()));
 
+            // Customer 정보 저장
             Customer customer = Customer.builder()
                     .userId(user)
                     .sigunguId(sigungu)
+                    .latitude(requestDto.getLatitude())
+                    .longitude(requestDto.getLongitude())
                     .build();
 
             customerRepository.save(customer);
@@ -97,6 +100,7 @@ public class UserServiceImpl implements UserService {
             user.completeRegistration();
             userRepository.save(user);
 
+            // Groomer 정보 저장
             Groomer groomer = Groomer.builder()
                     .userId(user)
                     .skill(requestDto.getSkill())
@@ -104,20 +108,22 @@ public class UserServiceImpl implements UserService {
 
             groomerRepository.save(groomer);
 
-            // 필요한 데이터 반환
             Map<String, Object> responseData = Map.of(
                     "userId", user.getUserId(),
                     "nickname", user.getNickname(),
                     "isRegister", user.isRegister()
             );
-            return Map.of(
-                    "userId", user.getUserId(),
-                    "nickname", user.getNickname(),
-                    "isRegister", user.isRegister()
-            );
+            return responseData;
         } catch (Exception e) {
             log.error("Groomer registration failed: {}", e.getMessage(), e);
             throw new RuntimeException("Groomer registration failed: " + e.getMessage());
+        }
+    }
+
+    private void handleProfileImage(User user, MultipartFile profileImage) {
+        if (profileImage != null && !profileImage.isEmpty()) {
+            List<UploadedFile> uploadedFiles = fileStore.storeFiles(List.of(profileImage), FileStore.USER_PROFILE);
+            user.updateProfileImage(uploadedFiles.get(0).getFileUrl());
         }
     }
 
@@ -145,12 +151,4 @@ public class UserServiceImpl implements UserService {
             throw new RuntimeException("Cookie deletion failed", e);
         }
     }
-
-    private void handleProfileImage(User user, MultipartFile profileImage) {
-        if (profileImage != null && !profileImage.isEmpty()) {
-            List<UploadedFile> uploadedFiles = fileStore.storeFiles(List.of(profileImage), FileStore.USER_PROFILE);
-            user.updateProfileImage(uploadedFiles.get(0).getFileUrl());
-        }
-    }
-
 }

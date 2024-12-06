@@ -15,5 +15,6 @@ public class CustomerRegisterRequestDTO {
     private Long sigungoId;
     private BigDecimal latitude;
     private BigDecimal longitude;
+    private String imageUrl;
 
 }

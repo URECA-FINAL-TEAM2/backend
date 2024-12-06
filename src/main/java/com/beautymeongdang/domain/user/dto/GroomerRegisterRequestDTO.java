@@ -14,7 +14,5 @@ public class GroomerRegisterRequestDTO {
     private String phone;
     private String skill;
     private String imageUrl;
-    private BigDecimal latitude;
-    private BigDecimal longitude;
     private MultipartFile profileImage;
 }
