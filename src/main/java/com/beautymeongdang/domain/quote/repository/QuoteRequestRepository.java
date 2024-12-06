@@ -228,4 +228,6 @@ public interface QuoteRequestRepository extends JpaRepository<QuoteRequest, Long
     """)
     List<GetMainGroomerTotalRequestResponseDto> findTop3LatestRequestsBySigunguId(@Param("sigunguId") Long sigunguId);
 
+    // 미용사 프로필 논리적 삭제
+    List<QuoteRequest> findAllByRequestType(String requestType);
 }

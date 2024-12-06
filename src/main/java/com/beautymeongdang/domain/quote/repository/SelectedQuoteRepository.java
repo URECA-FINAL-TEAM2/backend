@@ -3,6 +3,7 @@ package com.beautymeongdang.domain.quote.repository;
 import com.beautymeongdang.domain.quote.dto.GetCustomerSelectedQuoteResponseDto;
 import com.beautymeongdang.domain.quote.dto.GetSelectedQuoteDetailResponseDto;
 import com.beautymeongdang.domain.quote.dto.GetGroomerSelectedQuoteResponseDto;
+import com.beautymeongdang.domain.quote.entity.Quote;
 import com.beautymeongdang.domain.quote.entity.SelectedQuote;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -87,8 +88,6 @@ public interface SelectedQuoteRepository extends JpaRepository<SelectedQuote, Lo
     """)
     Integer countConfirmedReservations(@Param("groomerId") Long groomerId);
 
-
-
-
-
+    // 미용사 프로필 논리적 삭제
+    SelectedQuote findByQuoteId(Quote quote);
 }

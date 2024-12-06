@@ -48,7 +48,7 @@ public class MypageServiceImpl implements MypageService {
 
         return GetGroomerMypageResponseDto.builder()
                 .groomerId(groomer.getGroomerId())
-                .nickname(user.getNickname())
+                .userName(user.getUserName())
                 .email(user.getEmail())
                 .phoneNumber(user.getPhone())
                 .profileImage(user.getProfileImage())
