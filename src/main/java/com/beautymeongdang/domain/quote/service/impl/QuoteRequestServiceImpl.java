@@ -18,7 +18,10 @@ import com.beautymeongdang.domain.user.entity.User;
 import com.beautymeongdang.domain.user.repository.CustomerRepository;
 import com.beautymeongdang.domain.user.repository.GroomerRepository;
 import com.beautymeongdang.domain.user.repository.UserRepository;
+import com.beautymeongdang.global.common.entity.CommonCode;
+import com.beautymeongdang.global.common.entity.CommonCodeId;
 import com.beautymeongdang.global.common.entity.UploadedFile;
+import com.beautymeongdang.global.common.repository.CommonCodeRepository;
 import com.beautymeongdang.global.exception.handler.BadRequestException;
 import com.beautymeongdang.global.exception.handler.NotFoundException;
 import com.beautymeongdang.global.region.entity.Sigungu;
@@ -49,6 +52,7 @@ public class QuoteRequestServiceImpl implements QuoteRequestService {
     private final CustomerRepository customerRepository;
     private final UserRepository userRepository;
     private final ShopRepository shopRepository;
+    private final CommonCodeRepository commonCodeRepository;
 
 
     /**
@@ -270,6 +274,11 @@ public class QuoteRequestServiceImpl implements QuoteRequestService {
         Dog dog = dogRepository.findById(quoteRequest.getDogId().getDogId())
                 .orElseThrow(() -> NotFoundException.entityNotFound("강아지"));
 
+        CommonCodeId commonCodeId = new CommonCodeId(dog.getDogBreed(), "400");
+        CommonCode commonCode = commonCodeRepository.findById(commonCodeId)
+                .orElseThrow(() -> NotFoundException.entityNotFound("견종"));
+        String dogBreed = commonCode.getCommonName();
+
         // user
         Customer customer = customerRepository.findById(dog.getCustomerId().getCustomerId())
                 .orElseThrow(() -> NotFoundException.entityNotFound("고객"));
@@ -290,11 +299,11 @@ public class QuoteRequestServiceImpl implements QuoteRequestService {
                 .beautyDate(quoteRequest.getBeautyDate())
                 .requestContent(quoteRequest.getContent())
                 .userProfileImage(user.getProfileImage())
-                .nickname(user.getNickname())
+                .userName(user.getUserName())
                 .dogId(dog.getDogId())
                 .dogProfileImage(dog.getProfileImage())
                 .dogName(dog.getDogName())
-                .dogBreed(dog.getDogBreed())
+                .dogBreed(dogBreed)
                 .dogWeight(dog.getDogWeight())
                 .dogAge(dog.getDogAge())
                 .dogGender(dog.getDogGender().name())

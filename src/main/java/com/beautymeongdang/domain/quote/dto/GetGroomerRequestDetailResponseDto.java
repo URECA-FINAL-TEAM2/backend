@@ -18,7 +18,7 @@ public class GetGroomerRequestDetailResponseDto {
 
     // user
     private String userProfileImage;
-    private String nickname;
+    private String userName;
 
     // dog
     private Long dogId;
@@ -37,7 +37,7 @@ public class GetGroomerRequestDetailResponseDto {
 
     @Builder
     public GetGroomerRequestDetailResponseDto(Long requestId, LocalDateTime expiryDate, LocalDateTime beautyDate, String requestContent,
-                                              String userProfileImage, String nickname, Long dogId, String dogProfileImage,
+                                              String userProfileImage, String userName, Long dogId, String dogProfileImage,
                                               String dogName, String dogBreed, String dogWeight, Integer dogAge, String dogGender,
                                               Boolean neutering, Boolean experience, String significant, List<String> requestImages) {
         this.requestId = requestId;
@@ -45,7 +45,7 @@ public class GetGroomerRequestDetailResponseDto {
         this.beautyDate = beautyDate;
         this.requestContent = requestContent;
         this.userProfileImage = userProfileImage;
-        this.nickname = nickname;
+        this.userName = userName;
         this.dogId = dogId;
         this.dogProfileImage = dogProfileImage;
         this.dogName = dogName;
