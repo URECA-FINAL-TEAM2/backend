@@ -83,7 +83,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Map<String, Object> registerGroomer(Long userId, GroomerRegisterRequestDTO requestDto) {
+    public Map<String, Object> registerGroomer(Long userId, GroomerRegisterRequestDTO requestDto, MultipartFile profileImage) {
         try {
             User user = userRepository.findById(userId)
                     .orElseThrow(() -> new EntityNotFoundException("User not found with id: " + userId));
@@ -93,7 +93,7 @@ public class UserServiceImpl implements UserService {
             }
 
             // 프로필 이미지 처리
-            handleProfileImage(user, requestDto.getProfileImage());
+            handleProfileImage(user, profileImage);
 
             user.getRoles().add(Role.미용사);
             user.updateUserInfo(requestDto.getPhone(), requestDto.getNickName());
@@ -119,6 +119,7 @@ public class UserServiceImpl implements UserService {
             throw new RuntimeException("Groomer registration failed: " + e.getMessage());
         }
     }
+
 
     private void handleProfileImage(User user, MultipartFile profileImage) {
         if (profileImage != null && !profileImage.isEmpty()) {

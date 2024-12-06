@@ -32,12 +32,14 @@ public class UserController {
     private final JwtProvider jwtProvider;
 
     // 고객 추가 회원가입 
+
     @PostMapping(value = "/register/customer", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ApiResponse<Map<String, Object>>> registerCustomer(
             @AuthenticationPrincipal CustomOAuth2User oauth2User,
-            @ModelAttribute CustomerRegisterRequestDTO requestDto) {
+            @RequestPart("requestDto") CustomerRegisterRequestDTO requestDto,
+            @RequestPart(value = "profileImage", required = false) MultipartFile profileImage) {
         try {
-            Map<String, Object> responseData = userService.registerCustomer(oauth2User.getUserId(), requestDto);
+            Map<String, Object> responseData = userService.registerCustomer(oauth2User.getUserId(), requestDto, profileImage);
             return ApiResponse.ok(201, responseData, "고객 회원가입 성공");
         } catch (Exception e) {
             log.error("고객 회원가입 실패: {}", e.getMessage(), e);
@@ -48,9 +50,10 @@ public class UserController {
     @PostMapping(value = "/register/groomer", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ApiResponse<Map<String, Object>>> registerGroomer(
             @AuthenticationPrincipal CustomOAuth2User oauth2User,
-            @ModelAttribute GroomerRegisterRequestDTO requestDto) {
+            @RequestPart("requestDto") GroomerRegisterRequestDTO requestDto,
+            @RequestPart(value = "profileImage", required = false) MultipartFile profileImage) {
         try {
-            Map<String, Object> responseData = userService.registerGroomer(oauth2User.getUserId(), requestDto);
+            Map<String, Object> responseData = userService.registerGroomer(oauth2User.getUserId(), requestDto, profileImage);
             return ApiResponse.ok(201, responseData, "미용사 회원가입 성공");
         } catch (Exception e) {
             log.error("미용사 회원가입 실패: {}", e.getMessage(), e);
