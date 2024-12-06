@@ -15,6 +15,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -44,13 +45,30 @@ public class UserController {
         }
     }
 
+    @PostMapping("/register/customer")
+    public ResponseEntity<ApiResponse<Map<String, Object>>> registerCustomer(
+            @AuthenticationPrincipal CustomOAuth2User oauth2User,
+            @RequestPart("requestDto") Map<String, String> requestDto,
+            @RequestPart(value = "profileImage", required = false) MultipartFile profileImage,
+            HttpServletResponse response) {
+        try {
+            User user = userService.registerCustomer(oauth2User.getUserId(), requestDto, profileImage);
+            Map<String, Object> tokenInfo = jwtProvider.createTokens(user, response);
+            return ApiResponse.ok(201, tokenInfo, "고객 회원가입 성공");
+        } catch (Exception e) {
+            log.error("고객 회원가입 실패: {}", e.getMessage(), e);
+            return ApiResponse.badRequest(400, "고객 회원가입 실패: " + e.getMessage());
+        }
+    }
+
     @PostMapping("/register/groomer")
     public ResponseEntity<ApiResponse<Map<String, Object>>> registerGroomer(
             @AuthenticationPrincipal CustomOAuth2User oauth2User,
-            @RequestBody GroomerRegisterRequestDTO registrationDTO,
+            @RequestPart("requestDto") Map<String, String> requestDto,
+            @RequestPart(value = "profileImage", required = false) MultipartFile profileImage,
             HttpServletResponse response) {
         try {
-            User user = userService.registerGroomer(oauth2User.getUserId(), registrationDTO);
+            User user = userService.registerGroomer(oauth2User.getUserId(), requestDto, profileImage);
             Map<String, Object> tokenInfo = jwtProvider.createTokens(user, response);
             return ApiResponse.ok(201, tokenInfo, "미용사 회원가입 성공");
         } catch (Exception e) {
@@ -58,21 +76,7 @@ public class UserController {
             return ApiResponse.badRequest(400, "미용사 회원가입 실패: " + e.getMessage());
         }
     }
-
-    @PostMapping("/logout")
-    public ResponseEntity<ApiResponse<Map<String, String>>> logout(HttpServletRequest request,
-            HttpServletResponse response) {
-        try {
-            userService.logout(request, response);
-            Map<String, String> result = new HashMap<>();
-            result.put("result", "JWT Token delete");
-
-            return ApiResponse.ok(201, result, "logout Success");
-        } catch (Exception e) {
-            log.error("Logout failed: {}", e.getMessage(), e);
-            return ApiResponse.badRequest(400, "Logout failed: " + e.getMessage());
-        }
-    }
+}
 
 
     // Controller
