@@ -13,6 +13,7 @@ public class GetDogInfoResponseDto {
     private Long dogId;
     private String dogName;
     private String image;
+    private String dogBreed;
     private String dogWeight;
     private Integer dogAge;
     private String dogGender;

@@ -18,7 +18,10 @@ import com.beautymeongdang.domain.user.entity.User;
 import com.beautymeongdang.domain.user.repository.CustomerRepository;
 import com.beautymeongdang.domain.user.repository.GroomerRepository;
 import com.beautymeongdang.domain.user.repository.UserRepository;
+import com.beautymeongdang.global.common.entity.CommonCode;
+import com.beautymeongdang.global.common.entity.CommonCodeId;
 import com.beautymeongdang.global.common.entity.UploadedFile;
+import com.beautymeongdang.global.common.repository.CommonCodeRepository;
 import com.beautymeongdang.global.exception.handler.BadRequestException;
 import com.beautymeongdang.global.exception.handler.NotFoundException;
 import com.beautymeongdang.global.region.entity.Sigungu;
@@ -49,7 +52,9 @@ public class QuoteRequestServiceImpl implements QuoteRequestService {
     private final CustomerRepository customerRepository;
     private final UserRepository userRepository;
     private final ShopRepository shopRepository;
+    private final CommonCodeRepository commonCodeRepository;
 
+    private static final String DOG_BREED_GROUP_CODE = "400";
 
     /**
      * 전체 견적서 요청하기
@@ -182,7 +187,6 @@ public class QuoteRequestServiceImpl implements QuoteRequestService {
      * 고객의 반려견 리스트 조회
      */
     @Override
-    @Transactional(readOnly = true)
     public List<GetDogListResponseDto> getDogList(Long customerId) {
         Customer customer = customerRepository.findById(customerId)
                 .orElseThrow(() -> NotFoundException.entityNotFound("고객"));
@@ -200,15 +204,19 @@ public class QuoteRequestServiceImpl implements QuoteRequestService {
      * 고객이 선택한 반려견 정보 조회
      */
     @Override
-    @Transactional(readOnly = true)
     public GetDogInfoResponseDto getDogInfo(Long dogId, Long customerId) {
         Dog dog = dogRepository.findById(dogId)
                 .orElseThrow(() -> NotFoundException.entityNotFound("강아지"));
+
+        CommonCodeId breedCodeId = new CommonCodeId(dog.getDogBreed(), DOG_BREED_GROUP_CODE);
+        CommonCode breedCode = commonCodeRepository.findById(breedCodeId)
+                .orElseThrow(() -> NotFoundException.entityNotFound("견종 코드"));
 
         return GetDogInfoResponseDto.builder()
                 .dogId(dog.getDogId())
                 .dogName(dog.getDogName())
                 .image(dog.getProfileImage())
+                .dogBreed(breedCode.getCommonName())
                 .dogWeight(dog.getDogWeight())
                 .dogAge(dog.getDogAge())
                 .dogGender(dog.getDogGender().name())
@@ -222,7 +230,6 @@ public class QuoteRequestServiceImpl implements QuoteRequestService {
      * 1:1 견적서 요청에서 미용사와 매장 정보 조회
      */
     @Override
-    @Transactional(readOnly = true)
     public GetRequestGroomerShopResponseDto getGroomerShopInfo(Long groomerId) {
 
         Shop shop = shopRepository.findByGroomerId(groomerId)
