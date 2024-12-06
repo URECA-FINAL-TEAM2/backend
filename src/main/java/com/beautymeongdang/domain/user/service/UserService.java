@@ -6,16 +6,15 @@ import com.beautymeongdang.domain.user.entity.User;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.util.Map;
 import java.util.Optional;
 
 @Service
 public interface UserService {
-
-    User registerCustomer(Long userId, CustomerRegisterRequestDTO customerDTO);
-
-    User registerGroomer(Long userId, GroomerRegisterRequestDTO registrationDTO);
-    void logout(HttpServletRequest request, HttpServletResponse response);
-
+    Map<String, Object> registerCustomer(Long userId, Map<String, String> requestDto, MultipartFile profileImage);
+    Map<String, Object> registerGroomer(Long userId, Map<String, String> requestDto);
     String getNicknameCheckMessage(String nickname);
+    void logout(HttpServletRequest request, HttpServletResponse response);
 }
