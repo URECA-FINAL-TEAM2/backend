@@ -23,7 +23,7 @@ public class GetGroomerQuoteDetailResponseDto {
     @NoArgsConstructor
     public static class  CustomerInfo{
         private String profileImage;
-        private String nickname;
+        private String userName;
     }
 
     @Getter

@@ -236,6 +236,11 @@ public class QuoteServiceImpl implements QuoteService {
         Dog dog = dogRepository.findById(quoteRequest.getDogId().getDogId())
                 .orElseThrow(() -> NotFoundException.entityNotFound("강아지"));
 
+        CommonCodeId commonCodeId = new CommonCodeId(dog.getDogBreed(), "400");
+        CommonCode commonCode = commonCodeRepository.findById(commonCodeId)
+                .orElseThrow(() -> NotFoundException.entityNotFound("견종"));
+        String dogBreed = commonCode.getCommonName();
+
         Customer customer = customerRepository.findById(dog.getCustomerId().getCustomerId())
                 .orElseThrow(() -> NotFoundException.entityNotFound("고객"));
 
@@ -257,12 +262,12 @@ public class QuoteServiceImpl implements QuoteService {
         return GetGroomerQuoteDetailResponseDto.builder()
                 .customer(GetGroomerQuoteDetailResponseDto.CustomerInfo.builder()
                         .profileImage(user.getProfileImage())
-                        .nickname(user.getNickname())
+                        .userName(user.getUserName())
                         .build())
                 .dog(GetGroomerQuoteDetailResponseDto.DogInfo.builder()
                         .dogProfileImage(dog.getProfileImage())
                         .dogName(dog.getDogName())
-                        .dogBreed(dog.getDogBreed())
+                        .dogBreed(dogBreed)
                         .dogWeight(dog.getDogWeight())
                         .dogAge(dog.getDogAge())
                         .dogGender(dog.getDogGender().name())
