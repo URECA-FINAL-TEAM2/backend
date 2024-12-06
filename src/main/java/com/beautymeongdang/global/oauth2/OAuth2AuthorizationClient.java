@@ -159,8 +159,19 @@ public class OAuth2AuthorizationClient {
                     String.class
             );
 
-            JsonNode jsonNode = objectMapper.readTree(response.getBody());
-            log.info("login-log📄 구글 응답 데이터: {}", response.getBody());
+            String responseBody = response.getBody();
+            log.info("login-log📄 응답 코드: {}", response.getStatusCode());
+            log.info("login-log📄 응답 헤더: {}", response.getHeaders());
+            log.info("login-log📄 구글 응답 데이터: {}", responseBody);
+
+            JsonNode jsonNode = objectMapper.readTree(responseBody);
+            log.info("login-log📄 JSON 파싱 결과: {}", jsonNode);
+
+            // 각 필드 존재 여부 확인
+            log.info("login-log📄 필드 체크 - sub: {}, email: {}, name: {}, picture: {}, email_verified: {}, locale: {}",
+                    jsonNode.has("sub"), jsonNode.has("email"), jsonNode.has("name"),
+                    jsonNode.has("picture"), jsonNode.has("email_verified"), jsonNode.has("locale"));
+
             return GoogleUserInfo.builder()
                     .id(jsonNode.get("sub").asText())
                     .email(jsonNode.get("email").asText())
@@ -170,8 +181,9 @@ public class OAuth2AuthorizationClient {
                     .locale(jsonNode.get("locale").asText())
                     .build();
         } catch (Exception e) {
-            log.error("login-log 구글 사용자 정보 요청 실패", e);
-            throw new RuntimeException("login-log 구글 사용자 정보 조회 실패", e);
+            log.error("login-log 구글 사용자 정보 요청 실패 - 에러 타입: {}, 메시지: {}",
+                    e.getClass().getName(), e.getMessage(), e);
+            throw new RuntimeException("구글 사용자 정보 조회 실패: " + e.getMessage(), e);
         }
     }
 }
