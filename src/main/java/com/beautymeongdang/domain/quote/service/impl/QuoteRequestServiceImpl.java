@@ -64,13 +64,23 @@ public class QuoteRequestServiceImpl implements QuoteRequestService {
     @Override
     @Transactional
     public CreateInsertRequestAllResponseDto createInsertRequestAll(Long customerId, CreateInsertRequestAllRequestDto requestDto, List<MultipartFile> images) {
-        CommonCodeId typeCodeId = new CommonCodeId("010", REQUEST_TYPE_GROUP_CODE);
-        CommonCode typeCode = commonCodeRepository.findById(typeCodeId)
+        // requestType 코드로 변환 ("전체요청" -> "010")
+        CommonCode typeCode = commonCodeRepository.findAll().stream()
+                .filter(code -> code.getId().getGroupId().equals(REQUEST_TYPE_GROUP_CODE))
+                .filter(code -> code.getCommonName().equals(requestDto.getRequestType()))
+                .findFirst()
                 .orElseThrow(() -> NotFoundException.entityNotFound("요청 타입 코드"));
 
         if (!typeCode.getId().getCodeId().equals("010")) {
             throw BadRequestException.invalidRequest("전체요청 타입");
         }
+
+        // status 코드로 변환 ("요청" -> "010")
+        CommonCode statusCode = commonCodeRepository.findAll().stream()
+                .filter(code -> code.getId().getGroupId().equals(REQUEST_STATUS_GROUP_CODE))
+                .filter(code -> code.getCommonName().equals(requestDto.getStatus()))
+                .findFirst()
+                .orElseThrow(() -> NotFoundException.entityNotFound("상태 코드"));
 
         Dog dog = dogRepository.findById(requestDto.getDogId())
                 .orElseThrow(() -> NotFoundException.entityNotFound("강아지"));
@@ -82,8 +92,8 @@ public class QuoteRequestServiceImpl implements QuoteRequestService {
                 .dogId(dog)
                 .content(requestDto.getRequestContent())
                 .beautyDate(requestDto.getBeautyDate())
-                .requestType("010")
-                .status("010")
+                .requestType(typeCode.getId().getCodeId())
+                .status(statusCode.getId().getCodeId())
                 .build();
 
         QuoteRequest savedRequest = quoteRequestRepository.save(quoteRequest);
@@ -110,10 +120,6 @@ public class QuoteRequestServiceImpl implements QuoteRequestService {
             savedImages = quoteRequestImageRepository.saveAll(quoteImages);
         }
 
-        CommonCodeId statusCodeId = new CommonCodeId("010", REQUEST_STATUS_GROUP_CODE);
-        CommonCode statusCode = commonCodeRepository.findById(statusCodeId)
-                .orElseThrow(() -> NotFoundException.entityNotFound("상태 코드"));
-
         return CreateInsertRequestAllResponseDto.builder()
                 .requestId(savedRequest.getRequestId())
                 .dogId(savedRequest.getDogId().getDogId())
@@ -128,19 +134,31 @@ public class QuoteRequestServiceImpl implements QuoteRequestService {
                 .build();
     }
 
+
+
     /**
      * 1:1 견적서 요청하기
      */
     @Override
     @Transactional
-    public CreateInsertRequestGroomerResponseDto createInsertRequestGroomer(Long customerId, CreateInsertRequestGroomerRequestDto requestDto,List<MultipartFile> images) {
-        CommonCodeId typeCodeId = new CommonCodeId("020", REQUEST_TYPE_GROUP_CODE);
-        CommonCode typeCode = commonCodeRepository.findById(typeCodeId)
+    public CreateInsertRequestGroomerResponseDto createInsertRequestGroomer(Long customerId, CreateInsertRequestGroomerRequestDto requestDto, List<MultipartFile> images) {
+        // requestType 코드로 변환 ("1:1요청" -> "020")
+        CommonCode typeCode = commonCodeRepository.findAll().stream()
+                .filter(code -> code.getId().getGroupId().equals(REQUEST_TYPE_GROUP_CODE))
+                .filter(code -> code.getCommonName().equals(requestDto.getRequestType()))
+                .findFirst()
                 .orElseThrow(() -> NotFoundException.entityNotFound("요청 타입 코드"));
 
         if (!typeCode.getId().getCodeId().equals("020")) {
             throw BadRequestException.invalidRequest("1:1요청 타입");
         }
+
+        // status 코드로 변환 ("요청" -> "010")
+        CommonCode statusCode = commonCodeRepository.findAll().stream()
+                .filter(code -> code.getId().getGroupId().equals(REQUEST_STATUS_GROUP_CODE))
+                .filter(code -> code.getCommonName().equals(requestDto.getStatus()))
+                .findFirst()
+                .orElseThrow(() -> NotFoundException.entityNotFound("상태 코드"));
 
         Dog dog = dogRepository.findById(requestDto.getDogId())
                 .orElseThrow(() -> NotFoundException.entityNotFound("강아지"));
@@ -152,8 +170,8 @@ public class QuoteRequestServiceImpl implements QuoteRequestService {
                 .dogId(dog)
                 .content(requestDto.getRequestContent())
                 .beautyDate(requestDto.getBeautyDate())
-                .requestType("020")
-                .status("010")
+                .requestType(typeCode.getId().getCodeId())
+                .status(statusCode.getId().getCodeId())
                 .build();
 
         QuoteRequest savedRequest = quoteRequestRepository.save(quoteRequest);
@@ -180,10 +198,6 @@ public class QuoteRequestServiceImpl implements QuoteRequestService {
             savedImages = quoteRequestImageRepository.saveAll(quoteImages);
         }
 
-        CommonCodeId statusCodeId = new CommonCodeId("010", REQUEST_STATUS_GROUP_CODE);
-        CommonCode statusCode = commonCodeRepository.findById(statusCodeId)
-                .orElseThrow(() -> NotFoundException.entityNotFound("상태 코드"));
-
         return CreateInsertRequestGroomerResponseDto.builder()
                 .requestId(savedRequest.getRequestId())
                 .dogId(savedRequest.getDogId().getDogId())
@@ -196,7 +210,6 @@ public class QuoteRequestServiceImpl implements QuoteRequestService {
                         .map(QuoteRequestImage::getImageUrl)
                         .collect(Collectors.toList()))
                 .build();
-
     }
 
 
