@@ -13,6 +13,5 @@ public class GroomerRegisterRequestDTO {
     private String nickName;
     private String phone;
     private String skill;
-    private String imageUrl;
     private MultipartFile profileImage;
 }

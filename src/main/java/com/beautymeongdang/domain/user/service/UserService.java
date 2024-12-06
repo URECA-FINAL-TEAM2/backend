@@ -9,7 +9,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.Map;
 
 public interface UserService {
-    Map<String, Object> registerCustomer(Long userId, CustomerRegisterRequestDTO requestDto, MultipartFile profileImage);
+    Map<String, Object> registerCustomer(Long userId, CustomerRegisterRequestDTO requestDto);
     Map<String, Object> registerGroomer(Long userId, GroomerRegisterRequestDTO requestDto);
     String getNicknameCheckMessage(String nickname);
     void logout(HttpServletRequest request, HttpServletResponse response);

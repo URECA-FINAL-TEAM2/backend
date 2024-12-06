@@ -35,22 +35,20 @@ public class UserController {
     @PostMapping(value = "/register/customer", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ApiResponse<Map<String, Object>>> registerCustomer(
             @AuthenticationPrincipal CustomOAuth2User oauth2User,
-            @RequestPart("requestDto") CustomerRegisterRequestDTO requestDto,
-            @RequestPart(value = "profileImage", required = false) MultipartFile profileImage) {
+            @ModelAttribute CustomerRegisterRequestDTO requestDto) {
         try {
-            Map<String, Object> responseData = userService.registerCustomer(oauth2User.getUserId(), requestDto, profileImage);
+            Map<String, Object> responseData = userService.registerCustomer(oauth2User.getUserId(), requestDto);
             return ApiResponse.ok(201, responseData, "고객 회원가입 성공");
         } catch (Exception e) {
             log.error("고객 회원가입 실패: {}", e.getMessage(), e);
             return ApiResponse.badRequest(400, "고객 회원가입 실패: " + e.getMessage());
         }
     }
-    // 미용사 추가 회원가입
+
     @PostMapping(value = "/register/groomer", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ApiResponse<Map<String, Object>>> registerGroomer(
             @AuthenticationPrincipal CustomOAuth2User oauth2User,
-            @RequestPart("requestDto") GroomerRegisterRequestDTO requestDto,
-            @RequestPart(value = "profileImage", required = false) MultipartFile profileImage) {
+            @ModelAttribute GroomerRegisterRequestDTO requestDto) {
         try {
             Map<String, Object> responseData = userService.registerGroomer(oauth2User.getUserId(), requestDto);
             return ApiResponse.ok(201, responseData, "미용사 회원가입 성공");
