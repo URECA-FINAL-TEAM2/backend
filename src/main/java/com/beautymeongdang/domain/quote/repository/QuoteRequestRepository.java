@@ -1,6 +1,7 @@
 package com.beautymeongdang.domain.quote.repository;
 
 
+import com.beautymeongdang.domain.dog.entity.Dog;
 import com.beautymeongdang.domain.quote.dto.GetGroomerQuoteRequestResponseDto;
 import com.beautymeongdang.domain.quote.dto.GetGroomerSendQuoteRequestResponseDto;
 import com.beautymeongdang.domain.quote.entity.QuoteRequest;
@@ -243,4 +244,6 @@ public interface QuoteRequestRepository extends JpaRepository<QuoteRequest, Long
     // 미용사 프로필 논리적 삭제
     List<QuoteRequest> findAllByRequestType(String requestType);
 
+    // 반려견 프로필 논리적 삭제
+    List<QuoteRequest> findAllByDogId(Dog dog);
 }

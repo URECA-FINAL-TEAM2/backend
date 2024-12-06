@@ -1,5 +1,6 @@
 package com.beautymeongdang.domain.payment.repository;
 
+import com.beautymeongdang.domain.dog.entity.Dog;
 import com.beautymeongdang.domain.payment.entity.Payment;
 import com.beautymeongdang.domain.user.entity.Groomer;
 import com.beautymeongdang.domain.quote.entity.SelectedQuote;
@@ -23,4 +24,8 @@ public interface PaymentRepository extends JpaRepository<Payment, Long> {
 
     // 미용사 프로필 논리적 삭제
     Payment findBySelectedQuoteId(SelectedQuote selectedQuote);
+
+    // 반려견 프로필 논리적 삭제
+    List<Payment> findAllBySelectedQuoteIdQuoteIdDogId(Dog dog);
+
 }

@@ -1,5 +1,6 @@
 package com.beautymeongdang.domain.quote.repository;
 
+import com.beautymeongdang.domain.dog.entity.Dog;
 import com.beautymeongdang.domain.quote.dto.GetCustomerSelectedQuoteResponseDto;
 import com.beautymeongdang.domain.quote.dto.GetSelectedQuoteDetailResponseDto;
 import com.beautymeongdang.domain.quote.dto.GetGroomerSelectedQuoteResponseDto;
@@ -98,4 +99,6 @@ public interface SelectedQuoteRepository extends JpaRepository<SelectedQuote, Lo
     // 미용사 프로필 논리적 삭제
     SelectedQuote findByQuoteId(Quote quote);
 
+    // 반려견 프로필 논리적 삭제
+    List<SelectedQuote> findAllByQuoteIdDogId(Dog dog);
 }
