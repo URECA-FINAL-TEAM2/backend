@@ -89,6 +89,8 @@ public interface SelectedQuoteRepository extends JpaRepository<SelectedQuote, Lo
     """)
     Integer countConfirmedReservations(@Param("groomerId") Long groomerId);
 
+    @Query("SELECT sq FROM SelectedQuote sq WHERE sq.customerId.customerId = :customerId AND sq.isDeleted = false")
+    List<SelectedQuote> findAllByCustomerId(@Param("customerId") Long customerId);
 
     // 매장 논리적 삭제
     List<SelectedQuote> findAllByQuoteIdGroomerIdAndIsDeletedFalse(Groomer groomerId);
