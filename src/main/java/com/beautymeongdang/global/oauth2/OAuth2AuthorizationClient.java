@@ -124,19 +124,13 @@ public class OAuth2AuthorizationClient {
         HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(params, headers);
 
         try {
-            // 먼저 String으로 응답을 받아 로깅
-            ResponseEntity<String> rawResponse = restTemplate.postForEntity(
+            ResponseEntity<GoogleToken> response = restTemplate.postForEntity(
                     tokenUrl,
                     request,
-                    String.class
+                    GoogleToken.class
             );
-
-            log.debug("login-log Google raw token response: {}", rawResponse.getBody());
-
-            // 응답을 GoogleToken 객체로 변환
-            GoogleToken token = objectMapper.readValue(rawResponse.getBody(), GoogleToken.class);
             log.info("login-log ✅ 구글 토큰 발급 성공");
-            return token;
+            return response.getBody();
         } catch (HttpClientErrorException e) {
             log.error("login-log 구글 토큰 요청 실패. Status: {}, Response: {}",
                     e.getStatusCode(), e.getResponseBodyAsString());
