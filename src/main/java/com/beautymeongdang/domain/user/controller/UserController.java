@@ -12,6 +12,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -30,7 +31,8 @@ public class UserController {
     private final UserRepository userRepository;
     private final JwtProvider jwtProvider;
 
-    @PostMapping("/register/customer")
+    // 고객 추가 회원가입 
+    @PostMapping(value = "/register/customer", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ApiResponse<Map<String, Object>>> registerCustomer(
             @AuthenticationPrincipal CustomOAuth2User oauth2User,
             @RequestPart("requestDto") CustomerRegisterRequestDTO requestDto,
@@ -43,8 +45,8 @@ public class UserController {
             return ApiResponse.badRequest(400, "고객 회원가입 실패: " + e.getMessage());
         }
     }
-
-    @PostMapping("/register/groomer")
+    // 미용사 추가 회원가입 
+    @PostMapping(value = "/register/groomer", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ApiResponse<Map<String, Object>>> registerGroomer(
             @AuthenticationPrincipal CustomOAuth2User oauth2User,
             @ModelAttribute GroomerRegisterRequestDTO requestDto) {
