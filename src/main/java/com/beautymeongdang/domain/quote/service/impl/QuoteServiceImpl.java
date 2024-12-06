@@ -20,6 +20,9 @@ import com.beautymeongdang.domain.user.entity.User;
 import com.beautymeongdang.domain.user.repository.CustomerRepository;
 import com.beautymeongdang.domain.user.repository.GroomerRepository;
 import com.beautymeongdang.domain.user.repository.UserRepository;
+import com.beautymeongdang.global.common.entity.CommonCode;
+import com.beautymeongdang.global.common.entity.CommonCodeId;
+import com.beautymeongdang.global.common.repository.CommonCodeRepository;
 import com.beautymeongdang.global.exception.handler.NotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -43,6 +46,7 @@ public class QuoteServiceImpl implements QuoteService {
     private final DogRepository dogRepository;
     private final CustomerRepository customerRepository;
     private final UserRepository userRepository;
+    private final CommonCodeRepository commonCodeRepository;
 
     /**
      * 고객이 자기가 보낸 견적(1:1) 요청을 조회
@@ -206,6 +210,11 @@ public class QuoteServiceImpl implements QuoteService {
             quoteRequestRepository.save(updateQuoteRequest);
         }
 
+        CommonCodeId commonCodeId = new CommonCodeId(saveQuote.getStatus(), "100");
+        CommonCode commonCode = commonCodeRepository.findById(commonCodeId)
+                .orElseThrow(() -> NotFoundException.entityNotFound("요청 진행 상태"));
+        String requestStatus = commonCode.getCommonName();
+
         return CreateGroomerQuoteResponseDto.builder()
                 .quoteId(saveQuote.getQuoteId())
                 .requestId(saveQuote.getRequestId().getRequestId())
@@ -214,7 +223,7 @@ public class QuoteServiceImpl implements QuoteService {
                 .quoteContent(saveQuote.getContent())
                 .quoteCost(saveQuote.getCost())
                 .beautyDate(saveQuote.getBeautyDate())
-                .quoteStatus(saveQuote.getStatus())
+                .quoteStatus(requestStatus)
                 .build();
     }
 
