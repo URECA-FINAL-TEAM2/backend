@@ -4,12 +4,21 @@ import com.beautymeongdang.domain.dog.dto.*;
 import com.beautymeongdang.domain.dog.entity.Dog;
 import com.beautymeongdang.domain.dog.repository.DogRepository;
 import com.beautymeongdang.domain.dog.service.DogService;
+import com.beautymeongdang.domain.quote.entity.Quote;
+import com.beautymeongdang.domain.quote.entity.QuoteRequest;
+import com.beautymeongdang.domain.quote.entity.SelectedQuote;
+import com.beautymeongdang.domain.payment.entity.Payment;
+import com.beautymeongdang.domain.payment.repository.PaymentRepository;
+import com.beautymeongdang.domain.quote.repository.QuoteRepository;
+import com.beautymeongdang.domain.quote.repository.QuoteRequestRepository;
+import com.beautymeongdang.domain.quote.repository.SelectedQuoteRepository;
 import com.beautymeongdang.domain.user.entity.Customer;
 import com.beautymeongdang.domain.user.repository.CustomerRepository;
 import com.beautymeongdang.global.common.entity.UploadedFile;
 import com.beautymeongdang.global.exception.handler.BadRequestException;
 import com.beautymeongdang.global.exception.handler.NotFoundException;
 import com.beautymeongdang.infra.s3.FileStore;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -23,6 +32,11 @@ public class DogServiceImpl implements DogService {
     private final FileStore fileStore;
     private final DogRepository dogRepository;
     private final CustomerRepository customerRepository;
+    private final QuoteRepository quoteRepository;
+    private final QuoteRequestRepository quoteRequestRepository;
+    private final SelectedQuoteRepository selectedQuoteRepository;
+    private final PaymentRepository paymentRepository;
+
 
     private static final String DEFAULT_DOG_PROFILE_IMAGE = "https://s3-beauty-meongdang.s3.ap-northeast-2.amazonaws.com/%EB%A7%A4%EC%9E%A5+%EB%A1%9C%EA%B3%A0+%EC%9D%B4%EB%AF%B8%EC%A7%80/43936c99-66cd-4cf3-a600-782527c30ab6.jpg";
     private static final int MAX_DOGS_PER_CUSTOMER = 5;
@@ -162,18 +176,30 @@ public class DogServiceImpl implements DogService {
      * 반려견 프로필 삭제
      */
     @Override
-    public DeleteDogResponseDto deleteDog(Long dogId,Long customerId) {
+    @Transactional
+    public DeleteDogResponseDto deleteDog(Long dogId, Long customerId) {
         Dog dog = dogRepository.findById(dogId)
                 .orElseThrow(() -> NotFoundException.entityNotFound("반려견"));
 
-        dog.delete();
+        if (!dog.getCustomerId().getCustomerId().equals(customerId)) {
+            throw BadRequestException.invalidRequest("해당 반려견의 소유자");
+        }
 
-        dogRepository.save(dog);
+        paymentRepository.findAllBySelectedQuoteIdQuoteIdDogId(dog).forEach(Payment::delete);
+        selectedQuoteRepository.findAllByQuoteIdDogId(dog).forEach(SelectedQuote::delete);
+        quoteRepository.findAllByDogId(dog).forEach(Quote::delete);
+        quoteRequestRepository.findAllByDogId(dog).forEach(QuoteRequest::delete);
+
+        // 반려견 논리적 삭제
+        dog.delete();
 
         return DeleteDogResponseDto.builder()
                 .dogId(dog.getDogId())
                 .build();
     }
+
+
+
 }
 
 
