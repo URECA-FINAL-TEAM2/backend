@@ -289,7 +289,6 @@ public class ShopServiceImpl implements ShopService {
 
         // 매장 논리적 삭제
         shop.delete();
-        shopRepository.save(shop);
 
         return DeleteShopResponseDto.builder()
                 .shopId(shop.getShopId())
