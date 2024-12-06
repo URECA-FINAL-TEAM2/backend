@@ -95,7 +95,7 @@ public class UserController {
             // 응답 데이터 구성
             Map<String, Object> responseData = new HashMap<>();
             responseData.put("isRegister", user.isRegister());
-            responseData.put("accessToken", tokenInfo.get("accessToken"));
+            responseData.put("accessToken", tokenInfo.get("access_token")); // 수정: "accessToken" -> "access_token"
 
             // 사용자 정보 구성
             Map<String, Object> userInfo = new HashMap<>();
