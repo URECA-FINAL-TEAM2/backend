@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 public class GetGroomerSendQuoteRequestResponseDto {
     private Long requestId;
-    private String nickname;
+    private String userName;
     private String userProfileImage;
     private LocalDateTime beautyDate;
     private String dogBreed;
@@ -20,10 +20,10 @@ public class GetGroomerSendQuoteRequestResponseDto {
     private String requestType;
 
     @Builder
-    public GetGroomerSendQuoteRequestResponseDto(Long requestId, String nickname, String profileImage, LocalDateTime beautyDate,
+    public GetGroomerSendQuoteRequestResponseDto(Long requestId, String userName, String profileImage, LocalDateTime beautyDate,
                                                  String dogBreed, String dogGender, String dogWeight, String content, String requestType) {
         this.requestId = requestId;
-        this.nickname = nickname;
+        this.userName = userName;
         this.userProfileImage = profileImage;
         this.beautyDate = beautyDate;
         this.dogBreed = dogBreed;
