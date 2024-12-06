@@ -17,7 +17,7 @@ public interface SelectedQuoteRepository extends JpaRepository<SelectedQuote, Lo
 
     @Query("SELECT new com.beautymeongdang.domain.quote.dto.GetCustomerSelectedQuoteResponseDto(" +
             "sq.selectedQuoteId, q.quoteId, d.profileImage, s.shopName, " +
-            "g.userId.userName, q.beautyDate, d.dogName, sq.status) " +
+            "g.userId.nickname, q.beautyDate, d.dogName, sq.status) " +
             "FROM SelectedQuote sq " +
             "JOIN sq.quoteId q " +
             "JOIN q.dogId d " +
@@ -38,7 +38,7 @@ public interface SelectedQuoteRepository extends JpaRepository<SelectedQuote, Lo
     List<GetGroomerSelectedQuoteResponseDto> findGroomerSelectedQuotes(@Param("groomerId") Long groomerId);
 
     @Query("SELECT new com.beautymeongdang.domain.quote.dto.GetSelectedQuoteDetailResponseDto(" +
-            "c.userId.userName, g.userId.userName, s.shopName, s.address, g.userId.phone, " +
+            "c.userId.userName, g.userId.nickname, s.shopName, s.address, g.userId.phone, " +
             "d.dogName, d.profileImage, d.dogBreed, d.dogWeight, d.dogAge, " +
             "CAST(d.dogGender AS string), " +
             "d.neutering, d.experience, d.significant, " +
