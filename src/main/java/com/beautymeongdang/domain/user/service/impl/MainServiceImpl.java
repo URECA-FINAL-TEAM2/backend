@@ -66,13 +66,18 @@ public class MainServiceImpl implements MainService {
         List<LocalGroomerDto> localGroomerDtos = localGroomers.stream()
                 .map(shop -> {
                     Long groomerId = shop.getGroomerId().getGroomerId();
+                    Integer reviewCount = reviewRepository.countGroomerReviews(groomerId);
+                    Double starScoreAvg = shopRepository.getAverageStarRatingByGroomerId(groomerId);
+                    Integer favoriteCount = shopRepository.countFavoritesByShop(shop);
+
                     return LocalGroomerDto.builder()
                             .groomerId(groomerId)
                             .shopId(shop.getShopId())
                             .shopLogo(shop.getImageUrl())
                             .shopName(shop.getShopName())
-                            .starScoreAvg(shopRepository.getAverageStarRatingByGroomerId(groomerId))
-                            .reviewCount(reviewRepository.countGroomerReviews(groomerId))
+                            .starScoreAvg(starScoreAvg != null ? starScoreAvg : 0.0)
+                            .reviewCount(reviewCount)
+                            .favoriteCount(favoriteCount)
                             .address(shop.getAddress())
                             .businessTime(shop.getBusinessTime())
                             .skills(shop.getGroomerId().getSkill())
