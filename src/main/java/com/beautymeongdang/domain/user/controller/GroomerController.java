@@ -40,8 +40,8 @@ public class GroomerController {
     // 미용사 프로필 수정
     @PutMapping("")
     public ResponseEntity<?> updateGroomerProfile(@RequestPart UpdateGroomerProfileDto requestDto,
-                                                  @RequestPart(required = false) List<MultipartFile> images) {
-        return ApiResponse.ok(200, groomerService.updateGroomerProfile(requestDto, images), "Update GroomerProfile Success");
+                                                  @RequestPart(required = false) List<MultipartFile> profileImage) {
+        return ApiResponse.ok(200, groomerService.updateGroomerProfile(requestDto, profileImage), "Update GroomerProfile Success");
     }
 
 
