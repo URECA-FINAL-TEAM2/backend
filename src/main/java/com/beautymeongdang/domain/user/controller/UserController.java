@@ -40,7 +40,7 @@ public class UserController {
             @RequestPart(value = "profileImage", required = false) MultipartFile profileImage) {
         try {
             Map<String, Object> responseData = userService.registerCustomer(oauth2User.getUserId(), requestDto, profileImage);
-            return ApiResponse.ok(201, responseData, "고객 회원가입 성공");
+            return ApiResponse.ok(201, responseData, "고객 회원 가입 성공");
         } catch (Exception e) {
             log.error("고객 회원가입 실패: {}", e.getMessage(), e);
             return ApiResponse.badRequest(400, "고객 회원가입 실패: " + e.getMessage());
