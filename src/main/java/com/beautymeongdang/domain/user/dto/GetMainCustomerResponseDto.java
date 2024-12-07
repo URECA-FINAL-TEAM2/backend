@@ -42,6 +42,7 @@ public class GetMainCustomerResponseDto {
         private String shopName;
         private Double starScoreAvg;
         private Integer reviewCount;
+        private Integer favoriteCount;
         private String address;
         private String businessTime;
         private String skills;

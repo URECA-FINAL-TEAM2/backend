@@ -40,6 +40,7 @@ public interface ShopRepository extends JpaRepository<Shop, Long> {
         WHERE r.groomerId = g
         AND r.isDeleted = false
     ) DESC
+    LIMIT 2
     """)
     List<Shop> findShopsByCustomerSigunguOrderByReviewCountAndStarScore(@Param("customerId") Long customerId);
 
