@@ -16,6 +16,7 @@ public class GetGroomerSelectedQuoteResponseDto {
     private final String dogName;
     private final LocalDateTime beautyDate;
     private final String status;
+    private final String dogBreed;
 
     @Builder
     public GetGroomerSelectedQuoteResponseDto(
@@ -27,7 +28,8 @@ public class GetGroomerSelectedQuoteResponseDto {
             String phone,
             String dogName,
             LocalDateTime beautyDate,
-            String status) {
+            String status,
+            String dogBreed) {
         this.selectedQuoteId = selectedQuoteId;
         this.quoteId = quoteId;
         this.profileImage = profileImage;
@@ -37,5 +39,6 @@ public class GetGroomerSelectedQuoteResponseDto {
         this.dogName = dogName;
         this.beautyDate = beautyDate;
         this.status = status;
+        this.dogBreed = dogBreed;
     }
 }
