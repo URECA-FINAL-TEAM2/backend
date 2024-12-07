@@ -54,16 +54,33 @@ public class QuoteRequestServiceImpl implements QuoteRequestService {
     private final ShopRepository shopRepository;
     private final CommonCodeRepository commonCodeRepository;
 
+    private static final String REQUEST_STATUS_GROUP_CODE = "100";
+    private static final String DOG_BREED_GROUP_CODE = "400";
+    private static final String REQUEST_TYPE_GROUP_CODE = "900";
 
     /**
      * 전체 견적서 요청하기
      */
     @Override
     @Transactional
-    public CreateInsertRequestAllResponseDto createInsertRequestAll(Long customerId,CreateInsertRequestAllRequestDto requestDto,List<MultipartFile> images) {
-        if (!requestDto.getRequestType().equals("010")) {
+    public CreateInsertRequestAllResponseDto createInsertRequestAll(Long customerId, CreateInsertRequestAllRequestDto requestDto, List<MultipartFile> images) {
+        // requestType 코드로 변환 ("전체요청" -> "010")
+        CommonCode typeCode = commonCodeRepository.findAll().stream()
+                .filter(code -> code.getId().getGroupId().equals(REQUEST_TYPE_GROUP_CODE))
+                .filter(code -> code.getCommonName().equals(requestDto.getRequestType()))
+                .findFirst()
+                .orElseThrow(() -> NotFoundException.entityNotFound("요청 타입 코드"));
+
+        if (!typeCode.getId().getCodeId().equals("010")) {
             throw BadRequestException.invalidRequest("전체요청 타입");
         }
+
+        // status 코드로 변환 ("요청" -> "010")
+        CommonCode statusCode = commonCodeRepository.findAll().stream()
+                .filter(code -> code.getId().getGroupId().equals(REQUEST_STATUS_GROUP_CODE))
+                .filter(code -> code.getCommonName().equals(requestDto.getStatus()))
+                .findFirst()
+                .orElseThrow(() -> NotFoundException.entityNotFound("상태 코드"));
 
         Dog dog = dogRepository.findById(requestDto.getDogId())
                 .orElseThrow(() -> NotFoundException.entityNotFound("강아지"));
@@ -75,8 +92,8 @@ public class QuoteRequestServiceImpl implements QuoteRequestService {
                 .dogId(dog)
                 .content(requestDto.getRequestContent())
                 .beautyDate(requestDto.getBeautyDate())
-                .requestType(requestDto.getRequestType())
-                .status(requestDto.getStatus())
+                .requestType(typeCode.getId().getCodeId())
+                .status(statusCode.getId().getCodeId())
                 .build();
 
         QuoteRequest savedRequest = quoteRequestRepository.save(quoteRequest);
@@ -103,14 +120,13 @@ public class QuoteRequestServiceImpl implements QuoteRequestService {
             savedImages = quoteRequestImageRepository.saveAll(quoteImages);
         }
 
-
         return CreateInsertRequestAllResponseDto.builder()
                 .requestId(savedRequest.getRequestId())
                 .dogId(savedRequest.getDogId().getDogId())
-                .requestType(savedRequest.getRequestType())
+                .requestType(typeCode.getCommonName())
                 .requestContent(savedRequest.getContent())
                 .beautyDate(savedRequest.getBeautyDate())
-                .status(savedRequest.getStatus())
+                .status(statusCode.getCommonName())
                 .sigunguId(sigungu.getSigunguId())
                 .quoteRequestImage(savedImages.stream()
                         .map(QuoteRequestImage::getImageUrl)
@@ -118,15 +134,31 @@ public class QuoteRequestServiceImpl implements QuoteRequestService {
                 .build();
     }
 
+
+
     /**
      * 1:1 견적서 요청하기
      */
     @Override
     @Transactional
-    public CreateInsertRequestGroomerResponseDto createInsertRequestGroomer(Long customerId, CreateInsertRequestGroomerRequestDto requestDto,List<MultipartFile> images) {
-        if (!requestDto.getRequestType().equals("020")) {
+    public CreateInsertRequestGroomerResponseDto createInsertRequestGroomer(Long customerId, CreateInsertRequestGroomerRequestDto requestDto, List<MultipartFile> images) {
+        // requestType 코드로 변환 ("1:1요청" -> "020")
+        CommonCode typeCode = commonCodeRepository.findAll().stream()
+                .filter(code -> code.getId().getGroupId().equals(REQUEST_TYPE_GROUP_CODE))
+                .filter(code -> code.getCommonName().equals(requestDto.getRequestType()))
+                .findFirst()
+                .orElseThrow(() -> NotFoundException.entityNotFound("요청 타입 코드"));
+
+        if (!typeCode.getId().getCodeId().equals("020")) {
             throw BadRequestException.invalidRequest("1:1요청 타입");
         }
+
+        // status 코드로 변환 ("요청" -> "010")
+        CommonCode statusCode = commonCodeRepository.findAll().stream()
+                .filter(code -> code.getId().getGroupId().equals(REQUEST_STATUS_GROUP_CODE))
+                .filter(code -> code.getCommonName().equals(requestDto.getStatus()))
+                .findFirst()
+                .orElseThrow(() -> NotFoundException.entityNotFound("상태 코드"));
 
         Dog dog = dogRepository.findById(requestDto.getDogId())
                 .orElseThrow(() -> NotFoundException.entityNotFound("강아지"));
@@ -138,8 +170,8 @@ public class QuoteRequestServiceImpl implements QuoteRequestService {
                 .dogId(dog)
                 .content(requestDto.getRequestContent())
                 .beautyDate(requestDto.getBeautyDate())
-                .requestType(requestDto.getRequestType())
-                .status(requestDto.getStatus())
+                .requestType(typeCode.getId().getCodeId())
+                .status(statusCode.getId().getCodeId())
                 .build();
 
         QuoteRequest savedRequest = quoteRequestRepository.save(quoteRequest);
@@ -169,16 +201,15 @@ public class QuoteRequestServiceImpl implements QuoteRequestService {
         return CreateInsertRequestGroomerResponseDto.builder()
                 .requestId(savedRequest.getRequestId())
                 .dogId(savedRequest.getDogId().getDogId())
-                .groomerId(groomer.getGroomerId())
-                .requestType(savedRequest.getRequestType())
+                .requestType(typeCode.getCommonName())
                 .requestContent(savedRequest.getContent())
                 .beautyDate(savedRequest.getBeautyDate())
-                .status(savedRequest.getStatus())
+                .status(statusCode.getCommonName())
+                .groomerId(groomer.getGroomerId())
                 .quoteRequestImage(savedImages.stream()
                         .map(QuoteRequestImage::getImageUrl)
                         .collect(Collectors.toList()))
                 .build();
-
     }
 
 
@@ -186,7 +217,6 @@ public class QuoteRequestServiceImpl implements QuoteRequestService {
      * 고객의 반려견 리스트 조회
      */
     @Override
-    @Transactional(readOnly = true)
     public List<GetDogListResponseDto> getDogList(Long customerId) {
         Customer customer = customerRepository.findById(customerId)
                 .orElseThrow(() -> NotFoundException.entityNotFound("고객"));
@@ -204,15 +234,19 @@ public class QuoteRequestServiceImpl implements QuoteRequestService {
      * 고객이 선택한 반려견 정보 조회
      */
     @Override
-    @Transactional(readOnly = true)
     public GetDogInfoResponseDto getDogInfo(Long dogId, Long customerId) {
         Dog dog = dogRepository.findById(dogId)
                 .orElseThrow(() -> NotFoundException.entityNotFound("강아지"));
+
+        CommonCodeId breedCodeId = new CommonCodeId(dog.getDogBreed(), DOG_BREED_GROUP_CODE);
+        CommonCode breedCode = commonCodeRepository.findById(breedCodeId)
+                .orElseThrow(() -> NotFoundException.entityNotFound("견종 코드"));
 
         return GetDogInfoResponseDto.builder()
                 .dogId(dog.getDogId())
                 .dogName(dog.getDogName())
                 .image(dog.getProfileImage())
+                .dogBreed(breedCode.getCommonName())
                 .dogWeight(dog.getDogWeight())
                 .dogAge(dog.getDogAge())
                 .dogGender(dog.getDogGender().name())
@@ -226,7 +260,6 @@ public class QuoteRequestServiceImpl implements QuoteRequestService {
      * 1:1 견적서 요청에서 미용사와 매장 정보 조회
      */
     @Override
-    @Transactional(readOnly = true)
     public GetRequestGroomerShopResponseDto getGroomerShopInfo(Long groomerId) {
 
         Shop shop = shopRepository.findByGroomerId(groomerId)

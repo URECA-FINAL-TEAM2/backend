@@ -13,7 +13,11 @@ import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
+
+import java.util.ArrayList;
+import java.util.List;
 
 
 @Service
@@ -107,8 +111,8 @@ public class OAuth2AuthorizationClient {
     public GoogleToken getGoogleAccessToken(String code) {
         String tokenUrl = "https://oauth2.googleapis.com/token";
 
-        log.info("login-log Google token request parameters - clientId: {}, clientSecret: {}, redirectUri: {}",
-                googleClientId, googleClientSecret, googleRedirectUri);
+        log.info("login-log Google token request parameters - clientId: {}, redirectUri: {}",
+                googleClientId, googleRedirectUri);
 
         MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
         params.add("grant_type", "authorization_code");
@@ -130,8 +134,12 @@ public class OAuth2AuthorizationClient {
             );
             log.info("login-log ✅ 구글 토큰 발급 성공");
             return response.getBody();
+        } catch (HttpClientErrorException e) {
+            log.error("login-log 구글 토큰 요청 실패. Status: {}, Response: {}",
+                    e.getStatusCode(), e.getResponseBodyAsString());
+            throw new RuntimeException("구글 토큰 발급 실패: " + e.getResponseBodyAsString());
         } catch (Exception e) {
-            log.error("login-log 구글 토큰 요청 실패", e);
+            log.error("login-log 구글 토큰 요청 실패: {}", e.getMessage(), e);
             throw new RuntimeException("구글 토큰 발급 실패", e);
         }
     }
@@ -154,19 +162,48 @@ public class OAuth2AuthorizationClient {
                     String.class
             );
 
-            JsonNode jsonNode = objectMapper.readTree(response.getBody());
-            log.info("login-log📄 구글 응답 데이터: {}", response.getBody());
+            String responseBody = response.getBody();
+            log.info("login-log📄 응답 코드: {}", response.getStatusCode());
+            log.info("login-log📄 응답 헤더: {}", response.getHeaders());
+            log.info("login-log📄 구글 응답 데이터: {}", responseBody);
+
+            JsonNode jsonNode = objectMapper.readTree(responseBody);
+            log.info("login-log📄 JSON 파싱 결과: {}", jsonNode);
+
+            // 필수 필드 검증
+            validateRequiredFields(jsonNode);
+
+            // locale은 선택적 필드로 처리
+            String locale = jsonNode.has("locale") ? jsonNode.get("locale").asText() : "ko";  // 기본값 "ko" 설정
+
             return GoogleUserInfo.builder()
                     .id(jsonNode.get("sub").asText())
                     .email(jsonNode.get("email").asText())
                     .name(jsonNode.get("name").asText())
                     .profileImage(jsonNode.get("picture").asText())
                     .emailVerified(jsonNode.get("email_verified").asBoolean())
-                    .locale(jsonNode.get("locale").asText())
+                    .locale(locale)
                     .build();
         } catch (Exception e) {
-            log.error("login-log 구글 사용자 정보 요청 실패", e);
-            throw new RuntimeException("login-log 구글 사용자 정보 조회 실패", e);
+            log.error("login-log 구글 사용자 정보 요청 실패 - 에러 타입: {}, 메시지: {}",
+                    e.getClass().getName(), e.getMessage(), e);
+            throw new RuntimeException("구글 사용자 정보 조회 실패: " + e.getMessage(), e);
+        }
+    }
+
+    // 필수 필드 검증 메소드 추가
+    private void validateRequiredFields(JsonNode jsonNode) {
+        List<String> missingFields = new ArrayList<>();
+
+        String[] requiredFields = {"sub", "email", "name", "picture", "email_verified"};
+        for (String field : requiredFields) {
+            if (jsonNode.get(field) == null) {
+                missingFields.add(field);
+            }
+        }
+
+        if (!missingFields.isEmpty()) {
+            throw new RuntimeException("필수 필드 누락: " + String.join(", ", missingFields));
         }
     }
 }

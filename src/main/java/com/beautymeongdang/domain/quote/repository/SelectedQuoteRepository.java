@@ -20,29 +20,36 @@ public interface SelectedQuoteRepository extends JpaRepository<SelectedQuote, Lo
 
     @Query("SELECT new com.beautymeongdang.domain.quote.dto.GetCustomerSelectedQuoteResponseDto(" +
             "sq.selectedQuoteId, q.quoteId, d.profileImage, s.shopName, " +
-            "g.userId.nickname, q.beautyDate, d.dogName, sq.status) " +
+            "g.userId.nickname, q.beautyDate, d.dogName, " +
+            "cc.commonName) " +
             "FROM SelectedQuote sq " +
             "JOIN sq.quoteId q " +
             "JOIN q.dogId d " +
             "JOIN q.groomerId g " +
             "JOIN Shop s ON s.groomerId = g " +
+            "JOIN CommonCode cc ON cc.id.codeId = sq.status AND cc.id.groupId = '250' " +
             "WHERE sq.customerId.customerId = :customerId AND sq.isDeleted = false")
     List<GetCustomerSelectedQuoteResponseDto> findCustomerSelectedQuotes(@Param("customerId") Long customerId);
 
 
     @Query("SELECT new com.beautymeongdang.domain.quote.dto.GetGroomerSelectedQuoteResponseDto(" +
             "sq.selectedQuoteId, q.quoteId, d.profileImage, c.userId.userName, " +
-            "c.userId.nickname, c.userId.phone, d.dogName, q.beautyDate, sq.status) " +
+            "c.userId.nickname, c.userId.phone, d.dogName, q.beautyDate, " +
+            "statusCode.commonName, breedCode.commonName) " +
             "FROM SelectedQuote sq " +
             "JOIN sq.quoteId q " +
             "JOIN sq.customerId c " +
             "JOIN q.dogId d " +
+            "JOIN CommonCode statusCode ON statusCode.id.codeId = sq.status AND statusCode.id.groupId = '250' " +
+            "JOIN CommonCode breedCode ON breedCode.id.codeId = d.dogBreed AND breedCode.id.groupId = '400' " +
             "WHERE q.groomerId.groomerId = :groomerId AND sq.isDeleted = false")
     List<GetGroomerSelectedQuoteResponseDto> findGroomerSelectedQuotes(@Param("groomerId") Long groomerId);
 
     @Query("SELECT new com.beautymeongdang.domain.quote.dto.GetSelectedQuoteDetailResponseDto(" +
             "c.userId.userName, g.userId.nickname, s.shopName, s.address, g.userId.phone, " +
-            "d.dogName, d.profileImage, d.dogBreed, d.dogWeight, d.dogAge, " +
+            "d.dogName, d.profileImage, " +
+            "cc.commonName, " +
+            "d.dogWeight, d.dogAge, " +
             "CAST(d.dogGender AS string), " +
             "d.neutering, d.experience, d.significant, " +
             "q.quoteId, q.beautyDate, qr.content, q.content) " +
@@ -53,6 +60,7 @@ public interface SelectedQuoteRepository extends JpaRepository<SelectedQuote, Lo
             "JOIN q.groomerId g " +
             "JOIN Shop s ON s.groomerId = g " +
             "JOIN sq.customerId c " +
+            "JOIN CommonCode cc ON cc.id.codeId = d.dogBreed AND cc.id.groupId = '400'" +
             "WHERE sq.selectedQuoteId = :selectedQuoteId AND sq.isDeleted = false")
     GetSelectedQuoteDetailResponseDto findQuoteDetailById(@Param("selectedQuoteId") Long selectedQuoteId);
 
