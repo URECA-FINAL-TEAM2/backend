@@ -41,7 +41,7 @@ public class DogServiceImpl implements DogService {
     private final PaymentRepository paymentRepository;
     private final CommonCodeRepository commonCodeRepository;
 
-    private static final String DEFAULT_DOG_PROFILE_IMAGE = "https://s3-beauty-meongdang.s3.ap-northeast-2.amazonaws.com/%EB%A7%A4%EC%9E%A5+%EB%A1%9C%EA%B3%A0+%EC%9D%B4%EB%AF%B8%EC%A7%80/43936c99-66cd-4cf3-a600-782527c30ab6.jpg";
+    private static final String DEFAULT_DOG_PROFILE_IMAGE = "https://s3-beauty-meongdang.s3.ap-northeast-2.amazonaws.com/%EB%B0%98%EB%A0%A4%EA%B2%AC+%ED%94%84%EB%A1%9C%ED%95%84+%EC%9D%B4%EB%AF%B8%EC%A7%80/%EB%B0%98%EB%A0%A4%EA%B2%AC%ED%94%84%EB%A1%9C%ED%95%84%EA%B8%B0%EB%B3%B8%EC%9D%B4%EB%AF%B8%EC%A7%80.jpg";
     private static final String DOG_BREED_GROUP_CODE = "400";
 
     /**
