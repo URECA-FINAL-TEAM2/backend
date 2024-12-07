@@ -18,6 +18,8 @@ public interface CustomerRepository extends JpaRepository<Customer, Long> {
         u.nickname,
         u.phone,
         u.profileImage,
+        sido.sidoId,
+        sigungu.sigunguId,
         sido.sidoName,
         sigungu.sigunguName
     )
