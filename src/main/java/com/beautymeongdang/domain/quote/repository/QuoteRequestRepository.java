@@ -53,7 +53,6 @@ public interface QuoteRequestRepository extends JpaRepository<QuoteRequest, Long
                         JOIN
                             qr.dogId d
                         JOIN CommonCode cc ON cc.id.codeId = d.dogBreed AND cc.id.groupId = '400'
-                        JOIN GroupCode gc ON gc.groupId = cc.id.groupId
                         JOIN
                             d.customerId c
                         JOIN
@@ -91,7 +90,6 @@ public interface QuoteRequestRepository extends JpaRepository<QuoteRequest, Long
                         JOIN
                             qr.dogId d
                         JOIN CommonCode cc ON cc.id.codeId = d.dogBreed AND cc.id.groupId = '400'
-                        JOIN GroupCode gc ON gc.groupId = cc.id.groupId
                         JOIN
                             d.customerId c
                         JOIN
@@ -129,7 +127,6 @@ public interface QuoteRequestRepository extends JpaRepository<QuoteRequest, Long
                         JOIN
                             qr.dogId d
                         JOIN CommonCode cc ON cc.id.codeId = d.dogBreed AND cc.id.groupId = '400'
-                        JOIN GroupCode gc ON gc.groupId = cc.id.groupId
                         JOIN
                             d.customerId c
                         JOIN
@@ -223,7 +220,6 @@ public interface QuoteRequestRepository extends JpaRepository<QuoteRequest, Long
         LEFT JOIN Quote q ON q.requestId = qr
         JOIN qr.dogId d
         JOIN CommonCode cc ON cc.id.codeId = d.dogBreed AND cc.id.groupId = '400'
-        JOIN GroupCode gc ON gc.groupId = cc.id.groupId
         JOIN d.customerId c
         JOIN c.userId u
         JOIN TotalQuoteRequest tqr ON tqr.requestId = qr
