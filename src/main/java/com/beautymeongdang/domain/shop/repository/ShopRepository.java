@@ -22,7 +22,7 @@ public interface ShopRepository extends JpaRepository<Shop, Long> {
     Double getAverageStarRatingByGroomerId(@Param("groomerId") Long groomerId);
 
 
-    // 우리동네 미용사 조회 (일단 최신순으로 두 개만 받아오기?)
+    // 우리동네 미용사 조회 (리뷰 많은 순, 리뷰가 같으면 별점 높은 순으로 2개만)
     @Query("""
     SELECT s FROM Shop s
     JOIN s.groomerId g
