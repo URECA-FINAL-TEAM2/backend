@@ -37,11 +37,11 @@ public interface QuoteRequestRepository extends JpaRepository<QuoteRequest, Long
     @Query(value = """
             SELECT new com.beautymeongdang.domain.quote.dto.GetGroomerQuoteRequestResponseDto(
                             qr.requestId,
-                            u.nickname,
+                            u.userName,
                             u.profileImage,
                             qr.createdAt,
                             qr.beautyDate,
-                            d.dogBreed,
+                            cc.commonName,
                             CAST(d.dogGender AS string),
                             d.dogWeight,
                             qr.content
@@ -52,6 +52,7 @@ public interface QuoteRequestRepository extends JpaRepository<QuoteRequest, Long
                             Quote q ON q.requestId = qr
                         JOIN
                             qr.dogId d
+                        JOIN CommonCode cc ON cc.id.codeId = d.dogBreed AND cc.id.groupId = '400'
                         JOIN
                             d.customerId c
                         JOIN
@@ -64,6 +65,8 @@ public interface QuoteRequestRepository extends JpaRepository<QuoteRequest, Long
                           AND qr.requestType = '020'
                           AND qr.status = '010'
                           AND dqr.directQuoteRequestId.groomerId.groomerId = :groomerId
+                        ORDER BY
+                             qr.createdAt ASC
            """)
     List<GetGroomerQuoteRequestResponseDto> findQuoteRequestsByGroomerId(@Param("groomerId") Long groomerId);
 
@@ -71,11 +74,11 @@ public interface QuoteRequestRepository extends JpaRepository<QuoteRequest, Long
     @Query(value = """
             SELECT new com.beautymeongdang.domain.quote.dto.GetGroomerQuoteRequestResponseDto(
                             qr.requestId,
-                            u.nickname,
+                            u.userName,
                             u.profileImage,
                             qr.createdAt,
                             qr.beautyDate,
-                            d.dogBreed,
+                            cc.commonName,
                             CAST(d.dogGender AS string),
                             d.dogWeight,
                             qr.content
@@ -86,6 +89,7 @@ public interface QuoteRequestRepository extends JpaRepository<QuoteRequest, Long
                             Quote q ON q.requestId = qr
                         JOIN
                             qr.dogId d
+                        JOIN CommonCode cc ON cc.id.codeId = d.dogBreed AND cc.id.groupId = '400'
                         JOIN
                             d.customerId c
                         JOIN
@@ -107,10 +111,10 @@ public interface QuoteRequestRepository extends JpaRepository<QuoteRequest, Long
     @Query(value = """
             SELECT new com.beautymeongdang.domain.quote.dto.GetGroomerSendQuoteRequestResponseDto(
                             qr.requestId,
-                            u.nickname,
+                            u.userName,
                             u.profileImage,
                             qr.beautyDate,
-                            d.dogBreed,
+                            cc.commonName,
                             CAST(d.dogGender AS string),
                             d.dogWeight,
                             qr.content,
@@ -122,6 +126,7 @@ public interface QuoteRequestRepository extends JpaRepository<QuoteRequest, Long
                             Quote q ON q.requestId = qr
                         JOIN
                             qr.dogId d
+                        JOIN CommonCode cc ON cc.id.codeId = d.dogBreed AND cc.id.groupId = '400'
                         JOIN
                             d.customerId c
                         JOIN
@@ -215,7 +220,6 @@ public interface QuoteRequestRepository extends JpaRepository<QuoteRequest, Long
         LEFT JOIN Quote q ON q.requestId = qr
         JOIN qr.dogId d
         JOIN CommonCode cc ON cc.id.codeId = d.dogBreed AND cc.id.groupId = '400'
-        JOIN GroupCode gc ON gc.groupId = cc.id.groupId
         JOIN d.customerId c
         JOIN c.userId u
         JOIN TotalQuoteRequest tqr ON tqr.requestId = qr
