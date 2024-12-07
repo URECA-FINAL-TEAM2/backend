@@ -1,4 +1,4 @@
-package com.beautymeongdang.domain.user.service.Impl.CustomerServiceImpl
+package com.beautymeongdang.domain.user.service.Impl;
 
 import com.beautymeongdang.domain.chat.entity.Chat;
 import com.beautymeongdang.domain.chat.repository.ChatRepository;
