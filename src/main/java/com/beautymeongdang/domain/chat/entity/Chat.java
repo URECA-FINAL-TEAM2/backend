@@ -24,4 +24,12 @@ public class Chat extends DeletableBaseTimeEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "groomer_id",nullable = false)
     private Groomer groomerId;
+
+    @Column(nullable = false)
+    private Boolean customerExited = false;
+
+    @Column(nullable = false)
+    private Boolean groomerExited = false;
+
+
 }
