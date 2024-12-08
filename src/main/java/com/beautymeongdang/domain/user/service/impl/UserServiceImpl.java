@@ -1,7 +1,5 @@
 package com.beautymeongdang.domain.user.service.Impl;
 
-import com.beautymeongdang.domain.shop.entity.Shop;
-import com.beautymeongdang.domain.shop.repository.ShopRepository;
 import com.beautymeongdang.domain.user.dto.*;
 import com.beautymeongdang.domain.user.entity.*;
 import com.beautymeongdang.domain.user.repository.*;
@@ -21,7 +19,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 
@@ -56,8 +53,8 @@ public class UserServiceImpl implements UserService {
             userRepository.save(user);
 
             // 시군구 정보 조회
-            Sigungu sigungu = sigunguRepository.findById(requestDto.getSigungoId())
-                    .orElseThrow(() -> new EntityNotFoundException("Sigungu not found with id: " + requestDto.getSigungoId()));
+            Sigungu sigungu = sigunguRepository.findById(requestDto.getSigunguId())
+                    .orElseThrow(() -> new EntityNotFoundException("Sigungu not found with id: " + requestDto.getSigunguId()));
 
             // Customer 정보 저장
             Customer customer = Customer.builder()
