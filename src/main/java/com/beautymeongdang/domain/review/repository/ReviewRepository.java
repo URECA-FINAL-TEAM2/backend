@@ -61,5 +61,10 @@ public interface ReviewRepository extends JpaRepository<Reviews, Long> {
 
     // 미용사 프로필 논리적 삭제
     List<Reviews> findAllByGroomerId(Groomer groomer);
+
+    @Query("SELECT COUNT(r) FROM Reviews r " +
+            "WHERE r.customerId.customerId = :customerId " +
+            "AND r.isDeleted = false")
+    Integer countByCustomerId(Long customerId);
 }
 

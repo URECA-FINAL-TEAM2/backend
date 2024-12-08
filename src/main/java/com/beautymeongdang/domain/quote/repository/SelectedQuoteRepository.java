@@ -109,4 +109,16 @@ public interface SelectedQuoteRepository extends JpaRepository<SelectedQuote, Lo
 
     // 반려견 프로필 논리적 삭제
     List<SelectedQuote> findAllByQuoteIdDogId(Dog dog);
+
+    @Query("SELECT COUNT(sq) FROM SelectedQuote sq " +
+            "WHERE sq.customerId.customerId = :customerId " +  // customerId.customerId로 수정
+            "AND sq.status = 'CONFIRMED' " +
+            "AND sq.isDeleted = false")
+    Integer countConfirmedReservationsByCustomerId(@Param("customerId") Long customerId);
+
+    @Query("SELECT COUNT(sq) FROM SelectedQuote sq " +
+            "WHERE sq.customerId.customerId = :customerId " +  // customerId.customerId로 수정
+            "AND sq.status = 'COMPLETED' " +
+            "AND sq.isDeleted = false")
+    Integer countCompletedServicesByCustomerId(@Param("customerId") Long customerId);
 }
