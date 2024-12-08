@@ -19,10 +19,13 @@ import com.beautymeongdang.domain.shop.repository.ShopRepository;
 import com.beautymeongdang.domain.user.dto.DeleteGroomerProfileResponseDto;
 import com.beautymeongdang.domain.user.dto.UpdateGroomerPortfolioDto;
 import com.beautymeongdang.domain.user.dto.GetGroomerProfileResponseDto;
+import com.beautymeongdang.domain.user.dto.UpdateGroomerProfileDto;
 import com.beautymeongdang.domain.user.entity.Groomer;
 import com.beautymeongdang.domain.user.entity.GroomerPortfolioImage;
+import com.beautymeongdang.domain.user.entity.User;
 import com.beautymeongdang.domain.user.repository.GroomerPortfolioImageRepository;
 import com.beautymeongdang.domain.user.repository.GroomerRepository;
+import com.beautymeongdang.domain.user.repository.UserRepository;
 import com.beautymeongdang.domain.user.service.GroomerService;
 import com.beautymeongdang.global.common.entity.DeletableBaseTimeEntity;
 import com.beautymeongdang.global.common.entity.UploadedFile;
@@ -53,6 +56,7 @@ public class GroomerServiceImpl implements GroomerService {
     private final PaymentRepository paymentRepository;
     private final QuoteRequestRepository quoteRequestRepository;
     private final ReviewRepository reviewRepository;
+    private final UserRepository userRepository;
 
     // 미용사 정보 조회
     @Override
@@ -160,5 +164,65 @@ public class GroomerServiceImpl implements GroomerService {
         reviews.forEach(DeletableBaseTimeEntity::delete);
 
         return new DeleteGroomerProfileResponseDto(groomer.getGroomerId());
+    }
+
+    // 미용사 프로필 수정
+    @Override
+    @Transactional
+    public UpdateGroomerProfileDto updateGroomerProfile(UpdateGroomerProfileDto updateGroomerProfileDto, List<MultipartFile> images) {
+        if (images != null && images.size() > 1) {
+            throw new BadRequestException("프로필 이미지는 1장만 등록할 수 있습니다");
+        }
+
+        // 미용사 스킬 수정
+        Groomer groomer = groomerRepository.findById(updateGroomerProfileDto.getGroomerId())
+                .orElseThrow(() -> NotFoundException.entityNotFound("미용사"));
+
+        Groomer updateGroomer = Groomer.builder()
+                .groomerId(groomer.getGroomerId())
+                .userId(groomer.getUserId())
+                .skill(updateGroomerProfileDto.getSkills())
+                .build();
+
+        Groomer saveGroomer = groomerRepository.save(updateGroomer);
+
+        // 회원 수정
+        User user = userRepository.findById(groomer.getUserId().getUserId())
+                .orElseThrow(() -> NotFoundException.entityNotFound("회원"));
+
+        // S3 회원 이미지 수정
+        String groomerProfileUrl = user.getProfileImage();
+        if(images != null && !images.isEmpty()) {
+            // S3 이미지 삭제
+            fileStore.deleteFile(user.getProfileImage());
+
+            // S3 이미지 등록
+            List<UploadedFile> uploadedFiles = fileStore.storeFiles(images, FileStore.USER_PROFILE);
+            groomerProfileUrl = uploadedFiles.get(0).getFileUrl();
+
+        }
+
+        User updateUser = User.builder()
+                .userId(user.getUserId())
+                .roles(user.getRoles())
+                .userName(user.getUserName())
+                .email(user.getEmail())
+                .nickname(updateGroomerProfileDto.getNickname())
+                .socialProvider(user.getSocialProvider())
+                .profileImage(groomerProfileUrl)
+                .phone(updateGroomerProfileDto.getPhone())
+                .isRegister(user.isRegister())
+                .providerId(user.getProviderId())
+                .build();
+
+        User saveUser = userRepository.save(updateUser);
+
+        return UpdateGroomerProfileDto.builder()
+                .groomerId(saveGroomer.getGroomerId())
+                .profileImage(saveUser.getProfileImage())
+                .nickname(saveUser.getNickname())
+                .phone(saveUser.getPhone())
+                .skills(saveGroomer.getSkill())
+                .build();
     }
 }
