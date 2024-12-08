@@ -28,6 +28,7 @@ public class GetSelectedQuoteDetailResponseDto {
     private LocalDateTime beautyDate;
     private String requestContent;
     private String quoteContent;
+    private Integer amount;
     private List<String> requestImage;
 
     @Builder
@@ -49,7 +50,8 @@ public class GetSelectedQuoteDetailResponseDto {
             Long quoteId,
             LocalDateTime beautyDate,
             String requestContent,
-            String quoteContent
+            String quoteContent,
+            Integer amount
     ) {
         this.customerName = customerName;
         this.groomerName = groomerName;
@@ -69,5 +71,6 @@ public class GetSelectedQuoteDetailResponseDto {
         this.beautyDate = beautyDate;
         this.requestContent = requestContent;
         this.quoteContent = quoteContent;
+        this.amount = amount;
     }
 }
