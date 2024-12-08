@@ -109,7 +109,7 @@ public class CustomerServiceImpl implements CustomerService {
 
         // 사용자 정보
         GetCustomerMypageResponseDto.UserInfoDto userInfo = GetCustomerMypageResponseDto.UserInfoDto.builder()
-                .userName(customer.getUserId().getNickname() + " 고객님")
+                .userName(customer.getUserId().getNickname())
                 .email(customer.getUserId().getEmail())
                 .profileImage(customer.getUserId().getProfileImage())
                 .build();
