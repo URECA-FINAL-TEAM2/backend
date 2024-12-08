@@ -118,7 +118,7 @@ public class CustomerServiceImpl implements CustomerService {
         GetCustomerMypageResponseDto.CustomrtMypageCountsDto counts = GetCustomerMypageResponseDto.CustomrtMypageCountsDto.builder()
                 .completedServices(selectedQuoteRepository.countCompletedServicesByCustomerId(customerId))
                 .confirmedReservations(selectedQuoteRepository.countConfirmedReservationsByCustomerId(customerId))
-                .myReviews(reviewRepository.countByCustomerId(customerId))
+                .myReviews(reviewRepository.countCustomerReviews(customerId))
                 .build();
 
         // 반려동물 정보 조회
