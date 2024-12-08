@@ -1,10 +1,12 @@
 package com.beautymeongdang.domain.user.controller;
 
 import com.beautymeongdang.domain.user.dto.CustomerProfileResponseDto;
+import com.beautymeongdang.domain.user.dto.GetCustomerMypageResponseDto;
 import com.beautymeongdang.domain.user.dto.UpdateAddressRequestDto;
 import com.beautymeongdang.domain.user.dto.UpdateCustomerProfileDto;
 import com.beautymeongdang.domain.user.service.CustomerService;
 import com.beautymeongdang.global.common.dto.ApiResponse;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -54,5 +56,18 @@ public class CustomerController {
             @RequestBody UpdateAddressRequestDto request) {
         customerService.updateAddress(customerId, request.getSidoName(), request.getSigunguName());
         return ApiResponse.ok(200, null, "고객 주소 업데이트 성공");
+    }
+    
+    // 마이페이지 조회 API 추가
+    @GetMapping("/{customerId}/mypage")
+    public ResponseEntity<ApiResponse<GetCustomerMypageResponseDto>> getCustomerMypage(@PathVariable Long customerId) {
+        try {
+            GetCustomerMypageResponseDto responseDto = customerService.getCustomerMypage(customerId);
+            return ApiResponse.ok(200, responseDto, "Get Customer MyPage Success");
+        } catch (EntityNotFoundException e) {
+            return ApiResponse.badRequest(404, "고객을 찾을 수 없습니다: " + e.getMessage());
+        } catch (Exception e) {
+            return ApiResponse.badRequest(400, "마이페이지 조회 실패: " + e.getMessage());
+        }
     }
 }

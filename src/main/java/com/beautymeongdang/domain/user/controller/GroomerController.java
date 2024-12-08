@@ -38,7 +38,7 @@ public class GroomerController {
     }
 
     // 미용사 프로필 수정
-    @PutMapping("")
+    @PutMapping(value = "", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> updateGroomerProfile(@RequestPart UpdateGroomerProfileDto requestDto,
                                                   @RequestPart(required = false) List<MultipartFile> profileImage) {
         return ApiResponse.ok(200, groomerService.updateGroomerProfile(requestDto, profileImage), "Update GroomerProfile Success");

@@ -42,7 +42,7 @@ public interface ReviewRepository extends JpaRepository<Reviews, Long> {
     Double getAverageStarRatingByGroomerId(@Param("groomerId") Long groomerId);
 
 
-    //각 미용사의 리뷰 개수
+    // 각 미용사의 리뷰 개수
     @Query("SELECT COUNT(r) FROM Reviews r WHERE r.groomerId.groomerId = :groomerId AND r.isDeleted = false")
     Integer countGroomerReviews(@Param("groomerId") Long groomerId);
 
@@ -61,5 +61,11 @@ public interface ReviewRepository extends JpaRepository<Reviews, Long> {
 
     // 미용사 프로필 논리적 삭제
     List<Reviews> findAllByGroomerId(Groomer groomer);
+
+    // 본인이 적은 리뷰 수
+    @Query("SELECT COUNT(r) FROM Reviews r " +
+            "WHERE r.customerId.customerId = :customerId " +
+            "AND r.isDeleted = false")
+    Integer countByCustomerId(@Param("customerId") Long customerId);
 }
 
