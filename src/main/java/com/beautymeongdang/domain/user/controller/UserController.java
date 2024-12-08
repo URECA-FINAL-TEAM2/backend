@@ -12,9 +12,11 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -26,37 +28,48 @@ import java.util.Map;
 public class UserController {
 
     private final UserService userService;
-    private final JwtProvider jwtProvider;
     private final UserRepository userRepository;
+    private final JwtProvider jwtProvider;
 
-    @PostMapping("/register/customer")
+    // 고객 추가 회원가입 
+
+    @PostMapping(value = "/register/customer", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ApiResponse<Map<String, Object>>> registerCustomer(
             @AuthenticationPrincipal CustomOAuth2User oauth2User,
-            @RequestBody CustomerRegisterRequestDTO customerDTO,
-            HttpServletResponse response) {
+            @RequestPart("requestDto") CustomerRegisterRequestDTO requestDto,
+            @RequestPart(value = "profileImage", required = false) MultipartFile profileImage) {
         try {
-            User user = userService.registerCustomer(oauth2User.getUserId(), customerDTO);
-            Map<String, Object> tokenInfo = jwtProvider.createTokens(user, response);
-            return ApiResponse.ok(201, tokenInfo, "고객 회원가입 성공");
+            Map<String, Object> responseData = userService.registerCustomer(oauth2User.getUserId(), requestDto, profileImage);
+            return ApiResponse.ok(201, responseData, "고객 회원 가입 성공");
         } catch (Exception e) {
             log.error("고객 회원가입 실패: {}", e.getMessage(), e);
             return ApiResponse.badRequest(400, "고객 회원가입 실패: " + e.getMessage());
         }
     }
 
-    @PostMapping("/register/groomer")
+    @PostMapping(value = "/register/groomer", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ApiResponse<Map<String, Object>>> registerGroomer(
             @AuthenticationPrincipal CustomOAuth2User oauth2User,
-            @RequestBody GroomerRegisterRequestDTO registrationDTO,
-            HttpServletResponse response) {
+            @RequestPart("requestDto") GroomerRegisterRequestDTO requestDto,
+            @RequestPart(value = "profileImage", required = false) MultipartFile profileImage) {
         try {
-            User user = userService.registerGroomer(oauth2User.getUserId(), registrationDTO);
-            Map<String, Object> tokenInfo = jwtProvider.createTokens(user, response);
-            return ApiResponse.ok(201, tokenInfo, "미용사 회원가입 성공");
+            Map<String, Object> responseData = userService.registerGroomer(oauth2User.getUserId(), requestDto, profileImage);
+            return ApiResponse.ok(201, responseData, "미용사 회원가입 성공");
         } catch (Exception e) {
             log.error("미용사 회원가입 실패: {}", e.getMessage(), e);
             return ApiResponse.badRequest(400, "미용사 회원가입 실패: " + e.getMessage());
         }
+    }
+
+    @GetMapping("/nickname/{nickname}/check")
+    public ResponseEntity<ApiResponse<Boolean>> checkNicknameAvailability(@PathVariable String nickname) {
+        boolean isAvailable = !userRepository.existsByNickname(nickname);
+        String message = userService.getNicknameCheckMessage(nickname);
+
+        if (!isAvailable) {
+            return ApiResponse.badRequest(400, message);  // 이미 사용 중인 경우
+        }
+        return ApiResponse.ok(200, true, message);  // 사용 가능한 경우
     }
 
     @PostMapping("/logout")
@@ -66,28 +79,12 @@ public class UserController {
             userService.logout(request, response);
             Map<String, String> result = new HashMap<>();
             result.put("result", "JWT Token delete");
-
             return ApiResponse.ok(201, result, "logout Success");
         } catch (Exception e) {
             log.error("Logout failed: {}", e.getMessage(), e);
             return ApiResponse.badRequest(400, "Logout failed: " + e.getMessage());
         }
     }
-
-
-    // Controller
-    @GetMapping("/nickname/{nickname}/check")
-    public ResponseEntity<ApiResponse<Boolean>> checkNicknameAvailability(@PathVariable String nickname) {
-        boolean isAvailable = !userRepository.existsByNickname(nickname);
-        String message = userService.getNicknameCheckMessage(nickname);
-
-        if (!isAvailable) {
-            return ApiResponse.badRequest(400, message);  // 이미 사용 중인 경우
-        }
-
-        return ApiResponse.ok(200, true, message);  // 사용 가능한 경우
-    }
-
 
     // 테스트 용 (삭제 가능)
     @PostMapping("/auth/login")
@@ -102,7 +99,7 @@ public class UserController {
             // 응답 데이터 구성
             Map<String, Object> responseData = new HashMap<>();
             responseData.put("isRegister", user.isRegister());
-            responseData.put("accessToken", tokenInfo.get("accessToken"));
+            responseData.put("accessToken", tokenInfo.get("access_token")); // 수정: "accessToken" -> "access_token"
 
             // 사용자 정보 구성
             Map<String, Object> userInfo = new HashMap<>();
