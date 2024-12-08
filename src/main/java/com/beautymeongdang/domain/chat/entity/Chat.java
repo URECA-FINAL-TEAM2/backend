@@ -26,10 +26,16 @@ public class Chat extends DeletableBaseTimeEntity {
     private Groomer groomerId;
 
     @Column(nullable = false)
-    private Boolean customerExited = false;
+    private Boolean customerExitedYn = false;
 
     @Column(nullable = false)
-    private Boolean groomerExited = false;
+    private Boolean groomerExitedYn = false;
 
+    public void customerExited() {
+        this.customerExitedYn= true;
+    }
 
+    public void groomerExited() {
+        this.groomerExitedYn= true;
+    }
 }
