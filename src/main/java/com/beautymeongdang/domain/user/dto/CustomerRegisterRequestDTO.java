@@ -13,6 +13,4 @@ public class CustomerRegisterRequestDTO {
     private String phone;
     private Long sidoId;
     private Long sigunguId;
-    private BigDecimal latitude;
-    private BigDecimal longitude;
 }

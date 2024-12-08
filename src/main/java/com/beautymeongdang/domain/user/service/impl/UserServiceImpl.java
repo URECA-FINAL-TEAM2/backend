@@ -4,6 +4,7 @@ import com.beautymeongdang.domain.user.dto.*;
 import com.beautymeongdang.domain.user.entity.*;
 import com.beautymeongdang.domain.user.repository.*;
 import com.beautymeongdang.domain.user.service.UserService;
+import com.beautymeongdang.global.oauth2.CustomOAuth2User;
 import com.beautymeongdang.global.region.entity.Sigungu;
 import com.beautymeongdang.global.region.repository.SigunguRepository;
 import com.beautymeongdang.infra.s3.FileStore;
@@ -14,6 +15,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -35,7 +37,8 @@ public class UserServiceImpl implements UserService {
     private final FileStore fileStore;
 
     @Override
-    public Map<String, Object> registerCustomer(Long userId, CustomerRegisterRequestDTO requestDto, MultipartFile profileImage) {
+    public Map<String, Object> registerCustomer(CustomerRegisterRequestDTO requestDto, MultipartFile profileImage) {
+        Long userId = getCurrentUserId();
         try {
             User user = userRepository.findById(userId)
                     .orElseThrow(() -> new EntityNotFoundException("User not found with id: " + userId));
@@ -44,33 +47,37 @@ public class UserServiceImpl implements UserService {
                 throw new RuntimeException("User is already registered as a customer");
             }
 
-            // 프로필 이미지 처리
-            handleProfileImage(user, profileImage);
+            // 이미지 처리 로직 수정
+            String profileImageUrl = null;
+            if (profileImage != null && !profileImage.isEmpty()) {
+                List<UploadedFile> uploadedFiles = fileStore.storeFiles(List.of(profileImage), FileStore.USER_PROFILE);
+                profileImageUrl = uploadedFiles.get(0).getFileUrl();
+            }
 
             user.getRoles().add(Role.고객);
             user.updateUserInfo(requestDto.getPhone(), requestDto.getNickName());
+            if (profileImageUrl != null) {
+                user.updateProfileImage(profileImageUrl);
+            }
             user.completeRegistration();
             userRepository.save(user);
 
-            // 시군구 정보 조회
             Sigungu sigungu = sigunguRepository.findById(requestDto.getSigunguId())
                     .orElseThrow(() -> new EntityNotFoundException("Sigungu not found with id: " + requestDto.getSigunguId()));
 
-            // Customer 정보 저장
             Customer customer = Customer.builder()
                     .userId(user)
                     .sigunguId(sigungu)
-                    .latitude(requestDto.getLatitude())
-                    .longitude(requestDto.getLongitude())
                     .build();
 
             customerRepository.save(customer);
 
-            // 필요한 데이터 반환
             Map<String, Object> responseData = Map.of(
                     "userId", user.getUserId(),
                     "nickname", user.getNickname(),
-                    "isRegister", user.isRegister()
+                    "isRegister", user.isRegister(),
+                    "roles", user.getRoles(),
+                    "profileImage", profileImageUrl != null ? profileImageUrl : user.getProfileImage()
             );
             return responseData;
         } catch (Exception e) {
@@ -80,7 +87,8 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Map<String, Object> registerGroomer(Long userId, GroomerRegisterRequestDTO requestDto, MultipartFile profileImage) {
+    public Map<String, Object> registerGroomer(GroomerRegisterRequestDTO requestDto, MultipartFile profileImage) {
+        Long userId = getCurrentUserId();
         try {
             User user = userRepository.findById(userId)
                     .orElseThrow(() -> new EntityNotFoundException("User not found with id: " + userId));
@@ -89,15 +97,21 @@ public class UserServiceImpl implements UserService {
                 throw new RuntimeException("User is already registered as a groomer");
             }
 
-            // 프로필 이미지 처리
-            handleProfileImage(user, profileImage);
+            // 이미지 처리 로직 수정
+            String profileImageUrl = null;
+            if (profileImage != null && !profileImage.isEmpty()) {
+                List<UploadedFile> uploadedFiles = fileStore.storeFiles(List.of(profileImage), FileStore.USER_PROFILE);
+                profileImageUrl = uploadedFiles.get(0).getFileUrl();
+            }
 
             user.getRoles().add(Role.미용사);
             user.updateUserInfo(requestDto.getPhone(), requestDto.getNickName());
+            if (profileImageUrl != null) {
+                user.updateProfileImage(profileImageUrl);
+            }
             user.completeRegistration();
             userRepository.save(user);
 
-            // Groomer 정보 저장
             Groomer groomer = Groomer.builder()
                     .userId(user)
                     .skill(requestDto.getSkill())
@@ -108,20 +122,14 @@ public class UserServiceImpl implements UserService {
             Map<String, Object> responseData = Map.of(
                     "userId", user.getUserId(),
                     "nickname", user.getNickname(),
-                    "isRegister", user.isRegister()
+                    "isRegister", user.isRegister(),
+                    "roles", user.getRoles(),
+                    "profileImage", profileImageUrl != null ? profileImageUrl : user.getProfileImage()
             );
             return responseData;
         } catch (Exception e) {
             log.error("Groomer registration failed: {}", e.getMessage(), e);
             throw new RuntimeException("Groomer registration failed: " + e.getMessage());
-        }
-    }
-
-
-    private void handleProfileImage(User user, MultipartFile profileImage) {
-        if (profileImage != null && !profileImage.isEmpty()) {
-            List<UploadedFile> uploadedFiles = fileStore.storeFiles(List.of(profileImage), FileStore.USER_PROFILE);
-            user.updateProfileImage(uploadedFiles.get(0).getFileUrl());
         }
     }
 
@@ -148,5 +156,14 @@ public class UserServiceImpl implements UserService {
             log.error("Cookie deletion failed: {}", e.getMessage(), e);
             throw new RuntimeException("Cookie deletion failed", e);
         }
+    }
+
+    private Long getCurrentUserId() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !(authentication.getPrincipal() instanceof CustomOAuth2User)) {
+            throw new RuntimeException("Not authenticated");
+        }
+        CustomOAuth2User oauth2User = (CustomOAuth2User) authentication.getPrincipal();
+        return oauth2User.getUserId();
     }
 }
