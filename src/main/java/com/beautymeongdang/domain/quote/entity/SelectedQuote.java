@@ -19,7 +19,7 @@ public class SelectedQuote extends DeletableBaseTimeEntity {
     @JoinColumn(name = "quote_id",nullable = false)
     private Quote quoteId;
 
-    @OneToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "customer_id",nullable = false)
     private Customer customerId;
 

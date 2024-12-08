@@ -1,6 +1,7 @@
 package com.beautymeongdang.domain.user.controller;
 
 import com.beautymeongdang.domain.user.dto.UpdateGroomerPortfolioDto;
+import com.beautymeongdang.domain.user.dto.UpdateGroomerProfileDto;
 import com.beautymeongdang.domain.user.service.GroomerService;
 import com.beautymeongdang.global.common.dto.ApiResponse;
 import lombok.RequiredArgsConstructor;
@@ -35,5 +36,13 @@ public class GroomerController {
     public ResponseEntity<?> deleteGroomer(@PathVariable Long groomerId) {
         return ApiResponse.ok(200, groomerService.deleteGroomerProfile(groomerId), "Delete Groomer Success");
     }
+
+    // 미용사 프로필 수정
+    @PutMapping("")
+    public ResponseEntity<?> updateGroomerProfile(@RequestPart UpdateGroomerProfileDto requestDto,
+                                                  @RequestPart(required = false) List<MultipartFile> profileImage) {
+        return ApiResponse.ok(200, groomerService.updateGroomerProfile(requestDto, profileImage), "Update GroomerProfile Success");
+    }
+
 
 }

@@ -52,7 +52,7 @@ public interface SelectedQuoteRepository extends JpaRepository<SelectedQuote, Lo
             "d.dogWeight, d.dogAge, " +
             "CAST(d.dogGender AS string), " +
             "d.neutering, d.experience, d.significant, " +
-            "q.quoteId, q.beautyDate, qr.content, q.content) " +
+            "q.quoteId, q.beautyDate, qr.content, q.content, q.cost) " +
             "FROM SelectedQuote sq " +
             "JOIN sq.quoteId q " +
             "JOIN q.requestId qr " +
@@ -109,4 +109,20 @@ public interface SelectedQuoteRepository extends JpaRepository<SelectedQuote, Lo
 
     // 반려견 프로필 논리적 삭제
     List<SelectedQuote> findAllByQuoteIdDogId(Dog dog);
+
+    // 예약완료 수
+    @Query("SELECT COUNT(sq) FROM SelectedQuote sq " +
+            "JOIN CommonCode cc ON cc.id.codeId = sq.status AND cc.id.groupId = '250' " +
+            "WHERE sq.customerId.customerId = :customerId " +
+            "AND sq.status = '010' " +
+            "AND sq.isDeleted = false")
+    Integer countConfirmedReservationsByCustomerId(@Param("customerId") Long customerId);
+
+    // 미용 완료 수
+    @Query("SELECT COUNT(sq) FROM SelectedQuote sq " +
+            "JOIN CommonCode cc ON cc.id.codeId = sq.status AND cc.id.groupId = '250' " +
+            "WHERE sq.customerId.customerId = :customerId " +
+            "AND sq.status = '030' " +
+            "AND sq.isDeleted = false")
+    Integer countCompletedServicesByCustomerId(@Param("customerId") Long customerId);
 }

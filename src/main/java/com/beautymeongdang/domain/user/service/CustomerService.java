@@ -1,6 +1,7 @@
 package com.beautymeongdang.domain.user.service;
 
 import com.beautymeongdang.domain.user.dto.CustomerProfileResponseDto;
+import com.beautymeongdang.domain.user.dto.GetCustomerMypageResponseDto;
 import com.beautymeongdang.domain.user.repository.DeleteCustomerResponseDto;
 
 public interface CustomerService {
@@ -12,4 +13,7 @@ public interface CustomerService {
 
     // 고객 주소 수정
     void updateAddress(Long customerId, String sidoName, String sigunguName);
+
+    // 마이페이지 조회
+    GetCustomerMypageResponseDto getCustomerMypage(Long customerId);
 }

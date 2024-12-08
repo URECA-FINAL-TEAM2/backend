@@ -3,6 +3,7 @@ package com.beautymeongdang.domain.user.service;
 import com.beautymeongdang.domain.user.dto.DeleteGroomerProfileResponseDto;
 import com.beautymeongdang.domain.user.dto.UpdateGroomerPortfolioDto;
 import com.beautymeongdang.domain.user.dto.GetGroomerProfileResponseDto;
+import com.beautymeongdang.domain.user.dto.UpdateGroomerProfileDto;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
@@ -17,5 +18,8 @@ public interface GroomerService {
 
     // 미용사 프로필 논리적 삭제
     DeleteGroomerProfileResponseDto deleteGroomerProfile(Long groomerId);
+
+    // 미용사 프로필 수정
+    UpdateGroomerProfileDto updateGroomerProfile(UpdateGroomerProfileDto updateGroomerProfileDto, List<MultipartFile> images);
 
 }
