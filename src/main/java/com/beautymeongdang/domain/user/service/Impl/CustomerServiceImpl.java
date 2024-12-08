@@ -15,19 +15,25 @@ import com.beautymeongdang.domain.quote.repository.SelectedQuoteRepository;
 import com.beautymeongdang.domain.review.entity.Reviews;
 import com.beautymeongdang.domain.review.repository.ReviewRepository;
 import com.beautymeongdang.domain.user.dto.CustomerProfileResponseDto;
+import com.beautymeongdang.domain.user.dto.UpdateCustomerProfileDto;
 import com.beautymeongdang.domain.user.dto.GetCustomerMypageResponseDto;
 import com.beautymeongdang.domain.user.entity.Customer;
+import com.beautymeongdang.domain.user.entity.User;
 import com.beautymeongdang.domain.user.repository.CustomerRepository;
 import com.beautymeongdang.domain.user.repository.DeleteCustomerResponseDto;
+import com.beautymeongdang.domain.user.repository.UserRepository;
 import com.beautymeongdang.domain.user.service.CustomerService;
+import com.beautymeongdang.global.common.entity.UploadedFile;
 import com.beautymeongdang.global.exception.handler.BadRequestException;
 import com.beautymeongdang.global.exception.handler.NotFoundException;
 import com.beautymeongdang.global.region.entity.Sigungu;
 import com.beautymeongdang.global.region.repository.SigunguRepository;
+import com.beautymeongdang.infra.s3.FileStore;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -46,6 +52,9 @@ public class CustomerServiceImpl implements CustomerService {
     private final PaymentRepository paymentRepository;
     private final ChatRepository chatRepository;
     private final QuoteRequestRepository quoteRequestRepository;
+    private final FileStore fileStore;
+    private final UserRepository userRepository;
+
 
     // 고객 프로필 조회
     @Override
@@ -86,6 +95,52 @@ public class CustomerServiceImpl implements CustomerService {
                 .userId(customer.getUserId().getUserId())
                 .build();
     }
+
+    @Override
+    @Transactional
+    public UpdateCustomerProfileDto updateCustomerProfile(UpdateCustomerProfileDto updateCustomerProfileDto, List<MultipartFile> images) {
+
+        if (images != null && images.size() > 1) {
+            throw new BadRequestException("프로필 이미지는 1장만 등록할 수 있습니다");
+        }
+
+        // 고객 조회
+        Customer customer = customerRepository.findById(updateCustomerProfileDto.getCustomerId())
+                .orElseThrow(() -> NotFoundException.entityNotFound("고객"));
+
+        // 회원 정보 조회
+        User user = userRepository.findById(customer.getUserId().getUserId())
+                .orElseThrow(() -> NotFoundException.entityNotFound("회원"));
+
+        // S3 이미지 처리
+        String profileImageUrl = user.getProfileImage();
+        if (images != null && !images.isEmpty()) {
+            // 기존 이미지 삭제
+                fileStore.deleteFile(user.getProfileImage());
+
+            // 새로운 이미지 업로드
+            List<UploadedFile> uploadedFiles = fileStore.storeFiles(images, FileStore.USER_PROFILE);
+            profileImageUrl = uploadedFiles.get(0).getFileUrl(); // 여러 이미지 중 첫 번째 이미지를 사용
+        }
+
+        // 회원 정보 업데이트
+        user.updateUserInfo(updateCustomerProfileDto.getPhone(), updateCustomerProfileDto.getNickname());
+        if (profileImageUrl != null) {
+            user.updateProfileImage(profileImageUrl);
+        }
+
+        // 변경된 회원 정보 저장
+        userRepository.save(user);
+
+        // 응답 DTO 생성 및 반환
+        return UpdateCustomerProfileDto.builder()
+                .customerId(customer.getCustomerId())
+                .nickname(user.getNickname())
+                .phone(user.getPhone())
+                .build();
+    }
+
+
 
 
     // 고객 주소 수정
