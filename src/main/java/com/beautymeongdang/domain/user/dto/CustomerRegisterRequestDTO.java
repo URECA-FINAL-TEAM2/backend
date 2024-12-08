@@ -11,9 +11,8 @@ import java.math.BigDecimal;
 public class CustomerRegisterRequestDTO {
     private String nickName;
     private String phone;
+    private Long sidoId;
     private Long sigunguId;
-    private String address;
     private BigDecimal latitude;
     private BigDecimal longitude;
-
 }
