@@ -30,9 +30,9 @@ public class GetCustomerMypageResponseDto {
     @Builder
     @AllArgsConstructor
     public static class CustomrtMypageCountsDto {
-        private Integer completedServices;    // "미용 완료" 10건
-        private Integer confirmedReservations; // "확정된 예약" 2건
-        private Integer myReviews;            // "작성한 리뷰" 3건
+        private Integer completedServices;
+        private Integer confirmedReservations;
+        private Integer myReviews;
     }
 
 
