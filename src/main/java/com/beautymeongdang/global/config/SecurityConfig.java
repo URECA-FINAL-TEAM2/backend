@@ -78,7 +78,8 @@ public class SecurityConfig {
                                 "/",                    // 루트 경로
                                 "/selectRole",         // 역할 선택 페이지
                                 "/login",             // 로그인 페이지
-                                "/oauth2/**"          // OAuth2 관련 모든 경로
+                                "/oauth2/**",          // OAuth2 관련 모든 경로
+                                "/payments/**"
                         ).permitAll()
                         // API 및 Swagger 관련 경로
                         .requestMatchers(
