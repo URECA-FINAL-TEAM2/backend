@@ -17,42 +17,74 @@ public class NotificationController {
     }
 
     // 알림 저장 API
-    @PostMapping("/{userId}")
+    @PostMapping
     public ResponseEntity<String> saveNotification(
-            @PathVariable Long userId,
-            @RequestParam String roleType,
+            @RequestParam(required = false) Long customerId,
+            @RequestParam(required = false) Long groomerId,
             @RequestParam String notifyType,
             @RequestParam String notifyContent,
             @RequestParam String link) {
-        notificationService.saveNotification(userId, roleType, notifyType, notifyContent, link);
-        return ResponseEntity.ok("Notification saved.");
+
+        if (customerId != null) {
+            notificationService.saveNotification(customerId, "customer", notifyType, notifyContent, link);
+            return ResponseEntity.ok("Customer notification saved.");
+        } else if (groomerId != null) {
+            notificationService.saveNotification(groomerId, "groomer", notifyType, notifyContent, link);
+            return ResponseEntity.ok("Groomer notification saved.");
+        } else {
+            return ResponseEntity.badRequest().body("Either customerId or groomerId must be provided.");
+        }
     }
 
     // 알림 조회 API
-    @GetMapping("/{userId}")
+    @GetMapping
     public ResponseEntity<List<Object>> getNotifications(
-            @PathVariable Long userId,
-            @RequestParam String roleType) {
-        List<Object> notifications = notificationService.getNotifications(userId, roleType);
-        return ResponseEntity.ok(notifications);
+            @RequestParam(required = false) Long customerId,
+            @RequestParam(required = false) Long groomerId) {
+
+        if (customerId != null) {
+            List<Object> notifications = notificationService.getNotifications(customerId, "customer");
+            return ResponseEntity.ok(notifications);
+        } else if (groomerId != null) {
+            List<Object> notifications = notificationService.getNotifications(groomerId, "groomer");
+            return ResponseEntity.ok(notifications);
+        } else {
+            return ResponseEntity.badRequest().body(null);
+        }
     }
 
     // 알림 읽음 처리 API
-    @PatchMapping("/{userId}")
+    @PatchMapping
     public ResponseEntity<String> markAsRead(
-            @PathVariable Long userId,
-            @RequestParam String roleType,
+            @RequestParam(required = false) Long customerId,
+            @RequestParam(required = false) Long groomerId,
             @RequestParam int index) {
-        notificationService.markAsRead(userId, roleType, index);
-        return ResponseEntity.ok("Notification marked as read.");
+
+        if (customerId != null) {
+            notificationService.markAsRead(customerId, "customer", index);
+            return ResponseEntity.ok("Customer notification marked as read.");
+        } else if (groomerId != null) {
+            notificationService.markAsRead(groomerId, "groomer", index);
+            return ResponseEntity.ok("Groomer notification marked as read.");
+        } else {
+            return ResponseEntity.badRequest().body("Either customerId or groomerId must be provided.");
+        }
     }
 
     // 알림 삭제 API
-    @DeleteMapping("/{userId}")
+    @DeleteMapping
     public ResponseEntity<String> clearNotifications(
-            @PathVariable Long userId,
-            @RequestParam String roleType) {
-        notificationService.clearNotifications(userId, roleType);
-        return ResponseEntity.ok("Notifications cleared.");
+            @RequestParam(required = false) Long customerId,
+            @RequestParam(required = false) Long groomerId) {
+
+        if (customerId != null) {
+            notificationService.clearNotifications(customerId, "customer");
+            return ResponseEntity.ok("Customer notifications cleared.");
+        } else if (groomerId != null) {
+            notificationService.clearNotifications(groomerId, "groomer");
+            return ResponseEntity.ok("Groomer notifications cleared.");
+        } else {
+            return ResponseEntity.badRequest().body("Either customerId or groomerId must be provided.");
+        }
     }
 }
