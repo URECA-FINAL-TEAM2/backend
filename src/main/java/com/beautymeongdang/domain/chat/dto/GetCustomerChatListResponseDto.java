@@ -15,7 +15,7 @@ public class GetCustomerChatListResponseDto {
     private String profileImage;
     private String shopName;
     private String ShopAddress;
-    private String last_message;
+    private String lastMessage;
     private LocalDateTime lastMessageTime;
 
     @Builder
@@ -29,7 +29,7 @@ public class GetCustomerChatListResponseDto {
         this.profileImage = profileImage;
         this.shopName = shopName;
         this.ShopAddress = sidoName + " " + sigunguName;
-        this.last_message = lastMessageContent;
+        this.lastMessage = lastMessageContent;
         this.lastMessageTime = lastMessageCreatedAt;
     }
 }

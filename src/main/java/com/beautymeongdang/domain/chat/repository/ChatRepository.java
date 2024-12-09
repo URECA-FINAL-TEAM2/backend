@@ -1,6 +1,7 @@
 package com.beautymeongdang.domain.chat.repository;
 
 import com.beautymeongdang.domain.chat.dto.GetCustomerChatListResponseDto;
+import com.beautymeongdang.domain.chat.dto.GetGroomerChatListResponseDto;
 import com.beautymeongdang.domain.chat.entity.Chat;
 import com.beautymeongdang.domain.user.entity.Groomer;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -85,5 +86,31 @@ public interface ChatRepository extends JpaRepository<Chat, Long> {
     ORDER BY cm.createdAt DESC
     """)
     List<GetCustomerChatListResponseDto> getCustomerChatListBySearchKeyword(@Param("customerId") Long customerId, @Param("searchKeyword") String searchKeyword);
+
+    // 미용사 채팅방 목록 조회
+    @Query("""
+        SELECT new com.beautymeongdang.domain.chat.dto.GetGroomerChatListResponseDto(
+            c.chatId,
+            cu.customerId,
+            u.userName,
+            u.profileImage,
+            cm.content,
+            cm.createdAt
+        )
+        FROM Chat c
+        JOIN c.customerId cu
+        JOIN cu.userId u
+        JOIN c.groomerId g
+        LEFT JOIN ChatMessage cm ON cm.chatId = c
+            AND cm.messageId = (
+                SELECT MAX(cm2.messageId)
+                FROM ChatMessage cm2
+                WHERE cm2.chatId = c AND cm2.isDeleted = false
+            )
+        WHERE c.isDeleted = false
+          AND g.groomerId = :groomerId
+        ORDER BY cm.createdAt DESC
+    """)
+    List<GetGroomerChatListResponseDto> getGroomerChatList(@Param("groomerId") Long groomerId);
 
 }

@@ -26,4 +26,10 @@ public class ChatController {
         return ApiResponse.ok(200, chatService.getCustomerChatListBySearchKeyword(requestDto), "Get CustomerSearchWordChat Success");
     }
 
+    // 미용사 채팅방 목록 조회
+    @GetMapping("/groomer/{groomerId}")
+    public ResponseEntity<?> getGroomerChatList(@PathVariable Long groomerId) {
+        return ApiResponse.ok(200, chatService.getGroomerChatList(groomerId), "Get GroomerChatRoomList Success");
+    }
+
 }
