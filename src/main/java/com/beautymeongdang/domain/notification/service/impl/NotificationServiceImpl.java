@@ -4,10 +4,10 @@ import com.beautymeongdang.domain.notification.repository.NotificationRepository
 import com.beautymeongdang.domain.notification.service.NotificationService;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 @Service
 public class NotificationServiceImpl implements NotificationService {
@@ -21,35 +21,34 @@ public class NotificationServiceImpl implements NotificationService {
     @Override
     public void saveNotification(Long userId, String roleType, String notifyType, String notifyContent) {
         Map<String, Object> notification = new HashMap<>();
+        notification.put("id", UUID.randomUUID().toString());
+        notification.put("userId", userId);
+        notification.put("roleType", roleType);
         notification.put("notifyType", notifyType);
-        notification.put("notifyContent", notifyContent);
+        notification.put("content", notifyContent);
         notification.put("readCheckYn", false);
-        notification.put("createdAt", LocalDateTime.now().toString());
+        notification.put("createdAt", System.currentTimeMillis());
 
         notificationRepository.saveNotification(userId, roleType, notification);
     }
 
     @Override
-    public List<Object> getNotifications(Long userId) {
-        List<Object> customerNotifications = notificationRepository.getNotifications(userId, "customer");
-        List<Object> groomerNotifications = notificationRepository.getNotifications(userId, "groomer");
-
-        customerNotifications.addAll(groomerNotifications);
-        return customerNotifications;
-    }
-
-    @Override
-    public void markAsReadById(Long userId, String roleType, String notificationId) {
-        notificationRepository.markAsReadById(userId, roleType, notificationId);
-    }
-
-    @Override
-    public void clearNotifications(Long userId, String roleType) {
-        notificationRepository.clearNotifications(userId, roleType);
+    public List<Object> getNotifications(Long userId, String roleType) {
+        return notificationRepository.getNotifications(userId, roleType);
     }
 
     @Override
     public int getUnreadNotificationCount(Long userId, String roleType) {
         return notificationRepository.getUnreadNotificationCount(userId, roleType);
+    }
+
+    @Override
+    public void deleteNotification(Long userId, String roleType, String notificationId) {
+        notificationRepository.deleteNotificationById(userId, roleType, notificationId);
+    }
+
+    @Override
+    public void clearAllNotifications(Long userId, String roleType) {
+        notificationRepository.clearNotifications(userId, roleType);
     }
 }

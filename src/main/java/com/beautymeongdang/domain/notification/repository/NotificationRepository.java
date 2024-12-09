@@ -69,4 +69,9 @@ public class NotificationRepository {
                 })
                 .count();
     }
+
+    public void deleteNotificationById(Long userId, String roleType, String notificationId) {
+        String key = getRedisKey(userId, roleType);
+        redisTemplate.opsForHash().delete(key, notificationId);
+    }
 }
