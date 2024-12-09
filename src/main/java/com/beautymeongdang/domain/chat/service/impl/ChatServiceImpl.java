@@ -1,6 +1,7 @@
 package com.beautymeongdang.domain.chat.service.impl;
 
 import com.beautymeongdang.domain.chat.dto.GetCustomerChatListResponseDto;
+import com.beautymeongdang.domain.chat.dto.GetCustomerKeywordChatListRequestDto;
 import com.beautymeongdang.domain.chat.repository.ChatRepository;
 import com.beautymeongdang.domain.chat.service.ChatService;
 import lombok.RequiredArgsConstructor;
@@ -21,5 +22,11 @@ public class ChatServiceImpl implements ChatService {
     @Override
     public List<GetCustomerChatListResponseDto> getCustomerChatList(Long customerId) {
         return chatRepository.getCustomerChatList(customerId);
+    }
+
+    // 고객 채팅방 목록 검색 조회
+    @Override
+    public List<GetCustomerChatListResponseDto> getCustomerChatListBySearchKeyword(GetCustomerKeywordChatListRequestDto requestDto) {
+        return chatRepository.getCustomerChatListBySearchKeyword(requestDto.getCustomerId(), requestDto.getSearchWord());
     }
 }
