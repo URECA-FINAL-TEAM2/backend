@@ -1,7 +1,7 @@
 package com.beautymeongdang.domain.notification.service.impl;
 
+import com.beautymeongdang.domain.notification.repository.NotificationRepository;
 import com.beautymeongdang.domain.notification.service.NotificationService;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -12,49 +12,44 @@ import java.util.Map;
 @Service
 public class NotificationServiceImpl implements NotificationService {
 
-    private final RedisTemplate<String, Object> redisTemplate;
+    private final NotificationRepository notificationRepository;
 
-    public NotificationServiceImpl(RedisTemplate<String, Object> redisTemplate) {
-        this.redisTemplate = redisTemplate;
+    public NotificationServiceImpl(NotificationRepository notificationRepository) {
+        this.notificationRepository = notificationRepository;
     }
 
     @Override
-    public void saveNotification(Long id, String roleType, String notifyType, String notifyContent, String link) {
-        String key = String.format("notifications:%d:%s", id, roleType);
-
+    public void saveNotification(Long userId, String roleType, String notifyType, String notifyContent) {
         Map<String, Object> notification = new HashMap<>();
         notification.put("notifyType", notifyType);
         notification.put("notifyContent", notifyContent);
-        notification.put("link", link);
         notification.put("readCheckYn", false);
         notification.put("createdAt", LocalDateTime.now().toString());
 
-        redisTemplate.opsForList().rightPush(key, notification);
+        notificationRepository.saveNotification(userId, roleType, notification);
     }
 
     @Override
-    public List<Object> getNotifications(Long id, String roleType) {
-        String key = String.format("notifications:%d:%s", id, roleType);
-        return redisTemplate.opsForList().range(key, 0, -1);
+    public List<Object> getNotifications(Long userId) {
+        List<Object> customerNotifications = notificationRepository.getNotifications(userId, "customer");
+        List<Object> groomerNotifications = notificationRepository.getNotifications(userId, "groomer");
+
+        customerNotifications.addAll(groomerNotifications);
+        return customerNotifications;
     }
 
     @Override
-    public void markAsRead(Long id, String roleType, int index) {
-        String key = String.format("notifications:%d:%s", id, roleType);
-        List<Object> notifications = redisTemplate.opsForList().range(key, 0, -1);
-
-        if (notifications != null && index < notifications.size()) {
-            Map<String, Object> notification = (Map<String, Object>) notifications.get(index);
-            notification.put("readCheckYn", true);
-            redisTemplate.opsForList().set(key, index, notification); // Redis 데이터 업데이트
-        } else {
-            throw new IllegalArgumentException("Invalid notification index.");
-        }
+    public void markAsReadById(Long userId, String roleType, String notificationId) {
+        notificationRepository.markAsReadById(userId, roleType, notificationId);
     }
 
     @Override
-    public void clearNotifications(Long id, String roleType) {
-        String key = String.format("notifications:%d:%s", id, roleType);
-        redisTemplate.delete(key);
+    public void clearNotifications(Long userId, String roleType) {
+        notificationRepository.clearNotifications(userId, roleType);
+    }
+
+    @Override
+    public int getUnreadNotificationCount(Long userId, String roleType) {
+        return notificationRepository.getUnreadNotificationCount(userId, roleType);
     }
 }
