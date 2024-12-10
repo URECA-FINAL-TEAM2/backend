@@ -123,6 +123,11 @@ public class ShopServiceImpl implements ShopService {
             throw new BadRequestException("해당 매장에 대한 접근 권한이 없습니다.");
         }
 
+        Integer favoriteCount = shopRepository.countFavoritesByShop(shop);
+        Integer reviewCount = reviewRepository.countGroomerReviews(groomerId);
+
+        List<String> portfolioImages = groomerPortfolioImageRepository.findImageUrlsByGroomerId(groomerId);
+
         return GetShopResponseDto.builder()
                 .shopId(shop.getShopId())
                 .shopName(shop.getShopName())
@@ -132,9 +137,11 @@ public class ShopServiceImpl implements ShopService {
                 .sigunguName(shop.getSigunguId().getSigunguName())
                 .address(shop.getAddress())
                 .shopLogo(shop.getImageUrl())
+                .favoriteCount(favoriteCount)
+                .reviewCount(reviewCount)
+                .groomerPortfolioImages(portfolioImages)
                 .build();
     }
-
 
 
     /**
@@ -252,7 +259,6 @@ public class ShopServiceImpl implements ShopService {
                 .favorite(shopRepository.countFavoritesByShop(shop))
                 .isFavorite(isFavorite)
                 .description(shop.getDescription())
-                .shopLogo(shop.getImageUrl())
                 .groomerPortfolioImages(portfolioImages)
                 .groomerUsername(groomer.getUserId().getNickname())
                 .groomerProfileImage(groomer.getUserId().getProfileImage())
@@ -302,21 +308,22 @@ public class ShopServiceImpl implements ShopService {
      */
     @Override
     public GetGroomerShopListResponseDto.ShopListResponse getShopList(Long customerId) {
-        Customer customer = customerRepository.findById(customerId)
-                .orElseThrow(() -> NotFoundException.entityNotFound("고객"));
+        List<Object[]> results = shopRepository.findShopsByCustomerSigunguWithStats(customerId);
 
-        List<Shop> shops = shopRepository.findShopsByCustomerSigunguOrderByStarScore(customer.getSigunguId().getSigunguId());
+        List<ShopDto> shopDtos = results.stream()
+                .map(result -> {
+                    Shop shop = (Shop) result[0];
+                    Groomer groomer = (Groomer) result[1];
+                    Double avgRating = ((Double) result[2]);
+                    Long reviewCount = ((Long) result[3]);
 
-        List<ShopDto> shopDtos = shops.stream()
-                .map(shop -> {
-                    Groomer groomer = shop.getGroomerId();
                     return ShopDto.builder()
                             .groomerId(groomer.getGroomerId())
                             .shopId(shop.getShopId())
                             .shopLogo(shop.getImageUrl())
                             .shopName(shop.getShopName())
-                            .starScoreAvg(shopRepository.getAverageStarRatingByGroomerId(groomer.getGroomerId()))
-                            .reviewCount(reviewRepository.countGroomerReviews(groomer.getGroomerId()))
+                            .starScoreAvg(avgRating)
+                            .reviewCount(reviewCount.intValue())
                             .address(shop.getAddress())
                             .businessTime(shop.getBusinessTime())
                             .skills(groomer.getSkill())
@@ -331,7 +338,6 @@ public class ShopServiceImpl implements ShopService {
                 .shopLists(shopDtos)
                 .build();
     }
-
 
 
     /**

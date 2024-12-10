@@ -30,6 +30,8 @@ public class GetQuotesGroomerResponseDto {
         private final String groomerName;
         private final LocalDateTime beautyDate;
         private final String requestContent;
+        private final Long quoteId;
+        private final String rejectReason;
     }
 
 }

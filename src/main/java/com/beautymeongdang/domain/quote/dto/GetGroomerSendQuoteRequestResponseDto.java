@@ -18,10 +18,12 @@ public class GetGroomerSendQuoteRequestResponseDto {
     private String dogWeight;
     private String requestContent;
     private String requestType;
+    private String status;
 
     @Builder
-    public GetGroomerSendQuoteRequestResponseDto(Long requestId, String userName, String profileImage, LocalDateTime beautyDate,
-                                                 String dogBreed, String dogGender, String dogWeight, String content, String requestType) {
+    public GetGroomerSendQuoteRequestResponseDto(Long requestId, String userName, String profileImage,
+                                                 LocalDateTime beautyDate, String dogBreed, String dogGender,
+                                                 String dogWeight, String content, String requestType, String quoteStatus) {
         this.requestId = requestId;
         this.userName = userName;
         this.userProfileImage = profileImage;
@@ -31,6 +33,7 @@ public class GetGroomerSendQuoteRequestResponseDto {
         this.dogWeight = dogWeight;
         this.requestContent = content;
         this.requestType = requestType;
+        this.status = quoteStatus;
     }
 
 }

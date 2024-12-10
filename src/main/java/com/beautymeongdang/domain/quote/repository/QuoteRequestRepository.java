@@ -16,12 +16,17 @@ import java.util.List;
 
 public interface QuoteRequestRepository extends JpaRepository<QuoteRequest, Long> {
     // '1:1 견적' 요청 조회
-    @Query("SELECT qr FROM QuoteRequest qr " +
-            "JOIN FETCH qr.dogId d " +
-            "WHERE d.customerId.customerId = :customerId " +
-            "AND qr.requestType = '020' " +
-            "AND qr.isDeleted = false " +
-            "ORDER BY qr.createdAt DESC")
+    @Query("""
+    SELECT qr
+    FROM QuoteRequest qr
+    JOIN FETCH qr.dogId d
+    JOIN DirectQuoteRequest dqr ON dqr.directQuoteRequestId.requestId = qr
+    LEFT JOIN Quote q ON q.requestId = qr
+    WHERE d.customerId.customerId = :customerId
+    AND qr.requestType = '020'
+    AND qr.isDeleted = false
+    ORDER BY qr.createdAt DESC
+    """)
     List<QuoteRequest> findAllByCustomerId(@Param("customerId") Long customerId);
 
     // '전체 견적' 요청 조회
@@ -118,7 +123,8 @@ public interface QuoteRequestRepository extends JpaRepository<QuoteRequest, Long
                             CAST(d.dogGender AS string),
                             d.dogWeight,
                             qr.content,
-                            qr.requestType
+                            requestTypeCode.commonName,
+                            quoteStatus.commonName
                         )
                         FROM
                             QuoteRequest qr
@@ -131,6 +137,10 @@ public interface QuoteRequestRepository extends JpaRepository<QuoteRequest, Long
                             d.customerId c
                         JOIN
                             c.userId u
+                        JOIN CommonCode requestTypeCode ON requestTypeCode.id.codeId = qr.requestType
+                                AND requestTypeCode.id.groupId = '900'
+                        JOIN CommonCode quoteStatus ON quoteStatus.id.codeId = q.status
+                                AND quoteStatus.id.groupId = '200'
                         WHERE
                             q.requestId IS NOT NULL
                           AND qr.isDeleted = false
