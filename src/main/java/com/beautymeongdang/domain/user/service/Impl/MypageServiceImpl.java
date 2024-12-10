@@ -74,7 +74,7 @@ public class MypageServiceImpl implements MypageService {
 
         // 사용자 정보
         GetCustomerMypageResponseDto.UserInfoDto userInfo = GetCustomerMypageResponseDto.UserInfoDto.builder()
-                .userName(customer.getUserId().getNickname())
+                .userName(customer.getUserId().getUserName())
                 .email(customer.getUserId().getEmail())
                 .profileImage(customer.getUserId().getProfileImage())
                 .build();
