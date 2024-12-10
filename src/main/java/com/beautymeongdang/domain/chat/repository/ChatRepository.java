@@ -77,12 +77,12 @@ public interface ChatRepository extends JpaRepository<Chat, Long> {
             FROM ChatMessage cm2
             WHERE cm2.chatId = c AND cm2.isDeleted = false
         )
-    WHERE c.isDeleted = false 
+    WHERE c.isDeleted = false
     AND cu.customerId = :customerId
-            AND (
-                  u.nickname LIKE CONCAT('%', :searchKeyword, '%')
-                  OR s.shopName LIKE CONCAT('%', :searchKeyword, '%')
-              )
+    AND (
+           u.nickname LIKE CONCAT('%', :searchKeyword, '%')
+           OR s.shopName LIKE CONCAT('%', :searchKeyword, '%')
+    )
     ORDER BY cm.createdAt DESC
     """)
     List<GetCustomerChatListResponseDto> getCustomerChatListBySearchKeyword(@Param("customerId") Long customerId, @Param("searchKeyword") String searchKeyword);
@@ -112,5 +112,34 @@ public interface ChatRepository extends JpaRepository<Chat, Long> {
         ORDER BY cm.createdAt DESC
     """)
     List<GetGroomerChatListResponseDto> getGroomerChatList(@Param("groomerId") Long groomerId);
+
+    // 미용사 채팅방 목록 검색 조회
+    @Query("""
+        SELECT new com.beautymeongdang.domain.chat.dto.GetGroomerChatListResponseDto(
+            c.chatId,
+            cu.customerId,
+            u.userName,
+            u.profileImage,
+            cm.content,
+            cm.createdAt
+        )
+        FROM Chat c
+        JOIN c.customerId cu
+        JOIN cu.userId u
+        JOIN c.groomerId g
+        LEFT JOIN ChatMessage cm ON cm.chatId = c
+            AND cm.messageId = (
+                SELECT MAX(cm2.messageId)
+                FROM ChatMessage cm2
+                WHERE cm2.chatId = c AND cm2.isDeleted = false
+            )
+        WHERE c.isDeleted = false
+          AND g.groomerId = :groomerId
+          AND (
+                u.userName LIKE CONCAT('%', :searchKeyword, '%')
+           )
+        ORDER BY cm.createdAt DESC
+    """)
+    List<GetGroomerChatListResponseDto> getGroomerChatListBySearchKeyword(@Param("groomerId") Long groomerId, @Param("searchKeyword") String searchKeyword);
 
 }
