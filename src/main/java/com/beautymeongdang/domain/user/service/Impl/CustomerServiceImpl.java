@@ -154,9 +154,4 @@ public class CustomerServiceImpl implements CustomerService {
         customer.updateSigungu(sigungu);
     }
 
-    @Override
-    public CustomerProfileResponseDto getCustomerMypage(Long customerId) {
-        return customerRepository.findCustomerProfileById(customerId);
-    }
-
 }
