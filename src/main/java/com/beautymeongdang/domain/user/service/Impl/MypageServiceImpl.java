@@ -1,17 +1,26 @@
 package com.beautymeongdang.domain.user.service.Impl;
 
+import com.beautymeongdang.domain.chat.repository.ChatRepository;
+import com.beautymeongdang.domain.dog.repository.DogRepository;
 import com.beautymeongdang.domain.quote.repository.SelectedQuoteRepository;
 import com.beautymeongdang.domain.review.repository.ReviewRepository;
+import com.beautymeongdang.domain.user.dto.GetCustomerMypageResponseDto;
 import com.beautymeongdang.domain.user.dto.GetGroomerMypageResponseDto;
+import com.beautymeongdang.domain.user.entity.Customer;
 import com.beautymeongdang.domain.user.entity.Groomer;
 import com.beautymeongdang.domain.user.entity.User;
+import com.beautymeongdang.domain.user.repository.CustomerRepository;
 import com.beautymeongdang.domain.user.repository.GroomerRepository;
 import com.beautymeongdang.domain.user.repository.UserRepository;
 import com.beautymeongdang.domain.user.service.MypageService;
 import com.beautymeongdang.global.exception.handler.NotFoundException;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -21,6 +30,8 @@ public class MypageServiceImpl implements MypageService {
     private final UserRepository userRepository;
     private final SelectedQuoteRepository selectedQuoteRepository;
     private final ReviewRepository reviewRepository;
+    private final CustomerRepository customerRepository;
+    private final DogRepository dogRepository;
 
     // 미용사 마이페이지 조회
     @Override
@@ -53,6 +64,43 @@ public class MypageServiceImpl implements MypageService {
                 .phoneNumber(user.getPhone())
                 .profileImage(user.getProfileImage())
                 .counts(groomerMypageCountsDto)
+                .build();
+    }
+    // 고객 마이페이지 조회
+    @Override
+    public GetCustomerMypageResponseDto getCustomerMypage(Long customerId) {
+        Customer customer = customerRepository.findById(customerId)
+                .orElseThrow(() -> new EntityNotFoundException("Customer not found with id: " + customerId));
+
+        // 사용자 정보
+        GetCustomerMypageResponseDto.UserInfoDto userInfo = GetCustomerMypageResponseDto.UserInfoDto.builder()
+                .userName(customer.getUserId().getNickname())
+                .email(customer.getUserId().getEmail())
+                .profileImage(customer.getUserId().getProfileImage())
+                .build();
+
+        // 통계 정보 조회
+        GetCustomerMypageResponseDto.CustomrtMypageCountsDto counts = GetCustomerMypageResponseDto.CustomrtMypageCountsDto.builder()
+                .completedServices(selectedQuoteRepository.countCompletedServicesByCustomerId(customerId))
+                .confirmedReservations(selectedQuoteRepository.countConfirmedReservationsByCustomerId(customerId))
+                .myReviews(reviewRepository.countByCustomerId(customerId))
+                .build();
+
+        // 반려동물 정보 조회
+        List<GetCustomerMypageResponseDto.PetDto> myPets = dogRepository.findAllByCustomerId(customerId)
+                .stream()
+                .map(dog -> GetCustomerMypageResponseDto.PetDto.builder()
+                        .petId(dog.getDogId())
+                        .petName(dog.getDogName())
+                        .profileImage(dog.getProfileImage())
+                        .build())
+                .collect(Collectors.toList());
+
+        // Builder를 사용하여 응답 DTO 생성
+        return GetCustomerMypageResponseDto.builder()
+                .userInfo(userInfo)
+                .counts(counts)
+                .myPets(myPets)
                 .build();
     }
 
