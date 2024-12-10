@@ -10,6 +10,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.List;
+
 
 @RestController
 @RequestMapping("/profile/customer/dogs")
@@ -65,6 +67,12 @@ public class DogController {
             @RequestParam Long customerId) {
         DeleteDogResponseDto response = dogService.deleteDog(dogId, customerId);
         return ApiResponse.ok(200, response, "반려견 삭제 성공");
+    }
+
+    // 반려견 견종 목록 조회
+    @GetMapping("/breed")
+    public ResponseEntity<ApiResponse<List<GetBreedResponseDto>>> getBreed() {
+        return ApiResponse.ok(200, dogService.getBreed(), "Get Breed Success");
     }
 
 }
