@@ -47,15 +47,23 @@ public interface ShopRepository extends JpaRepository<Shop, Long> {
 
     // 미용사 찾기 같은 시군구 매장 리스트 ( 별점 높은 순 )
     @Query("""
-    SELECT s FROM Shop s
-    JOIN s.groomerId g
-    WHERE s.sigunguId = (SELECT c.sigunguId FROM Customer c WHERE c.customerId = :customerId)
+    SELECT DISTINCT s, g,
+           COALESCE(AVG(r.starRating), 0) as avgRating,
+           COUNT(DISTINCT r) as reviewCount
+    FROM Shop s
+    INNER JOIN FETCH s.groomerId g
+    LEFT JOIN Reviews r ON r.groomerId = g AND r.isDeleted = false
+    WHERE s.sigunguId.sigunguId = (
+        SELECT c.sigunguId.sigunguId 
+        FROM Customer c 
+        WHERE c.customerId = :customerId
+    )
     AND s.isDeleted = false
-    ORDER BY (SELECT AVG(r.starRating) FROM Reviews r
-             WHERE r.groomerId = g
-             AND r.isDeleted = false) DESC
+    GROUP BY s, g
+    ORDER BY avgRating DESC, reviewCount DESC
     """)
-    List<Shop> findShopsByCustomerSigunguOrderByStarScore(@Param("customerId") Long customerId);
+    List<Object[]> findShopsByCustomerSigunguWithStats(@Param("customerId") Long customerId);
+
 
     // 매장 찜 개수
     @Query("SELECT COUNT(f) FROM Favorite f WHERE f.favoriteId.shopId = :shop")

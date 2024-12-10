@@ -304,18 +304,22 @@ public class ShopServiceImpl implements ShopService {
         Customer customer = customerRepository.findById(customerId)
                 .orElseThrow(() -> NotFoundException.entityNotFound("고객"));
 
-        List<Shop> shops = shopRepository.findShopsByCustomerSigunguOrderByStarScore(customer.getSigunguId().getSigunguId());
+        List<Object[]> results = shopRepository.findShopsByCustomerSigunguWithStats(customerId);
 
-        List<ShopDto> shopDtos = shops.stream()
-                .map(shop -> {
-                    Groomer groomer = shop.getGroomerId();
+        List<ShopDto> shopDtos = results.stream()
+                .map(result -> {
+                    Shop shop = (Shop) result[0];
+                    Groomer groomer = (Groomer) result[1];
+                    Double avgRating = ((Double) result[2]);
+                    Long reviewCount = ((Long) result[3]);
+
                     return ShopDto.builder()
                             .groomerId(groomer.getGroomerId())
                             .shopId(shop.getShopId())
                             .shopLogo(shop.getImageUrl())
                             .shopName(shop.getShopName())
-                            .starScoreAvg(shopRepository.getAverageStarRatingByGroomerId(groomer.getGroomerId()))
-                            .reviewCount(reviewRepository.countGroomerReviews(groomer.getGroomerId()))
+                            .starScoreAvg(avgRating)
+                            .reviewCount(reviewCount.intValue())
                             .address(shop.getAddress())
                             .businessTime(shop.getBusinessTime())
                             .skills(groomer.getSkill())
@@ -330,7 +334,6 @@ public class ShopServiceImpl implements ShopService {
                 .shopLists(shopDtos)
                 .build();
     }
-
 
 
     /**
