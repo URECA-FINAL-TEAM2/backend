@@ -1,7 +1,11 @@
 package com.beautymeongdang.domain.user.controller;
 
+import com.beautymeongdang.domain.user.dto.CustomerProfileResponseDto;
+import com.beautymeongdang.domain.user.dto.GetCustomerMypageResponseDto;
+import com.beautymeongdang.domain.user.service.CustomerService;
 import com.beautymeongdang.domain.user.service.MypageService;
 import com.beautymeongdang.global.common.dto.ApiResponse;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -21,5 +25,16 @@ public class MypageController {
         return ApiResponse.ok(200, mypageService.getGroomerMypage(groomerId), "Get Goomer MyPage Success");
     }
 
-
+    // 고객 마이페이지 조회
+    @GetMapping("/customer/{customerId}")
+    public ResponseEntity<ApiResponse<GetCustomerMypageResponseDto>> getCustomerMypage(@PathVariable Long customerId) {
+        try {
+            GetCustomerMypageResponseDto responseDto = mypageService.getCustomerMypage(customerId);
+            return ApiResponse.ok(200, responseDto, "Get Customer MyPage Success");
+        } catch (EntityNotFoundException e) {
+            return ApiResponse.badRequest(404, "고객을 찾을 수 없습니다: " + e.getMessage());
+        } catch (Exception e) {
+            return ApiResponse.badRequest(400, "마이페이지 조회 실패: " + e.getMessage());
+        }
+    }
 }

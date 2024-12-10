@@ -17,7 +17,6 @@ import com.beautymeongdang.domain.review.repository.ReviewRepository;
 import com.beautymeongdang.domain.user.dto.CustomerProfileResponseDto;
 import com.beautymeongdang.domain.user.dto.GetCustomerAddressResponseDto;
 import com.beautymeongdang.domain.user.dto.UpdateCustomerProfileDto;
-import com.beautymeongdang.domain.user.dto.GetCustomerMypageResponseDto;
 import com.beautymeongdang.domain.user.entity.Customer;
 import com.beautymeongdang.domain.user.entity.User;
 import com.beautymeongdang.domain.user.repository.CustomerRepository;
@@ -37,7 +36,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -161,41 +159,4 @@ public class CustomerServiceImpl implements CustomerService {
         customer.updateSigungu(sigungu);
     }
 
-    @Override
-    @Transactional(readOnly = true)
-    public GetCustomerMypageResponseDto getCustomerMypage(Long customerId) {
-        Customer customer = customerRepository.findById(customerId)
-                .orElseThrow(() -> new EntityNotFoundException("Customer not found with id: " + customerId));
-
-        // 사용자 정보
-        GetCustomerMypageResponseDto.UserInfoDto userInfo = GetCustomerMypageResponseDto.UserInfoDto.builder()
-                .userName(customer.getUserId().getNickname())
-                .email(customer.getUserId().getEmail())
-                .profileImage(customer.getUserId().getProfileImage())
-                .build();
-
-        // 통계 정보 조회
-        GetCustomerMypageResponseDto.CustomrtMypageCountsDto counts = GetCustomerMypageResponseDto.CustomrtMypageCountsDto.builder()
-                .completedServices(selectedQuoteRepository.countCompletedServicesByCustomerId(customerId))
-                .confirmedReservations(selectedQuoteRepository.countConfirmedReservationsByCustomerId(customerId))
-                .myReviews(reviewRepository.countByCustomerId(customerId))
-                .build();
-
-        // 반려동물 정보 조회
-        List<GetCustomerMypageResponseDto.PetDto> myPets = dogRepository.findAllByCustomerId(customerId)
-                .stream()
-                .map(dog -> GetCustomerMypageResponseDto.PetDto.builder()
-                        .petId(dog.getDogId())
-                        .petName(dog.getDogName())
-                        .profileImage(dog.getProfileImage())
-                        .build())
-                .collect(Collectors.toList());
-
-        // Builder를 사용하여 응답 DTO 생성
-        return GetCustomerMypageResponseDto.builder()
-                .userInfo(userInfo)
-                .counts(counts)
-                .myPets(myPets)
-                .build();
-    }
 }
