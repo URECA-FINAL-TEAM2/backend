@@ -49,8 +49,6 @@ public class QuoteServiceImpl implements QuoteService {
 
     private static final String QUOTE_REQUEST_STATUS_GROUP_CODE = "100";
     private static final String QUOTE_STATUS_GROUP_CODE = "200";
-    private static final String DOG_BREED_GROUP_CODE = "400";
-
 
     /**
      * 고객이 자기가 보낸 견적(1:1) 요청을 조회
