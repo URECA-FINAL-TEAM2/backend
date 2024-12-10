@@ -125,4 +125,11 @@ public interface SelectedQuoteRepository extends JpaRepository<SelectedQuote, Lo
             "AND sq.status = '030' " +
             "AND sq.isDeleted = false")
     Integer countCompletedServicesByCustomerId(@Param("customerId") Long customerId);
+
+    // 미용 완료 상태 변경
+    @Query("SELECT sq FROM SelectedQuote sq " +
+            "JOIN sq.quoteId q " +
+            "WHERE sq.status = :status AND q.beautyDate < :currentDate AND sq.isDeleted = false")
+    List<SelectedQuote> findByStatusAndBeautyDateBefore(@Param("status") String status, @Param("currentDate") LocalDateTime currentDate);
+
 }

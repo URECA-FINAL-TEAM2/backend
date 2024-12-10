@@ -16,4 +16,7 @@ public interface SelectedQuoteService {
 
     // 예약 상세 조회
     GetSelectedQuoteDetailResponseDto getQuoteDetail(Long selectedQuoteId);
+
+    // 미용 완료 변경
+    void updateStatusToCompletedIfPastBeautyDate();
 }
