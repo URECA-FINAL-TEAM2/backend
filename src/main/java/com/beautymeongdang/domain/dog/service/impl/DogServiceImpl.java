@@ -16,8 +16,10 @@ import com.beautymeongdang.domain.user.entity.Customer;
 import com.beautymeongdang.domain.user.repository.CustomerRepository;
 import com.beautymeongdang.global.common.entity.CommonCode;
 import com.beautymeongdang.global.common.entity.CommonCodeId;
+import com.beautymeongdang.global.common.entity.GroupCode;
 import com.beautymeongdang.global.common.entity.UploadedFile;
 import com.beautymeongdang.global.common.repository.CommonCodeRepository;
+import com.beautymeongdang.global.common.repository.GroupCodeRepository;
 import com.beautymeongdang.global.exception.handler.BadRequestException;
 import com.beautymeongdang.global.exception.handler.NotFoundException;
 import com.beautymeongdang.infra.s3.FileStore;
@@ -26,6 +28,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -43,6 +46,7 @@ public class DogServiceImpl implements DogService {
 
     private static final String DEFAULT_DOG_PROFILE_IMAGE = "https://s3-beauty-meongdang.s3.ap-northeast-2.amazonaws.com/%EB%B0%98%EB%A0%A4%EA%B2%AC+%ED%94%84%EB%A1%9C%ED%95%84+%EC%9D%B4%EB%AF%B8%EC%A7%80/%EB%B0%98%EB%A0%A4%EA%B2%AC%ED%94%84%EB%A1%9C%ED%95%84%EA%B8%B0%EB%B3%B8%EC%9D%B4%EB%AF%B8%EC%A7%80.jpg";
     private static final String DOG_BREED_GROUP_CODE = "400";
+    private final GroupCodeRepository groupCodeRepository;
 
     /**
      * 반려견 프로필 생성
@@ -215,6 +219,26 @@ public class DogServiceImpl implements DogService {
                 .build();
     }
 
+    // 반려견 견종 목록 조회
+    @Override
+    public List<GetBreedResponseDto> getBreed() {
+        GroupCode groupCode = groupCodeRepository.findById("400")
+                .orElseThrow(() -> NotFoundException.entityNotFound("반려견 견종"));
+
+        List<CommonCode> dogBreedCode = commonCodeRepository.findAllByGroupId(groupCode);
+
+        List<GetBreedResponseDto> dogBreed = new ArrayList<>();
+
+        dogBreedCode.forEach(commonCode -> {
+            GetBreedResponseDto getBreedResponseDto = new GetBreedResponseDto(
+                    commonCode.getId().getCodeId(),
+                    commonCode.getCommonName()
+            );
+            dogBreed.add(getBreedResponseDto);
+        });
+
+        return dogBreed;
+    }
 
 
 }
