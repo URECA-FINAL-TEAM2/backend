@@ -308,9 +308,6 @@ public class ShopServiceImpl implements ShopService {
      */
     @Override
     public GetGroomerShopListResponseDto.ShopListResponse getShopList(Long customerId) {
-        Customer customer = customerRepository.findById(customerId)
-                .orElseThrow(() -> NotFoundException.entityNotFound("고객"));
-
         List<Object[]> results = shopRepository.findShopsByCustomerSigunguWithStats(customerId);
 
         List<ShopDto> shopDtos = results.stream()
