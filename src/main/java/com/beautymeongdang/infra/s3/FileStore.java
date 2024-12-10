@@ -6,13 +6,15 @@ import com.amazonaws.services.s3.model.DeleteObjectsRequest;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 
 import com.beautymeongdang.global.common.entity.UploadedFile;
-import java.io.IOException;
-import java.io.InputStream;
+
+import java.io.*;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
+
 
 import com.beautymeongdang.global.exception.handler.BadRequestException;
 import com.beautymeongdang.global.exception.handler.InternalServerException;
@@ -36,6 +38,7 @@ public class FileStore {
     public static final String GROOMER_PORTFOLIO= "미용사 포트폴리오 이미지/";
     public static final String REVIEWS= "리뷰 이미지/";
     public static final String SHOP_LOGO= "매장 로고 이미지/";
+    public static final String CHAT_IMAGES = "채팅 이미지/";
 
 
     private final AmazonS3Client amazonS3Client;
@@ -138,6 +141,48 @@ public class FileStore {
             return decodedPath.startsWith("/") ? decodedPath.substring(1) : decodedPath;
         } catch (Exception e) {
             throw InternalServerException.error("파일 URL 처리 중 오류가 발생했습니다: " + e.getMessage());
+        }
+    }
+
+
+    // 채팅 이미지 처리
+    public UploadedFile storeBase64File(String base64Image, String directory) {
+        try {
+            // Base64 데이터와 타입 추출
+            String[] parts = base64Image.split(",");
+            String base64Header = parts[0];
+            String base64Data = parts.length > 1 ? parts[1] : parts[0];
+
+            // 이미지 타입 추출 (예: jpeg, png, gif 등)
+            String contentType = "image/png";
+            String extension = "png";
+
+            if (base64Header.contains("image/")) {
+                contentType = base64Header.substring(base64Header.indexOf("image/"), base64Header.indexOf(";base64"));
+                extension = contentType.split("/")[1];
+            }
+
+            byte[] imageBytes = Base64.getDecoder().decode(base64Data);
+
+            String fileName = UUID.randomUUID() + "." + extension;
+            String storeFileName = directory + fileName;
+
+            ObjectMetadata objectMetadata = new ObjectMetadata();
+            objectMetadata.setContentType(contentType);
+            objectMetadata.setContentLength(imageBytes.length);
+
+            try (InputStream inputStream = new ByteArrayInputStream(imageBytes)) {
+                amazonS3Client.putObject(bucketName, storeFileName, inputStream, objectMetadata);
+            }
+
+            // UploadedFile 생성 및 URL 설정
+            UploadedFile uploadedFile = new UploadedFile(fileName, storeFileName);
+            uploadedFile.setFileUrl(amazonS3Client.getUrl(bucketName, storeFileName).toString());
+
+            return uploadedFile;
+
+        } catch (Exception e) {
+            throw new InternalServerException("이미지 업로드에 실패했습니다: " + e.getMessage());
         }
     }
 
