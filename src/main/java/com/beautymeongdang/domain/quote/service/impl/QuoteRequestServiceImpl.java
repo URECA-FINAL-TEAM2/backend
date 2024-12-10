@@ -142,6 +142,19 @@ public class QuoteRequestServiceImpl implements QuoteRequestService {
     @Override
     @Transactional
     public CreateInsertRequestGroomerResponseDto createInsertRequestGroomer(Long customerId, CreateInsertRequestGroomerRequestDto requestDto, List<MultipartFile> images) {
+        Customer customer = customerRepository.findById(customerId)
+                .orElseThrow(() -> NotFoundException.entityNotFound("고객"));
+        Long customerUserId = customer.getUserId().getUserId();
+
+        Groomer groomer = groomerRepository.findById(requestDto.getGroomerId())
+                .orElseThrow(() -> NotFoundException.entityNotFound("미용사"));
+        Long groomerUserId = groomer.getUserId().getUserId();
+
+        // 같은 사용자인 경우(동일한 userId) 견적서 요청 불가
+        if (customerUserId.equals(groomerUserId)) {
+            throw new BadRequestException("고객과 미용사가 동일인물입니다. 자신에게 견적서를 요청할 수 없습니다.");
+        }
+
         // requestType 코드로 변환 ("1:1요청" -> "020")
         CommonCode typeCode = commonCodeRepository.findAll().stream()
                 .filter(code -> code.getId().getGroupId().equals(REQUEST_TYPE_GROUP_CODE))
@@ -162,9 +175,6 @@ public class QuoteRequestServiceImpl implements QuoteRequestService {
 
         Dog dog = dogRepository.findById(requestDto.getDogId())
                 .orElseThrow(() -> NotFoundException.entityNotFound("강아지"));
-
-        Groomer groomer = groomerRepository.findById(requestDto.getGroomerId())
-                .orElseThrow(() -> NotFoundException.entityNotFound("미용사"));
 
         QuoteRequest quoteRequest = QuoteRequest.builder()
                 .dogId(dog)

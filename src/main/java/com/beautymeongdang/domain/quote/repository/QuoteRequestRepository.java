@@ -118,7 +118,8 @@ public interface QuoteRequestRepository extends JpaRepository<QuoteRequest, Long
                             CAST(d.dogGender AS string),
                             d.dogWeight,
                             qr.content,
-                            qr.requestType
+                            requestTypeCode.commonName,
+                            quoteStatus.commonName
                         )
                         FROM
                             QuoteRequest qr
@@ -131,6 +132,10 @@ public interface QuoteRequestRepository extends JpaRepository<QuoteRequest, Long
                             d.customerId c
                         JOIN
                             c.userId u
+                        JOIN CommonCode requestTypeCode ON requestTypeCode.id.codeId = qr.requestType
+                                AND requestTypeCode.id.groupId = '900'
+                        JOIN CommonCode quoteStatus ON quoteStatus.id.codeId = q.status
+                                AND quoteStatus.id.groupId = '200'
                         WHERE
                             q.requestId IS NOT NULL
                           AND qr.isDeleted = false

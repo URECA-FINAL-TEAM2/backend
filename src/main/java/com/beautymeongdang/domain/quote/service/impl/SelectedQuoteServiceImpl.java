@@ -4,12 +4,14 @@ import com.beautymeongdang.domain.quote.dto.GetCustomerSelectedQuoteResponseDto;
 import com.beautymeongdang.domain.quote.dto.GetSelectedQuoteDetailResponseDto;
 import com.beautymeongdang.domain.quote.dto.GetGroomerSelectedQuoteResponseDto;
 import com.beautymeongdang.domain.quote.entity.QuoteRequestImage;
+import com.beautymeongdang.domain.quote.entity.SelectedQuote;
 import com.beautymeongdang.domain.quote.repository.QuoteRequestImageRepository;
 import com.beautymeongdang.domain.quote.repository.SelectedQuoteRepository;
 import com.beautymeongdang.domain.quote.service.SelectedQuoteService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -41,5 +43,15 @@ public class SelectedQuoteServiceImpl implements SelectedQuoteService {
         mainData.setRequestImage(requestImages);
 
         return mainData;
+    }
+
+    // 미용 완료 변경
+    @Override
+    public void updateStatusToCompletedIfPastBeautyDate() {
+        List<SelectedQuote> quotesToUpdate = selectedQuoteRepository.findByStatusAndBeautyDateBefore("010", LocalDateTime.now());
+        quotesToUpdate.forEach(selectedQuote -> {
+            selectedQuote.updateStatus("030");
+            selectedQuoteRepository.save(selectedQuote);
+        });
     }
 }

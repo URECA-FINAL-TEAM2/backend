@@ -1,9 +1,6 @@
 package com.beautymeongdang.domain.user.controller;
 
-import com.beautymeongdang.domain.user.dto.CustomerProfileResponseDto;
-import com.beautymeongdang.domain.user.dto.GetCustomerMypageResponseDto;
-import com.beautymeongdang.domain.user.dto.UpdateAddressRequestDto;
-import com.beautymeongdang.domain.user.dto.UpdateCustomerProfileDto;
+import com.beautymeongdang.domain.user.dto.*;
 import com.beautymeongdang.domain.user.service.CustomerService;
 import com.beautymeongdang.global.common.dto.ApiResponse;
 import jakarta.persistence.EntityNotFoundException;
@@ -45,6 +42,16 @@ public class CustomerController {
             @RequestPart(required = false) List<MultipartFile> profileImage) {
         UpdateCustomerProfileDto updatedProfile = customerService.updateCustomerProfile(requestDto, profileImage);
         return ApiResponse.ok(200, updatedProfile, "고객 프로필 수정 성공");
+    }
+
+    // 고객 주소 조회
+    @GetMapping("/{customerId}/address")
+    public ResponseEntity<ApiResponse<GetCustomerAddressResponseDto>> getCustomerAddress(@PathVariable Long customerId) {
+        GetCustomerAddressResponseDto responseDto = customerService.getCustomerAddress(customerId);
+        if (responseDto == null) {
+            return ApiResponse.ok(404, null, "고객 주소를 찾을 수 없습니다.");
+        }
+        return ApiResponse.ok(200, responseDto, "고객 주소 조회 성공");
     }
 
     // 고객 주소 수정

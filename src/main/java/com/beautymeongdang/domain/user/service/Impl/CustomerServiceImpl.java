@@ -1,4 +1,4 @@
-package com.beautymeongdang.domain.user.service.Impl;
+package com.beautymeongdang.domain.user.service.impl;
 
 import com.beautymeongdang.domain.chat.entity.Chat;
 import com.beautymeongdang.domain.chat.repository.ChatRepository;
@@ -15,6 +15,7 @@ import com.beautymeongdang.domain.quote.repository.SelectedQuoteRepository;
 import com.beautymeongdang.domain.review.entity.Reviews;
 import com.beautymeongdang.domain.review.repository.ReviewRepository;
 import com.beautymeongdang.domain.user.dto.CustomerProfileResponseDto;
+import com.beautymeongdang.domain.user.dto.GetCustomerAddressResponseDto;
 import com.beautymeongdang.domain.user.dto.UpdateCustomerProfileDto;
 import com.beautymeongdang.domain.user.entity.Customer;
 import com.beautymeongdang.domain.user.entity.User;
@@ -138,7 +139,11 @@ public class CustomerServiceImpl implements CustomerService {
                 .build();
     }
 
-
+    // 고객 주소 조회
+    @Override
+    public GetCustomerAddressResponseDto getCustomerAddress(Long customerId) {
+        return customerRepository.findCustomerAddressById(customerId);
+    }
 
 
     // 고객 주소 수정
