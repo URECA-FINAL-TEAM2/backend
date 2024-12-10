@@ -1,6 +1,8 @@
 package com.beautymeongdang.domain.chat.controller;
 
 
+import com.beautymeongdang.domain.chat.dto.CreateChatRequestDto;
+import com.beautymeongdang.domain.chat.dto.CreateChatResponseDto;
 import com.beautymeongdang.domain.chat.dto.GetCustomerKeywordChatListRequestDto;
 import com.beautymeongdang.domain.chat.dto.GetGroomerKeywordChatListRequestDto;
 import com.beautymeongdang.domain.chat.service.ChatService;
@@ -14,6 +16,15 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class ChatController {
     private final ChatService chatService;
+
+    /**
+     * 채팅방 생성
+     */
+    @PostMapping
+    public ResponseEntity<CreateChatResponseDto> createChat(@RequestBody CreateChatRequestDto request) {
+        CreateChatResponseDto response = chatService.createChat(request);
+        return ResponseEntity.ok(response);
+    }
 
     // 고객 채팅방 목록 조회
     @GetMapping("/customer/{customerId}")
