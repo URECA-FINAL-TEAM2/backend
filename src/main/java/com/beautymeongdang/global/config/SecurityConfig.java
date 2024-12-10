@@ -60,7 +60,7 @@ public class SecurityConfig {
 
                 // URL 접근 권한 설정
                 .authorizeHttpRequests((auth) -> auth
-
+                        .requestMatchers("/api/users/register/**").authenticated()  // JWT 헤더에 인증이 필요함
                         // 인증이 필요없는 public 접근 경로
                         .requestMatchers(
                                 "/api/users/register/**",
