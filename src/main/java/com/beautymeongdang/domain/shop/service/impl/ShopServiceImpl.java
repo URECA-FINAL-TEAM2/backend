@@ -123,6 +123,11 @@ public class ShopServiceImpl implements ShopService {
             throw new BadRequestException("해당 매장에 대한 접근 권한이 없습니다.");
         }
 
+        Integer favoriteCount = shopRepository.countFavoritesByShop(shop);
+        Integer reviewCount = reviewRepository.countGroomerReviews(groomerId);
+
+        List<String> portfolioImages = groomerPortfolioImageRepository.findImageUrlsByGroomerId(groomerId);
+
         return GetShopResponseDto.builder()
                 .shopId(shop.getShopId())
                 .shopName(shop.getShopName())
@@ -132,9 +137,11 @@ public class ShopServiceImpl implements ShopService {
                 .sigunguName(shop.getSigunguId().getSigunguName())
                 .address(shop.getAddress())
                 .shopLogo(shop.getImageUrl())
+                .favoriteCount(favoriteCount)
+                .reviewCount(reviewCount)
+                .groomerPortfolioImages(portfolioImages)
                 .build();
     }
-
 
 
     /**
