@@ -24,7 +24,6 @@ public class GetShopDetailResponseDto {
     private Integer favorite;
     private Boolean isFavorite;
     private String description;
-    private String shopImage;
     private List<String> groomerPortfolioImages;
     private String groomerUsername;
     private String groomerProfileImage;

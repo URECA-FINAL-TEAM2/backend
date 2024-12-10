@@ -252,7 +252,6 @@ public class ShopServiceImpl implements ShopService {
                 .favorite(shopRepository.countFavoritesByShop(shop))
                 .isFavorite(isFavorite)
                 .description(shop.getDescription())
-                .shopLogo(shop.getImageUrl())
                 .groomerPortfolioImages(portfolioImages)
                 .groomerUsername(groomer.getUserId().getNickname())
                 .groomerProfileImage(groomer.getUserId().getProfileImage())
