@@ -1,131 +1,137 @@
-package com.beautymeongdang.domain.user.service.impl;
+package com.beautymeongdang.domain.user.service.Impl;
 
-import com.beautymeongdang.domain.shop.entity.Shop;
-import com.beautymeongdang.domain.shop.repository.ShopRepository;
-import com.beautymeongdang.domain.user.dto.CustomerRegisterRequestDTO;
-import com.beautymeongdang.domain.user.dto.GroomerRegisterRequestDTO;
+import com.beautymeongdang.domain.user.dto.*;
 import com.beautymeongdang.domain.user.entity.*;
 import com.beautymeongdang.domain.user.repository.*;
 import com.beautymeongdang.domain.user.service.UserService;
+import com.beautymeongdang.global.oauth2.CustomOAuth2User;
 import com.beautymeongdang.global.region.entity.Sigungu;
 import com.beautymeongdang.global.region.repository.SigunguRepository;
+import com.beautymeongdang.infra.s3.FileStore;
+import com.beautymeongdang.global.common.entity.UploadedFile;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional
 public class UserServiceImpl implements UserService {
+
     private final UserRepository userRepository;
-    private final GroomerRepository groomerRepository;
     private final CustomerRepository customerRepository;
-    private final ShopRepository shopRepository;
+    private final GroomerRepository groomerRepository;
     private final SigunguRepository sigunguRepository;
+    private final FileStore fileStore;
 
     @Override
-    public User registerCustomer(Long userId, CustomerRegisterRequestDTO customerDTO) {
+    public Map<String, Object> registerCustomer(CustomerRegisterRequestDTO requestDto, MultipartFile profileImage) {
+        Long userId = getCurrentUserId();
         try {
             User user = userRepository.findById(userId)
                     .orElseThrow(() -> new EntityNotFoundException("User not found with id: " + userId));
 
-            // 이미 Customer로 등록되어 있는지 확인
             if (customerRepository.existsByUserId(user)) {
                 throw new RuntimeException("User is already registered as a customer");
             }
 
-            // 닉네임 중복 확인
-            if (user.getNickname() != null && !user.getNickname().equals(customerDTO.getNickName()) &&
-                    userRepository.existsByNickname(customerDTO.getNickName())) {
-                throw new RuntimeException("Nickname is already in use");
+            // 이미지 처리 로직 수정
+            String profileImageUrl = null;
+            if (profileImage != null && !profileImage.isEmpty()) {
+                List<UploadedFile> uploadedFiles = fileStore.storeFiles(List.of(profileImage), FileStore.USER_PROFILE);
+                profileImageUrl = uploadedFiles.get(0).getFileUrl();
             }
 
-
             user.getRoles().add(Role.고객);
-            user.updateUserInfo(customerDTO.getPhone(), customerDTO.getNickName());
+            user.updateUserInfo(requestDto.getPhone(), requestDto.getNickName());
+            if (profileImageUrl != null) {
+                user.updateProfileImage(profileImageUrl);
+            }
             user.completeRegistration();
             userRepository.save(user);
 
-            Sigungu sigungu = sigunguRepository.findById(customerDTO.getSigunguId())
-                    .orElseThrow(() -> new EntityNotFoundException("Sigungu not found with id: " + customerDTO.getSigunguId()));
+            Sigungu sigungu = sigunguRepository.findById(requestDto.getSigunguId())
+                    .orElseThrow(() -> new EntityNotFoundException("Sigungu not found with id: " + requestDto.getSigunguId()));
 
             Customer customer = Customer.builder()
                     .userId(user)
                     .sigunguId(sigungu)
-                    .address(customerDTO.getAddress())
-                    .latitude(customerDTO.getLatitude())
-                    .longitude(customerDTO.getLongitude())
                     .build();
 
             customerRepository.save(customer);
-            return user;
+
+            Map<String, Object> responseData = Map.of(
+                    "userId", user.getUserId(),
+                    "nickname", user.getNickname(),
+                    "isRegister", user.isRegister(),
+                    "roles", user.getRoles(),
+                    "profileImage", profileImageUrl != null ? profileImageUrl : user.getProfileImage()
+            );
+            return responseData;
         } catch (Exception e) {
             log.error("Customer registration failed: {}", e.getMessage(), e);
-            throw new RuntimeException("Customer registration failed", e);
+            throw new RuntimeException("Customer registration failed: " + e.getMessage());
         }
     }
 
     @Override
-    public User registerGroomer(Long userId, GroomerRegisterRequestDTO registrationDTO) {
+    public Map<String, Object> registerGroomer(GroomerRegisterRequestDTO requestDto, MultipartFile profileImage) {
+        Long userId = getCurrentUserId();
         try {
             User user = userRepository.findById(userId)
                     .orElseThrow(() -> new EntityNotFoundException("User not found with id: " + userId));
 
-            // 이미 Groomer로 등록되어 있는지 확인
             if (groomerRepository.existsByUserId(user)) {
                 throw new RuntimeException("User is already registered as a groomer");
             }
 
-            // 닉네임 중복 확인
-            if (user.getNickname() != null && !user.getNickname().equals(registrationDTO.getNickName()) &&
-                    userRepository.existsByNickname(registrationDTO.getNickName())) {
-                throw new RuntimeException("Nickname is already in use");
+            // 이미지 처리 로직 수정
+            String profileImageUrl = null;
+            if (profileImage != null && !profileImage.isEmpty()) {
+                List<UploadedFile> uploadedFiles = fileStore.storeFiles(List.of(profileImage), FileStore.USER_PROFILE);
+                profileImageUrl = uploadedFiles.get(0).getFileUrl();
             }
 
-
             user.getRoles().add(Role.미용사);
-            user.updateUserInfo(registrationDTO.getPhone(), registrationDTO.getNickName());
+            user.updateUserInfo(requestDto.getPhone(), requestDto.getNickName());
+            if (profileImageUrl != null) {
+                user.updateProfileImage(profileImageUrl);
+            }
             user.completeRegistration();
             userRepository.save(user);
 
-            Sigungu sigungu = sigunguRepository.findById(registrationDTO.getSigunguId())
-                    .orElseThrow(() -> new EntityNotFoundException("Sigungu not found"));
-
             Groomer groomer = Groomer.builder()
                     .userId(user)
-                    .skill(registrationDTO.getSkill())
+                    .skill(requestDto.getSkill())
                     .build();
 
             groomerRepository.save(groomer);
 
-            Shop shop = Shop.builder()
-                    .groomerId(groomer)
-                    .sigunguId(sigungu)
-                    .shopName(registrationDTO.getShopName())
-                    .description(registrationDTO.getDescription())
-                    .address(registrationDTO.getAddress())
-                    .latitude(registrationDTO.getLatitude())
-                    .longitude(registrationDTO.getLongitude())
-                    .businessTime(registrationDTO.getBusinessTime())
-                    .imageUrl(registrationDTO.getImageUrl())
-                    .build();
-
-            shopRepository.save(shop);
-            return user;
+            Map<String, Object> responseData = Map.of(
+                    "userId", user.getUserId(),
+                    "nickname", user.getNickname(),
+                    "isRegister", user.isRegister(),
+                    "roles", user.getRoles(),
+                    "profileImage", profileImageUrl != null ? profileImageUrl : user.getProfileImage()
+            );
+            return responseData;
         } catch (Exception e) {
             log.error("Groomer registration failed: {}", e.getMessage(), e);
-            throw new RuntimeException("Groomer registration failed", e);
+            throw new RuntimeException("Groomer registration failed: " + e.getMessage());
         }
     }
-
 
     @Override
     public String getNicknameCheckMessage(String nickname) {
@@ -152,11 +158,12 @@ public class UserServiceImpl implements UserService {
         }
     }
 
-    private String extractAccessToken(HttpServletRequest request) {
-        String bearerToken = request.getHeader("Authorization");
-        if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
-            return bearerToken.substring(7);
+    private Long getCurrentUserId() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !(authentication.getPrincipal() instanceof CustomOAuth2User)) {
+            throw new RuntimeException("Not authenticated");
         }
-        return null;
+        CustomOAuth2User oauth2User = (CustomOAuth2User) authentication.getPrincipal();
+        return oauth2User.getUserId();
     }
 }
