@@ -21,5 +21,13 @@ public class ChatMessage extends DeletableBaseTimeEntity {
     private String content;
     private Boolean customerYn;
 
+    public enum MessageType {
+        ENTER,  // 채팅방 입장
+        TALK,   // 일반 메시지
+        QUIT    // 채팅방 나가기
+    }
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private MessageType messageType;
 }
