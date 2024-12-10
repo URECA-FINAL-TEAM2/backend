@@ -13,6 +13,7 @@ public class GetSelectedQuoteDetailResponseDto {
     private String customerName;
     private String groomerName;
     private String shopName;
+    private String shopLogo;
     private String address;
     private String phone;
     private String dogName;
@@ -36,6 +37,7 @@ public class GetSelectedQuoteDetailResponseDto {
             String customerName,
             String groomerName,
             String shopName,
+            String shopLogo,
             String address,
             String phone,
             String dogName,
@@ -56,6 +58,7 @@ public class GetSelectedQuoteDetailResponseDto {
         this.customerName = customerName;
         this.groomerName = groomerName;
         this.shopName = shopName;
+        this.shopLogo = shopLogo;
         this.address = address;
         this.phone = phone;
         this.dogName = dogName;

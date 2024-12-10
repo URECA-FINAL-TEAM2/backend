@@ -46,7 +46,7 @@ public interface SelectedQuoteRepository extends JpaRepository<SelectedQuote, Lo
     List<GetGroomerSelectedQuoteResponseDto> findGroomerSelectedQuotes(@Param("groomerId") Long groomerId);
 
     @Query("SELECT new com.beautymeongdang.domain.quote.dto.GetSelectedQuoteDetailResponseDto(" +
-            "c.userId.userName, g.userId.nickname, s.shopName, s.address, g.userId.phone, " +
+            "c.userId.userName, g.userId.nickname, s.shopName, s.imageUrl, s.address, g.userId.phone, " +
             "d.dogName, d.profileImage, " +
             "cc.commonName, " +
             "d.dogWeight, d.dogAge, " +
