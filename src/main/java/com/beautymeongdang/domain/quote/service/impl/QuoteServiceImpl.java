@@ -111,11 +111,17 @@ public class QuoteServiceImpl implements QuoteService {
                                         .orElseThrow(() -> NotFoundException.entityNotFound("견적서 상태 코드"));
                                 String quoteStatusName = quoteStatusCode.getCommonName();
 
+                                Shop shop = shopRepository.findByGroomerId(quote.getGroomerId().getGroomerId())
+                                        .orElseThrow(() -> NotFoundException.entityNotFound("미용실"));
+
+                                String shopSidoSigungu = shop.getSigunguId().getSidoId().getSidoName() + " "
+                                        + shop.getSigunguId().getSigunguName();
+
                                 return GetQuotesAllResponseDto.QuoteInfo.builder()
                                         .quoteId(quote.getQuoteId())
-                                        .shopName(shopRepository.findByGroomerId(quote.getGroomerId().getGroomerId())
-                                                .orElseThrow(() -> NotFoundException.entityNotFound("미용실"))
-                                                .getShopName())
+                                        .shopName(shop.getShopName())
+                                        .shopLogo(shop.getImageUrl())
+                                        .shopSidoSigungu(shopSidoSigungu)
                                         .groomerName(quote.getGroomerId().getUserId().getNickname())
                                         .quoteStatus(quoteStatusName)
                                         .cost(quote.getCost())
@@ -125,20 +131,12 @@ public class QuoteServiceImpl implements QuoteService {
                             })
                             .collect(Collectors.toList());
 
-                    Dog dog = request.getDogId();
-                    CommonCodeId breedCodeId = new CommonCodeId(dog.getDogBreed(), DOG_BREED_GROUP_CODE);
-                    CommonCode breedCode = commonCodeRepository.findById(breedCodeId)
-                            .orElseThrow(() -> NotFoundException.entityNotFound("견종 코드"));
-
                     return GetQuotesAllResponseDto.QuoteRequestInfo.builder()
                             .quoteRequestId(request.getRequestId())
                             .requestStatus(requestStatusName)
                             .beautyDate(request.getBeautyDate())
                             .dogName(request.getDogId().getDogName())
-                            .image(request.getDogId().getProfileImage())
-                            .dogWeight(request.getDogId().getDogWeight())
-                            .dogBreed(breedCode.getCommonName())
-                            .dogAge(String.valueOf(request.getDogId().getDogAge()))
+                            .dogImage(request.getDogId().getProfileImage())
                             .requestContent(request.getContent())
                             .quotes(quoteInfos)
                             .build();

@@ -18,14 +18,17 @@ public interface QuoteRepository extends JpaRepository<Quote, Long> {
 
     // 고객에게 들어온 견적서(전체) 목록을 조회
     // 요청 타입이 '010'(전체)인 견적만 조회하며, 생성일시 기준 내림차순으로 정렬
-    @Query("SELECT q FROM Quote q " +
-            "JOIN FETCH q.requestId qr " +
-            "WHERE qr.requestId = :requestId " +
-            "AND qr.requestType = '010' " +
-            "AND q.isDeleted = false " +
-            "ORDER BY q.createdAt DESC")
+    @Query("""
+        SELECT q FROM Quote q
+        JOIN FETCH q.requestId qr
+        JOIN FETCH q.groomerId g
+        JOIN FETCH Shop s ON s.groomerId = g
+        WHERE qr.requestId = :requestId
+        AND qr.requestType = '010'
+        AND q.isDeleted = false
+        ORDER BY q.createdAt DESC
+    """)
     List<Quote> findAllByRequestId(@Param("requestId") Long requestId);
-
 
     // 견적서 상세 조회
     @Query("SELECT q FROM Quote q " +
