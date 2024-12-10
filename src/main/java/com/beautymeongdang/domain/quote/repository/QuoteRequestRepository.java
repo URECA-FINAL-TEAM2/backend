@@ -16,12 +16,17 @@ import java.util.List;
 
 public interface QuoteRequestRepository extends JpaRepository<QuoteRequest, Long> {
     // '1:1 견적' 요청 조회
-    @Query("SELECT qr FROM QuoteRequest qr " +
-            "JOIN FETCH qr.dogId d " +
-            "WHERE d.customerId.customerId = :customerId " +
-            "AND qr.requestType = '020' " +
-            "AND qr.isDeleted = false " +
-            "ORDER BY qr.createdAt DESC")
+    @Query("""
+    SELECT qr
+    FROM QuoteRequest qr
+    JOIN FETCH qr.dogId d
+    JOIN DirectQuoteRequest dqr ON dqr.directQuoteRequestId.requestId = qr
+    LEFT JOIN Quote q ON q.requestId = qr
+    WHERE d.customerId.customerId = :customerId
+    AND qr.requestType = '020'
+    AND qr.isDeleted = false
+    ORDER BY qr.createdAt DESC
+    """)
     List<QuoteRequest> findAllByCustomerId(@Param("customerId") Long customerId);
 
     // '전체 견적' 요청 조회

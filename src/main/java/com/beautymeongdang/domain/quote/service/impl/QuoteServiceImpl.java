@@ -64,19 +64,33 @@ public class QuoteServiceImpl implements QuoteService {
                             .orElseThrow(() -> NotFoundException.entityNotFound("직접 견적 요청"));
 
                     Groomer groomer = directRequest.getDirectQuoteRequestId().getGroomerId();
-
                     Shop shop = shopRepository.findByGroomerId(groomer.getGroomerId())
                             .orElseThrow(() -> NotFoundException.entityNotFound("미용실"));
+
+                    CommonCodeId requestStatusCodeId = new CommonCodeId(request.getStatus(), QUOTE_REQUEST_STATUS_GROUP_CODE);
+                    CommonCode requestStatusCode = commonCodeRepository.findById(requestStatusCodeId)
+                            .orElseThrow(() -> NotFoundException.entityNotFound("견적 요청 상태 코드"));
+
+                    // Quote 조회 - 거절이 아닐 때만
+                    Long quoteId = null;
+                    if (!request.getStatus().equals("020")) {
+                        Quote quote = quoteRepository.findByRequestIdAndGroomerIdAndIsDeletedFalse(request, groomer);
+                        if (quote != null) {
+                            quoteId = quote.getQuoteId();
+                        }
+                    }
 
                     return GetQuotesGroomerResponseDto.QuoteRequestInfo.builder()
                             .quoteRequestId(request.getRequestId())
                             .petName(request.getDogId().getDogName())
                             .petImage(request.getDogId().getProfileImage())
-                            .status(request.getStatus())
+                            .status(requestStatusCode.getCommonName())
                             .shopName(shop.getShopName())
                             .groomerName(groomer.getUserId().getNickname())
                             .beautyDate(request.getBeautyDate())
                             .requestContent(request.getContent())
+                            .quoteId(quoteId)
+                            .rejectReason(directRequest.getReasonForRejection())
                             .build();
                 })
                 .collect(Collectors.toList());
