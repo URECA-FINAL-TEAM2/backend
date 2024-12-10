@@ -52,7 +52,7 @@ public interface SelectedQuoteRepository extends JpaRepository<SelectedQuote, Lo
             "d.dogWeight, d.dogAge, " +
             "CAST(d.dogGender AS string), " +
             "d.neutering, d.experience, d.significant, " +
-            "q.quoteId, q.beautyDate, qr.content, q.content, q.cost) " +
+            "q.quoteId, q.beautyDate, qr.content, q.content, q.cost, p.paymentKey) " +
             "FROM SelectedQuote sq " +
             "JOIN sq.quoteId q " +
             "JOIN q.requestId qr " +
@@ -60,6 +60,7 @@ public interface SelectedQuoteRepository extends JpaRepository<SelectedQuote, Lo
             "JOIN q.groomerId g " +
             "JOIN Shop s ON s.groomerId = g " +
             "JOIN sq.customerId c " +
+            "JOIN Payment p ON p.selectedQuoteId = sq " +
             "JOIN CommonCode cc ON cc.id.codeId = d.dogBreed AND cc.id.groupId = '400'" +
             "WHERE sq.selectedQuoteId = :selectedQuoteId AND sq.isDeleted = false")
     GetSelectedQuoteDetailResponseDto findQuoteDetailById(@Param("selectedQuoteId") Long selectedQuoteId);
