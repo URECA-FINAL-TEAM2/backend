@@ -29,10 +29,7 @@ public class GetQuotesAllResponseDto {
         private String requestStatus;
         private LocalDateTime beautyDate;
         private String dogName;
-        private String image;
-        private String dogWeight;
-        private String dogBreed;
-        private String dogAge;
+        private String dogImage;
         private String requestContent;
         private List<QuoteInfo> quotes;
     }
@@ -45,6 +42,8 @@ public class GetQuotesAllResponseDto {
     public static class QuoteInfo {
         private Long quoteId;
         private String shopName;
+        private String shopLogo;
+        private String shopSidoSigungu;
         private String groomerName;
         private String quoteStatus;
         private Integer cost;
