@@ -12,11 +12,10 @@ public class ChatGptConfig {
     @Value("${openai.secret-key}")
     private String secretKey;
 
-    @Bean
+    @Bean(name = "chatGptRestTemplate")  // Bean 이름 변경
     public RestTemplate restTemplate() {
         return new RestTemplate();
     }
-
     @Bean
     public HttpHeaders httpHeaders() {
         HttpHeaders headers = new HttpHeaders();

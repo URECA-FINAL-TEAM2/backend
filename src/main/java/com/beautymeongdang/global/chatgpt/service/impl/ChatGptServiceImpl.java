@@ -10,12 +10,15 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.beautymeongdang.global.chatgpt.service.ChatGptService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
 import java.util.HashMap;
 import java.util.List;
@@ -40,14 +43,17 @@ public class ChatGptServiceImpl implements ChatGptService {
     @Value("${openai.url.legacy-prompt}")
     private String legacyPromptUrl;
 
+    @Autowired
+    @Qualifier("chatGptRestTemplate")
+    private RestTemplate restTemplate;
+
     @Override
     public List<Map<String, Object>> selectModelList() {
         log.debug("[+] 모델 리스트를 조회합니다.");
         List<Map<String, Object>> resultList = null;
 
         HttpHeaders headers = chatGptConfig.httpHeaders();
-        ResponseEntity<String> response = chatGptConfig
-                .restTemplate()
+        ResponseEntity<String> response = restTemplate
                 .exchange(modelUrl, HttpMethod.GET, new HttpEntity<>(headers), String.class);
         try {
             // [STEP3] Jackson을 기반으로 응답값을 가져옵니다.
@@ -126,17 +132,27 @@ public class ChatGptServiceImpl implements ChatGptService {
 
         HttpHeaders headers = chatGptConfig.httpHeaders();
         HttpEntity<ChatCompletionDto> requestEntity = new HttpEntity<>(chatCompletionDto, headers);
+
+        log.debug("Request Headers: {}", headers);
+        log.debug("Request Body: {}", chatCompletionDto);
+
         ResponseEntity<String> response = chatGptConfig
                 .restTemplate()
                 .exchange(promptUrl, HttpMethod.POST, requestEntity, String.class);
+
+        log.debug("Response Status Code: {}", response.getStatusCode());
+        log.debug("Response Body: {}", response.getBody());
+
         try {
             ObjectMapper om = new ObjectMapper();
             resultMap = om.readValue(response.getBody(), new TypeReference<>() {
             });
         } catch (JsonProcessingException e) {
-            log.debug("JsonMappingException :: " + e.getMessage());
+            log.error("JsonMappingException :: " + e.getMessage());
+            // 예외 처리 로직 추가
         } catch (RuntimeException e) {
-            log.debug("RuntimeException :: " + e.getMessage());
+            log.error("RuntimeException :: " + e.getMessage());
+            // 예외 처리 로직 추가
         }
         return resultMap;
     }

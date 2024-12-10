@@ -17,7 +17,7 @@ public class ChatCompletionDto {
 
     @Builder
     public ChatCompletionDto(List<ChatRequestMsgDto> messages) {
-        this.model = "gpt-4o-mini";
+        this.model = "gpt-3.5-turbo";
         this.messages = messages;
     }
 }
