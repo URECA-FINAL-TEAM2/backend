@@ -1,9 +1,14 @@
 package com.beautymeongdang.domain.notification.controller;
 
 import com.beautymeongdang.domain.notification.service.NotificationService;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.JwtException;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.security.Keys;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 
@@ -53,19 +58,25 @@ public class NotificationController {
         return ResponseEntity.ok(Map.of("status", "success", "message", "All notifications cleared."));
     }
 
-    // JWT에서 userId 추출
     private Long extractUserIdFromToken(String token) {
-        // JWT 파싱 로직 예시
         try {
-            // JWT를 실제로 파싱하는 유틸리티 또는 라이브러리 사용
-            // 예: Jwts.parserBuilder().setSigningKey(secretKey).build().parseClaimsJws(token);
-            // String userId = claims.getBody().get("userId", String.class);
-            // return Long.parseLong(userId);
+            Claims claims = Jwts.parser() // parser() 메서드 사용
+                    .setSigningKey(Keys.hmacShaKeyFor(secretKey.getBytes(StandardCharsets.UTF_8))) // HMAC 키로 변환
+                    .parseClaimsJws(token)
+                    .getBody();
 
-            // 아래는 테스트용으로 고정된 값 반환
-            return 123L; // 실제 사용자 ID 반환
-        } catch (Exception e) {
-            throw new IllegalArgumentException("Invalid token.");
+            String userId = claims.get("userId", String.class);
+            if (userId == null) {
+                throw new IllegalArgumentException("userId not found in token.");
+            }
+
+            return Long.parseLong(userId);
+        } catch (JwtException e) {
+            // JWT 파싱 실패 시 처리
+            throw new IllegalArgumentException("Invalid token.", e);
+        } catch (NumberFormatException e) {
+            // userId가 숫자로 변환되지 않을 경우 처리
+            throw new IllegalArgumentException("Invalid userId format in token.", e);
         }
     }
 }
