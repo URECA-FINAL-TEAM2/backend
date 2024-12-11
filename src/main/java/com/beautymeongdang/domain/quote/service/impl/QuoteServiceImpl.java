@@ -2,6 +2,8 @@ package com.beautymeongdang.domain.quote.service.impl;
 
 import com.beautymeongdang.domain.dog.entity.Dog;
 import com.beautymeongdang.domain.dog.repository.DogRepository;
+import com.beautymeongdang.domain.notification.repository.NotificationRepository;
+import com.beautymeongdang.domain.notification.service.NotificationService;
 import com.beautymeongdang.domain.quote.dto.*;
 import com.beautymeongdang.domain.quote.entity.DirectQuoteRequest;
 import com.beautymeongdang.domain.quote.entity.Quote;
@@ -46,6 +48,8 @@ public class QuoteServiceImpl implements QuoteService {
     private final CustomerRepository customerRepository;
     private final UserRepository userRepository;
     private final CommonCodeRepository commonCodeRepository;
+    private final NotificationRepository notificationRepository;
+    private final NotificationService notificationService;
 
     private static final String QUOTE_REQUEST_STATUS_GROUP_CODE = "100";
     private static final String QUOTE_STATUS_GROUP_CODE = "200";
@@ -245,6 +249,22 @@ public class QuoteServiceImpl implements QuoteService {
 
             quoteRequestRepository.save(updateQuoteRequest);
         }
+        // 알림 저장 로직 추가
+        String notificationMessage = String.format(
+                "견적서가 생성되었습니다. 미용사: %s, 강아지: %s, 비용: %d원",
+                groomer.getUserId().getNickname(),
+                dog.getDogName(),
+                requestDto.getQuoteCost()
+        );
+
+        // 알림 저장
+        notificationService.saveNotification(
+                quoteRequest.getDogId().getCustomerId().getUserId().getUserId(), // 고객의 userId
+                "customer", // 역할
+                "견적서 알림", // 알림 유형
+                notificationMessage // 알림 내용
+        );
+
 
         CommonCodeId commonCodeId = new CommonCodeId(saveQuote.getStatus(), "100");
         CommonCode commonCode = commonCodeRepository.findById(commonCodeId)
