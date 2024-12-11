@@ -39,6 +39,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -123,10 +124,9 @@ public class GroomerServiceImpl implements GroomerService {
         groomer.delete();
 
         // 매장
-        Shop shop = shopRepository.findByGroomerId(groomerId)
-                .orElseThrow(() -> NotFoundException.entityNotFound("매장"));
-        if (shop != null) {
-            shop.delete();
+        Optional<Shop> shop = shopRepository.findByGroomerId(groomerId);
+        if (shop.isPresent()) {
+            shop.get().delete();
         }
 
         // 채팅방, 채팅 메시지

@@ -4,7 +4,6 @@ import com.beautymeongdang.domain.chat.entity.ChatMessage.MessageType;
 import lombok.Builder;
 import lombok.Getter;
 
-
 @Getter
 @Builder
 public class CreateChatMessageRequestDto {
