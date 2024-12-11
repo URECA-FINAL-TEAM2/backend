@@ -1,8 +1,7 @@
 package com.beautymeongdang.domain.chat.service.impl;
 
 
-import com.beautymeongdang.domain.chat.dto.CreateChatMessageRequestDto;
-import com.beautymeongdang.domain.chat.dto.CreateChatMessageResponseDto;
+import com.beautymeongdang.domain.chat.dto.*;
 import com.beautymeongdang.domain.chat.entity.Chat;
 import com.beautymeongdang.domain.chat.entity.ChatMessage;
 import com.beautymeongdang.domain.chat.entity.ChatMessageImage;
@@ -12,6 +11,7 @@ import com.beautymeongdang.domain.chat.repository.ChatRepository;
 import com.beautymeongdang.domain.chat.service.ChatMessageService;
 import com.beautymeongdang.domain.user.entity.Customer;
 import com.beautymeongdang.domain.user.entity.Groomer;
+import com.beautymeongdang.domain.user.entity.User;
 import com.beautymeongdang.domain.user.repository.CustomerRepository;
 import com.beautymeongdang.domain.user.repository.GroomerRepository;
 import com.beautymeongdang.global.common.entity.UploadedFile;
@@ -22,6 +22,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
+
+import java.util.List;
 
 
 @Slf4j
@@ -83,7 +85,7 @@ public class ChatMessageServiceImpl implements ChatMessageService {
         if (imageUrl != null) {
             ChatMessageImage chatMessageImage = ChatMessageImage.builder()
                     .messageId(savedMessage)
-                    .image_url(imageUrl)
+                    .imageUrl(imageUrl)
                     .build();
             chatMessageImageRepository.save(chatMessageImage);
         }
@@ -101,7 +103,34 @@ public class ChatMessageServiceImpl implements ChatMessageService {
                 .build();
     }
 
+    // 채팅 조회
+    @Override
+    public GetChatMessageListResponseDto getChatMessageList(Long chatId) {
+        // 미용사
+        User groomer = chatRepository.findGroomerByChatId(chatId);
 
+        // 고객
+        User customer = chatRepository.findCustomerByChatId(chatId);
+
+        // 채팅
+        List<GetChatMessageResponseDto> chatMessageResponseDtoList = chatMessageRepository.findChatMessagesWithImages(chatId);
+
+        GetChatMessageListResponseDto.GroomerInfo groomerInfo = GetChatMessageListResponseDto.GroomerInfo.builder()
+                .groomerProfileImage(groomer.getProfileImage())
+                .groomerName(groomer.getNickname())
+                .build();
+
+        GetChatMessageListResponseDto.CustomerInfo customerInfo = GetChatMessageListResponseDto.CustomerInfo.builder()
+                .customerProfileImage(customer.getProfileImage())
+                .customerName(customer.getUserName())
+                .build();
+
+        return GetChatMessageListResponseDto.builder()
+                .groomerInfo(groomerInfo)
+                .customerInfo(customerInfo)
+                .messages(chatMessageResponseDtoList)
+                .build();
+    }
 
 
 }

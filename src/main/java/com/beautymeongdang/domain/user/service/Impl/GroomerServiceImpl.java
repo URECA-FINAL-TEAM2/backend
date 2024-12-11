@@ -82,26 +82,15 @@ public class GroomerServiceImpl implements GroomerService {
                 .map(GroomerPortfolioImage::getImageUrl)
                 .toList();
 
-        // 2. 받아온 images에서 S3 URL로 시작되는 파일 필터링
-        List<String> newImageUrls = new ArrayList<>();
-        List<MultipartFile> filesToUpload = new ArrayList<>();
-        for (MultipartFile image : images) {
-            if (image.getOriginalFilename().startsWith("https://s3")) {
-                newImageUrls.add(image.getOriginalFilename());
-            } else {
-                filesToUpload.add(image);
-            }
-        }
-
-        // 3. 기존 등록된 이미지 중 새로 받아온 이미지 목록에 없는 이미지를 삭제
-        List<String> imagesToDelete = existingImageUrls.stream()
-                .filter(existingImageUrl -> !newImageUrls.contains(existingImageUrl))
+        // 2. 기존 등록된 이미지 중 새로 받아온 이미지 목록에 없는 이미지를 삭제
+        List<String> imagesToDelete = existingImageUrls.stream()  // 삭제한 이미지
+                .filter(existingImageUrl -> !updateGroomerPortfolioDto.getImages().contains(existingImageUrl))
                 .collect(Collectors.toList());
         fileStore.deleteFiles(imagesToDelete);
         groomerPortfolioImageRepository.deleteAllByGroomerIdAndImageUrlIn(groomer, imagesToDelete);
 
-        // 4. 새로 업로드해야 하는 파일을 S3에 저장
-        List<UploadedFile> uploadedFiles = fileStore.storeFiles(filesToUpload, FileStore.GROOMER_PORTFOLIO);
+        // 3. 새로 업로드해야 하는 파일을 S3에 저장
+        List<UploadedFile> uploadedFiles = fileStore.storeFiles(images, FileStore.GROOMER_PORTFOLIO);
         List<GroomerPortfolioImage> newPortfolioImages = uploadedFiles.stream()
                 .map(uploadedFile -> GroomerPortfolioImage.builder()
                         .groomerId(groomer)
@@ -109,20 +98,21 @@ public class GroomerServiceImpl implements GroomerService {
                         .build())
                 .collect(Collectors.toList());
 
-        // 5. DB에 새 이미지 정보 저장
+        // 4. DB에 새 이미지 정보 저장
         List<GroomerPortfolioImage> savedImages = groomerPortfolioImageRepository.saveAll(newPortfolioImages);
 
-        // 최종 남아 있는 이미지 목록 생성
-        List<GroomerPortfolioImage> finalImages = existingImages.stream()
-                .filter(image -> newImageUrls.contains(image.getImageUrl()))
-                .collect(Collectors.toList());
-        finalImages.addAll(savedImages);
+        // 5. 최종 남아 있는 이미지 URL 목록 생성
+        List<String> finalImageUrls = new ArrayList<>();
+        // DTO에서 받아온 이미지 URL 추가
+        finalImageUrls.addAll(updateGroomerPortfolioDto.getImages());
+        // 새로 저장된 이미지 URL 추가
+        finalImageUrls.addAll(savedImages.stream()
+                .map(GroomerPortfolioImage::getImageUrl)
+                .toList());
 
         return UpdateGroomerPortfolioDto.builder()
                 .groomerId(groomer.getGroomerId())
-                .images(savedImages.stream()
-                        .map(GroomerPortfolioImage::getImageUrl)
-                        .collect(Collectors.toList()))
+                .images(finalImageUrls)
                 .build();
     }
 
