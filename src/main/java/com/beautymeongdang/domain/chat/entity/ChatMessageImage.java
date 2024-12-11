@@ -21,5 +21,5 @@ public class ChatMessageImage extends BaseTimeEntity {
     private ChatMessage messageId;
 
     @Column(nullable = false)
-    private String image_url;
+    private String imageUrl;
 }

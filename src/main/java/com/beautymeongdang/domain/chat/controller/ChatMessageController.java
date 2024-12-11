@@ -2,9 +2,12 @@ package com.beautymeongdang.domain.chat.controller;
 
 import com.beautymeongdang.domain.chat.dto.CreateChatMessageRequestDto;
 import com.beautymeongdang.domain.chat.dto.CreateChatMessageResponseDto;
+import com.beautymeongdang.domain.chat.dto.GetChatMessageListResponseDto;
 import com.beautymeongdang.domain.chat.service.ChatMessageService;
+import com.beautymeongdang.global.common.dto.ApiResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.simp.SimpMessageSendingOperations;
@@ -31,6 +34,12 @@ public class ChatMessageController {
         messagingTemplate.convertAndSend("/sub/chat/room/" + messageRequestDto.getChatId(), response);
 
         log.info("메시지 전송 완료. chatId: {}", messageRequestDto.getChatId());
+    }
+
+    // 채팅 조회
+    @GetMapping("/{chatId}")
+    public ResponseEntity<ApiResponse<GetChatMessageListResponseDto>> getChatMessageList(@PathVariable("chatId") Long chatId) {
+        return ApiResponse.ok(200, chatMessageService.getChatMessageList(chatId), "Get Message success");
     }
 
 }
