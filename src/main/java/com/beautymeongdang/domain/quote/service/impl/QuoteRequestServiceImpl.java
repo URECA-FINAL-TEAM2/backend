@@ -64,6 +64,10 @@ public class QuoteRequestServiceImpl implements QuoteRequestService {
     @Override
     @Transactional
     public CreateInsertRequestAllResponseDto createInsertRequestAll(Long customerId, CreateInsertRequestAllRequestDto requestDto, List<MultipartFile> images) {
+        if (images != null && images.size() > 3) {
+            throw BadRequestException.invalidRequest("이미지 개수는 3장");
+        }
+
         // requestType 코드로 변환 ("전체요청" -> "010")
         CommonCode typeCode = commonCodeRepository.findAll().stream()
                 .filter(code -> code.getId().getGroupId().equals(REQUEST_TYPE_GROUP_CODE))
@@ -75,12 +79,14 @@ public class QuoteRequestServiceImpl implements QuoteRequestService {
             throw BadRequestException.invalidRequest("전체요청 타입");
         }
 
-        // status 코드로 변환 ("요청" -> "010")
+
+        // status는 항상 "요청"(010)으로 설정
         CommonCode statusCode = commonCodeRepository.findAll().stream()
                 .filter(code -> code.getId().getGroupId().equals(REQUEST_STATUS_GROUP_CODE))
-                .filter(code -> code.getCommonName().equals(requestDto.getStatus()))
+                .filter(code -> code.getId().getCodeId().equals("010"))
                 .findFirst()
                 .orElseThrow(() -> NotFoundException.entityNotFound("상태 코드"));
+
 
         Dog dog = dogRepository.findById(requestDto.getDogId())
                 .orElseThrow(() -> NotFoundException.entityNotFound("강아지"));
@@ -155,6 +161,10 @@ public class QuoteRequestServiceImpl implements QuoteRequestService {
             throw new BadRequestException("고객과 미용사가 동일인물입니다. 자신에게 견적서를 요청할 수 없습니다.");
         }
 
+        if (images != null && images.size() > 3) {
+            throw BadRequestException.invalidRequest("이미지 개수는 3장");
+        }
+
         // requestType 코드로 변환 ("1:1요청" -> "020")
         CommonCode typeCode = commonCodeRepository.findAll().stream()
                 .filter(code -> code.getId().getGroupId().equals(REQUEST_TYPE_GROUP_CODE))
@@ -166,10 +176,10 @@ public class QuoteRequestServiceImpl implements QuoteRequestService {
             throw BadRequestException.invalidRequest("1:1요청 타입");
         }
 
-        // status 코드로 변환 ("요청" -> "010")
+        // status는 항상 "요청"(010)으로 설정
         CommonCode statusCode = commonCodeRepository.findAll().stream()
                 .filter(code -> code.getId().getGroupId().equals(REQUEST_STATUS_GROUP_CODE))
-                .filter(code -> code.getCommonName().equals(requestDto.getStatus()))
+                .filter(code -> code.getId().getCodeId().equals("010"))
                 .findFirst()
                 .orElseThrow(() -> NotFoundException.entityNotFound("상태 코드"));
 
