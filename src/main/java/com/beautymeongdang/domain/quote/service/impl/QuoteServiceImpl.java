@@ -53,6 +53,8 @@ public class QuoteServiceImpl implements QuoteService {
 
     private static final String QUOTE_REQUEST_STATUS_GROUP_CODE = "100";
     private static final String QUOTE_STATUS_GROUP_CODE = "200";
+    private static final String DOG_BREED_GROUP_CODE = "400";
+
 
     /**
      * 고객이 자기가 보낸 견적(1:1) 요청을 조회
@@ -179,6 +181,13 @@ public class QuoteServiceImpl implements QuoteService {
         List<QuoteRequestImage> requestImages = quoteRequestImageRepository
                 .findAllByRequestId(quote.getRequestId().getRequestId());
 
+        // db에 있는 견종 코드를 견종명으로 변환
+        CommonCodeId breedCodeId = new CommonCodeId(quote.getDogId().getDogBreed(), DOG_BREED_GROUP_CODE);
+        CommonCode breedCode = commonCodeRepository.findById(breedCodeId)
+                .orElseThrow(() -> NotFoundException.entityNotFound("견종 코드"));
+        String dogBreedName = breedCode.getCommonName();
+
+
         return GetQuoteDetailResponseDto.builder()
                 .groomer(GetQuoteDetailResponseDto.GroomerInfo.builder()
                         .shopLogo(shop.getImageUrl())
@@ -193,6 +202,7 @@ public class QuoteServiceImpl implements QuoteService {
                         .dogWeight(quote.getDogId().getDogWeight())
                         .dogAge(String.valueOf(quote.getDogId().getDogAge()))
                         .dogGender(quote.getDogId().getDogGender().toString())
+                        .dogBreed(dogBreedName)
                         .neutering(quote.getDogId().getNeutering())
                         .experience(quote.getDogId().getExperience())
                         .significant(quote.getDogId().getSignificant())
