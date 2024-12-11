@@ -21,7 +21,5 @@ public class CreateInsertRequestGroomerRequestDto {
     private String requestType;
     private String requestContent;
     private LocalDateTime beautyDate;
-    private String status;
     private Long groomerId;
-    private List<String> quoteRequestImage;
 }

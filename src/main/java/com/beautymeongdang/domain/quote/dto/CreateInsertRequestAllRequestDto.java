@@ -21,8 +21,6 @@ public class CreateInsertRequestAllRequestDto {
     private String requestType;
     private String requestContent;
     private LocalDateTime beautyDate;
-    private String status;
     private Long sigunguId;
-    private List<String> quoteRequestImage;
 
 }
