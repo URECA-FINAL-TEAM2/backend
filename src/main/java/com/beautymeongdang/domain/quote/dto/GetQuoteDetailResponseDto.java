@@ -39,11 +39,11 @@ public class GetQuoteDetailResponseDto {
         private String dogWeight;
         private String dogAge;
         private String dogGender;
+        private String dogBreed;
         private Boolean neutering;
         private Boolean experience;
         private String significant;
         private String requestContent;
-        private String dogBreed;
         private List<String> requestImage;
     }
     
