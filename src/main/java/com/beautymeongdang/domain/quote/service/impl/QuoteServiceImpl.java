@@ -265,8 +265,8 @@ public class QuoteServiceImpl implements QuoteService {
 
     // 미용사가 보낸 견적서 상세 조회
     @Override
-    public GetGroomerQuoteDetailResponseDto getGroomerQuoteDetail(GetGroomerQuoteDetailRequestDto requestDto) {
-        QuoteRequest quoteRequest = quoteRequestRepository.findById(requestDto.getRequestId())
+    public GetGroomerQuoteDetailResponseDto getGroomerQuoteDetail(Long requestId, Long groomerId) {
+        QuoteRequest quoteRequest = quoteRequestRepository.findById(requestId)
                 .orElseThrow(() -> NotFoundException.entityNotFound("견적서 요청"));
 
         Dog dog = dogRepository.findById(quoteRequest.getDogId().getDogId())
@@ -283,7 +283,7 @@ public class QuoteServiceImpl implements QuoteService {
         User user = userRepository.findById(customer.getUserId().getUserId())
                 .orElseThrow(() -> NotFoundException.entityNotFound("사용자"));
 
-        Groomer groomer = groomerRepository.findById(requestDto.getGroomerId())
+        Groomer groomer = groomerRepository.findById(groomerId)
                 .orElseThrow(() -> NotFoundException.entityNotFound("미용사"));
 
         Quote quote = quoteRepository.findByRequestIdAndGroomerId(quoteRequest, groomer);
@@ -291,7 +291,7 @@ public class QuoteServiceImpl implements QuoteService {
             throw NotFoundException.entityNotFound("해당 견적서를 찾을 수 없습니다.");
         }
 
-        List<QuoteRequestImage> getQuoteRequestImageList = quoteRequestImageRepository.findAllByRequestId(requestDto.getRequestId());
+        List<QuoteRequestImage> getQuoteRequestImageList = quoteRequestImageRepository.findAllByRequestId(requestId);
         List<String> quoteRequestImageList = new ArrayList<>();
         for (QuoteRequestImage quoteRequestImage : getQuoteRequestImageList) {
             quoteRequestImageList.add(quoteRequestImage.getImageUrl());

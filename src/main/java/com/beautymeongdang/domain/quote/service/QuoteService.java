@@ -18,6 +18,6 @@ public interface QuoteService {
     CreateGroomerQuoteResponseDto createGroomerQuote(CreateGroomerQuoteRequestDto requestDto);
 
     // 미용사가 보낸 견적서 상세 조회
-    GetGroomerQuoteDetailResponseDto getGroomerQuoteDetail(GetGroomerQuoteDetailRequestDto requestDto);
+    GetGroomerQuoteDetailResponseDto getGroomerQuoteDetail(Long requestId, Long groomerId);
 
 }
