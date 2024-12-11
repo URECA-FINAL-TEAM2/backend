@@ -3,6 +3,7 @@ package com.beautymeongdang.domain.chat.repository;
 import com.beautymeongdang.domain.chat.dto.GetCustomerChatListResponseDto;
 import com.beautymeongdang.domain.chat.dto.GetGroomerChatListResponseDto;
 import com.beautymeongdang.domain.chat.entity.Chat;
+import com.beautymeongdang.domain.user.entity.Customer;
 import com.beautymeongdang.domain.user.entity.Groomer;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -10,6 +11,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface ChatRepository extends JpaRepository<Chat, Long> {
@@ -19,6 +21,14 @@ public interface ChatRepository extends JpaRepository<Chat, Long> {
 
     // 미용사 프로필 논리적 삭제
     List<Chat> findAllByGroomerId(Groomer groomer);
+
+    // customer와 groomer 간의 기존 채팅방을 찾는 메서드
+    @Query("SELECT c FROM Chat c WHERE c.customerId = :customer AND c.groomerId = :groomer AND c.isDeleted = false")
+    Optional<Chat> findByCustomerIdAndGroomerIdAndNotDeleted(
+            @Param("customer") Customer customer,
+            @Param("groomer") Groomer groomer
+    );
+
 
     // 고객 채팅방 목록 조회
     @Query("""

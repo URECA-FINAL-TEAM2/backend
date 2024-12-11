@@ -112,20 +112,17 @@ public class DogServiceImpl implements DogService {
             throw BadRequestException.invalidRequest("해당 반려견의 소유자");
         }
 
-        String breedCodeId = commonCodeRepository.findAll()
-                .stream()
-                .filter(code -> code.getId().getGroupId().equals(DOG_BREED_GROUP_CODE))
-                .filter(code -> code.getCommonName().equals(dog.getDogBreed()))
-                .map(code -> code.getId().getCodeId())
-                .findFirst()
+        CommonCodeId commonCodeId = new CommonCodeId(dog.getDogBreed(), DOG_BREED_GROUP_CODE);
+        CommonCode breedCode = commonCodeRepository.findById(commonCodeId)
                 .orElseThrow(() -> NotFoundException.entityNotFound("견종 코드"));
+
 
         return GetDogResponseDto.builder()
                 .customerId(dog.getCustomerId().getCustomerId())
                 .dogId(dog.getDogId())
                 .dogName(dog.getDogName())
-                .dogBreedCodeId(breedCodeId)
-                .dogBreed(dog.getDogBreed())
+                .dogBreedCodeId(dog.getDogBreed())
+                .dogBreed(breedCode.getCommonName())
                 .dogWeight(dog.getDogWeight())
                 .dogBirth(dog.getDogBirth())
                 .dogGender(dog.getDogGender().name())
