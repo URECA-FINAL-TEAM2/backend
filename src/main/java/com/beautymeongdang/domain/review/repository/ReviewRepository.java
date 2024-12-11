@@ -21,7 +21,6 @@ public interface ReviewRepository extends JpaRepository<Reviews, Long> {
     @Query("SELECT COUNT(r) FROM Recommend r WHERE r.recommendId.reviewId.reviewId = :reviewId")
     Integer countRecommendsByReviewId(@Param("reviewId") Long reviewId);
 
-
     // customer과 같은 시군구에 있고, 리뷰 추천 수가 많은 Best 미용후기 2개
     @Query("""
     SELECT DISTINCT r FROM Reviews r
@@ -36,6 +35,9 @@ public interface ReviewRepository extends JpaRepository<Reviews, Long> {
     LIMIT 2
     """)
     List<Reviews> findTop2BestReviewsBySigungu(@Param("customerId") Long customerId);
+
+
+
 
     @Query("SELECT AVG(r.starRating) FROM Reviews r WHERE r.groomerId.groomerId = :groomerId AND r.isDeleted = false")
     Double getAverageStarRatingByGroomerId(@Param("groomerId") Long groomerId);
