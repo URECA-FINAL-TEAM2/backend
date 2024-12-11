@@ -14,7 +14,7 @@ public interface ShopService {
     GetShopDetailResponseDto getShopDetail(Long shopId, Long customerId);
 
     // 매장 조회 (미용사 마이 페이지)
-    GetShopResponseDto getGroomerShop(Long shopId, Long groomerId);
+    GetShopResponseDto getGroomerShop(Long groomerId);
 
     // 매장 수정
     UpdateShopResponseDto updateShop(Long shopId, Long groomerId, UpdateShopRequestDto requestDto, MultipartFile shopLogo);

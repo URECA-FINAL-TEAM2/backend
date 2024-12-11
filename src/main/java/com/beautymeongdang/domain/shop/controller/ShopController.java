@@ -35,11 +35,10 @@ public class ShopController {
     /**
      * 매장 조회 (미용사 마이 페이지)
      */
-    @GetMapping("/groomer/shop/{shopId}")
+    @GetMapping("/groomer/shop")
     public ResponseEntity<ApiResponse<GetShopResponseDto>> getGroomerShop(
-            @PathVariable Long shopId,
             @RequestParam Long groomerId) {
-        GetShopResponseDto response = shopService.getGroomerShop(shopId, groomerId);
+        GetShopResponseDto response = shopService.getGroomerShop(groomerId);
         return ApiResponse.ok(200, response, "매장 조회 성공");
     }
 
@@ -86,7 +85,7 @@ public class ShopController {
     /**
      * 미용사 찾기 매장 리스트 조회
      */
-    @GetMapping("/groomer/shop")
+    @GetMapping("/groomer/shop/list")
     public ResponseEntity<ApiResponse<GetGroomerShopListResponseDto.ShopListResponse>> getGroomerShopList(
             @RequestParam Long customerId) {
         GetGroomerShopListResponseDto.ShopListResponse response = shopService.getShopList(customerId);
