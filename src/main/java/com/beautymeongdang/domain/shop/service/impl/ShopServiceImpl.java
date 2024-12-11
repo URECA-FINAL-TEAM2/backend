@@ -115,17 +115,12 @@ public class ShopServiceImpl implements ShopService {
      * 매장 조회 (미용사 마이 페이지)
      */
     @Override
-    public GetShopResponseDto getGroomerShop(Long shopId, Long groomerId) {
-        Shop shop = shopRepository.findById(shopId)
-                .orElseThrow(() -> NotFoundException.entityNotFound("매장"));
-
-        if (!shop.getGroomerId().getGroomerId().equals(groomerId)) {
-            throw new BadRequestException("해당 매장에 대한 접근 권한이 없습니다.");
-        }
+    public GetShopResponseDto getGroomerShop(Long groomerId) {
+        Shop shop = shopRepository.findByGroomerId(groomerId)
+                .orElseThrow(() -> NotFoundException.entityNotFound("등록된 매장"));
 
         Integer favoriteCount = shopRepository.countFavoritesByShop(shop);
         Integer reviewCount = reviewRepository.countGroomerReviews(groomerId);
-
         List<String> portfolioImages = groomerPortfolioImageRepository.findImageUrlsByGroomerId(groomerId);
 
         return GetShopResponseDto.builder()
@@ -329,7 +324,7 @@ public class ShopServiceImpl implements ShopService {
                             .skills(groomer.getSkill())
                             .latitude(shop.getLatitude().doubleValue())
                             .longitude(shop.getLongitude().doubleValue())
-                            .favorite(shopRepository.countFavoritesByShop(shop))
+                            .favoriteCount(shopRepository.countFavoritesByShop(shop))
                             .build();
                 })
                 .collect(Collectors.toList());
