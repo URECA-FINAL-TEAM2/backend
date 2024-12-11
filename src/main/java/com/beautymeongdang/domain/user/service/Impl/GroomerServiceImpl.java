@@ -76,30 +76,47 @@ public class GroomerServiceImpl implements GroomerService {
         Groomer groomer = groomerRepository.findById(updateGroomerPortfolioDto.getGroomerId())
                 .orElseThrow(() -> NotFoundException.entityNotFound("미용사"));
 
-        List<GroomerPortfolioImage> groomerPortfolioImages = groomerPortfolioImageRepository.findAllByGroomerId(groomer);
+        // 1. 기존 등록된 포트폴리오 이미지 확인
+        List<GroomerPortfolioImage> existingImages = groomerPortfolioImageRepository.findAllByGroomerId(groomer);
+        List<String> existingImageUrls = existingImages.stream()
+                .map(GroomerPortfolioImage::getImageUrl)
+                .toList();
 
-        // 이미지 S3 삭제
-        for (GroomerPortfolioImage groomerImage: groomerPortfolioImages) {
-            fileStore.deleteFile(groomerImage.getImageUrl());
+        // 2. 받아온 images에서 S3 URL로 시작되는 파일 필터링
+        List<String> newImageUrls = new ArrayList<>();
+        List<MultipartFile> filesToUpload = new ArrayList<>();
+        for (MultipartFile image : images) {
+            if (image.getOriginalFilename().startsWith("https://s3")) {
+                newImageUrls.add(image.getOriginalFilename());
+            } else {
+                filesToUpload.add(image);
+            }
         }
 
-        // 이미지 DB 삭제
-        groomerPortfolioImageRepository.deleteAllByGroomerId(groomer);
+        // 3. 기존 등록된 이미지 중 새로 받아온 이미지 목록에 없는 이미지를 삭제
+        List<String> imagesToDelete = existingImageUrls.stream()
+                .filter(existingImageUrl -> !newImageUrls.contains(existingImageUrl))
+                .collect(Collectors.toList());
+        fileStore.deleteFiles(imagesToDelete);
+        groomerPortfolioImageRepository.deleteAllByGroomerIdAndImageUrlIn(groomer, imagesToDelete);
 
-        // 이미지 저장
-        List<GroomerPortfolioImage> savedImages = new ArrayList<>();
-        if (images != null && !images.isEmpty()) {
-            List<UploadedFile> uploadedFiles = fileStore.storeFiles(images, FileStore.GROOMER_PORTFOLIO);
+        // 4. 새로 업로드해야 하는 파일을 S3에 저장
+        List<UploadedFile> uploadedFiles = fileStore.storeFiles(filesToUpload, FileStore.GROOMER_PORTFOLIO);
+        List<GroomerPortfolioImage> newPortfolioImages = uploadedFiles.stream()
+                .map(uploadedFile -> GroomerPortfolioImage.builder()
+                        .groomerId(groomer)
+                        .imageUrl(uploadedFile.getFileUrl())
+                        .build())
+                .collect(Collectors.toList());
 
-            List<GroomerPortfolioImage> groomerPortfolioImageList = uploadedFiles.stream()
-                    .map(uploadedFile -> GroomerPortfolioImage.builder()
-                            .groomerId(groomer)
-                            .imageUrl(uploadedFile.getFileUrl())
-                            .build())
-                    .collect(Collectors.toList());
+        // 5. DB에 새 이미지 정보 저장
+        List<GroomerPortfolioImage> savedImages = groomerPortfolioImageRepository.saveAll(newPortfolioImages);
 
-            savedImages = groomerPortfolioImageRepository.saveAll(groomerPortfolioImageList);
-        }
+        // 최종 남아 있는 이미지 목록 생성
+        List<GroomerPortfolioImage> finalImages = existingImages.stream()
+                .filter(image -> newImageUrls.contains(image.getImageUrl()))
+                .collect(Collectors.toList());
+        finalImages.addAll(savedImages);
 
         return UpdateGroomerPortfolioDto.builder()
                 .groomerId(groomer.getGroomerId())
