@@ -125,7 +125,9 @@ public class GroomerServiceImpl implements GroomerService {
         // 매장
         Shop shop = shopRepository.findByGroomerId(groomerId)
                 .orElseThrow(() -> NotFoundException.entityNotFound("매장"));
-        shop.delete();
+        if (shop != null) {
+            shop.delete();
+        }
 
         // 채팅방, 채팅 메시지
         List<Chat> chats = chatRepository.findAllByGroomerId(groomer);

@@ -287,6 +287,9 @@ public class QuoteServiceImpl implements QuoteService {
                 .orElseThrow(() -> NotFoundException.entityNotFound("미용사"));
 
         Quote quote = quoteRepository.findByRequestIdAndGroomerId(quoteRequest, groomer);
+        if (quote == null) {
+            throw NotFoundException.entityNotFound("해당 견적서를 찾을 수 없습니다.");
+        }
 
         List<QuoteRequestImage> getQuoteRequestImageList = quoteRequestImageRepository.findAllByRequestId(requestDto.getRequestId());
         List<String> quoteRequestImageList = new ArrayList<>();
