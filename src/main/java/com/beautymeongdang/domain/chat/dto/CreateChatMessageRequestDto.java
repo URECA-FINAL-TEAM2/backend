@@ -3,10 +3,9 @@ package com.beautymeongdang.domain.chat.dto;
 import com.beautymeongdang.domain.chat.entity.ChatMessage.MessageType;
 import lombok.Builder;
 import lombok.Getter;
-import lombok.Setter;
+
 
 @Getter
-@Setter
 @Builder
 public class CreateChatMessageRequestDto {
     private Long chatId;
