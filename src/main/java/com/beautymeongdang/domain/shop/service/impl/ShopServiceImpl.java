@@ -324,7 +324,7 @@ public class ShopServiceImpl implements ShopService {
                             .skills(groomer.getSkill())
                             .latitude(shop.getLatitude().doubleValue())
                             .longitude(shop.getLongitude().doubleValue())
-                            .favorite(shopRepository.countFavoritesByShop(shop))
+                            .favoriteCount(shopRepository.countFavoritesByShop(shop))
                             .build();
                 })
                 .collect(Collectors.toList());

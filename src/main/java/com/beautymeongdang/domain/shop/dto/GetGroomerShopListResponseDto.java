@@ -28,6 +28,6 @@ public class GetGroomerShopListResponseDto {
         private String skills;
         private Double latitude;
         private Double longitude;
-        private Integer favorite;
+        private Integer favoriteCount;
     }
 }
