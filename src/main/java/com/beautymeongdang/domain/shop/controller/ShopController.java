@@ -58,17 +58,28 @@ public class ShopController {
 
 
 
-
     /**
-     * 매장 상세 조회
+     * 매장 상세 조회 (customer)
      */
-    @GetMapping("/groomer/shop/detail")
+    @GetMapping("/groomer/shop/detail/customer")
     public ResponseEntity<ApiResponse<GetShopDetailResponseDto>> getShopDetail(
             @RequestParam Long shopId,
             @RequestParam Long customerId) {
         GetShopDetailResponseDto response = shopService.getShopDetail(shopId, customerId);
         return ApiResponse.ok(200, response, "매장 상세 조회 성공");
     }
+
+
+    /**
+     * 자기 매장 상세 조회 (groomer)
+     */
+    @GetMapping("/groomer/shop/detail/groomer")
+    public ResponseEntity<ApiResponse<GetMyGroomerShopDetailResponseDto>> getMyShopDetail(
+            @RequestParam Long groomerId) {
+        GetMyGroomerShopDetailResponseDto response = shopService.getMyShopDetail(groomerId);
+        return ApiResponse.ok(200, response, "내 매장 상세 조회 성공");
+    }
+
 
     /**
      * 매장 논리적 삭제
