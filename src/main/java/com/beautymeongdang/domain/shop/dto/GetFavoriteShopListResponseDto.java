@@ -13,6 +13,7 @@ public class GetFavoriteShopListResponseDto {
     private String shopLogo;
     private String shopName;
     private Double starScoreAvg;
+    private Integer favoriteCount;
     private Integer reviewCount;
     private String address;
     private String businessTime;

@@ -459,8 +459,11 @@ public class ShopServiceImpl implements ShopService {
                     // 별점 평균 및 리뷰 개수 계산
                     Double starScoreAvg = Optional.ofNullable(reviewRepository.getAverageStarRatingByGroomerId(groomer.getGroomerId()))
                             .orElse(0.0);
+                    // 리뷰 개수
                     Integer reviewCount = Optional.ofNullable(reviewRepository.countGroomerReviews(groomer.getGroomerId()))
                             .orElse(0);
+                    // 매장 찜 개수
+                    Integer favoriteCount = shopRepository.countFavoritesByShop(shop);
 
                     return GetFavoriteShopListResponseDto.builder()
                             .groomerId(groomer.getGroomerId())
@@ -471,6 +474,7 @@ public class ShopServiceImpl implements ShopService {
                             .businessTime(shop.getBusinessTime())
                             .skill(groomer.getSkill())
                             .starScoreAvg(starScoreAvg)
+                            .favoriteCount(favoriteCount)
                             .reviewCount(reviewCount)
                             .build();
                 })
