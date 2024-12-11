@@ -1,13 +1,5 @@
 package com.beautymeongdang.domain.shop.service.impl;
 
-import com.beautymeongdang.domain.payment.entity.Payment;
-import com.beautymeongdang.domain.payment.repository.PaymentRepository;
-import com.beautymeongdang.domain.quote.entity.Quote;
-import com.beautymeongdang.domain.quote.entity.QuoteRequest;
-import com.beautymeongdang.domain.quote.entity.SelectedQuote;
-import com.beautymeongdang.domain.quote.repository.QuoteRepository;
-import com.beautymeongdang.domain.quote.repository.QuoteRequestRepository;
-import com.beautymeongdang.domain.quote.repository.SelectedQuoteRepository;
 import com.beautymeongdang.domain.review.entity.Reviews;
 import com.beautymeongdang.domain.review.entity.ReviewsImage;
 import com.beautymeongdang.domain.review.repository.RecommendRepository;
@@ -59,10 +51,6 @@ public class ShopServiceImpl implements ShopService {
     private final SigunguRepository sigunguRepository;
     private final FileStore fileStore;
     private final FavoriteRepository favoriteRepository;
-    private final QuoteRepository quoteRepository;
-    private final QuoteRequestRepository quoteRequestRepository;
-    private final SelectedQuoteRepository selectedQuoteRepository;
-    private final PaymentRepository paymentRepository;
 
     /**
      * 매장 등록
@@ -321,7 +309,7 @@ public class ShopServiceImpl implements ShopService {
 
 
     /**
-     * 매장 논리적 삭제
+     * 매장 삭제
      */
     @Override
     @Transactional
@@ -329,31 +317,21 @@ public class ShopServiceImpl implements ShopService {
         Shop shop = shopRepository.findById(shopId)
                 .orElseThrow(() -> NotFoundException.entityNotFound("매장"));
 
-        if (shop.isDeleted()) {
-            throw BadRequestException.invalidRequest("이미 삭제된 매장");
-        }
-
         if (!shop.getGroomerId().getGroomerId().equals(groomerId)) {
             throw BadRequestException.invalidRequest("매장 삭제 권한");
         }
 
-        Groomer groomer = shop.getGroomerId();
+        // 해당 매장의 찜 데이터 삭제
+        List<Favorite> favorites = favoriteRepository.findByFavoriteIdShopId(shop);
+        favoriteRepository.deleteAll(favorites);
 
-        paymentRepository.findAllBySelectedQuoteIdQuoteIdGroomerIdAndIsDeletedFalse(groomer).forEach(Payment::delete);
-        selectedQuoteRepository.findAllByQuoteIdGroomerIdAndIsDeletedFalse(groomer).forEach(SelectedQuote::delete);
-        reviewRepository.findGroomerReviews(groomer.getGroomerId()).forEach(Reviews::delete);
-        quoteRepository.findAllByGroomerIdAndIsDeletedFalse(groomer).forEach(Quote::delete);
-        quoteRequestRepository.findAllByGroomerIdAndIsDeletedFalse(groomer).forEach(QuoteRequest::delete);
-
-        // 매장 논리적 삭제
-        shop.delete();
+        shopRepository.delete(shop);
 
         return DeleteShopResponseDto.builder()
-                .shopId(shop.getShopId())
+                .shopId(shopId)
                 .shopName(shop.getShopName())
                 .build();
     }
-
 
     /**
      * 미용사 찾기 매장 리스트 조회

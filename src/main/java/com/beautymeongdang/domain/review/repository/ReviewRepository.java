@@ -38,7 +38,6 @@ public interface ReviewRepository extends JpaRepository<Reviews, Long> {
 
 
 
-
     @Query("SELECT AVG(r.starRating) FROM Reviews r WHERE r.groomerId.groomerId = :groomerId AND r.isDeleted = false")
     Double getAverageStarRatingByGroomerId(@Param("groomerId") Long groomerId);
 

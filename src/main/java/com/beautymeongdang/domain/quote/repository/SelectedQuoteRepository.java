@@ -6,7 +6,6 @@ import com.beautymeongdang.domain.quote.dto.GetSelectedQuoteDetailResponseDto;
 import com.beautymeongdang.domain.quote.dto.GetGroomerSelectedQuoteResponseDto;
 import com.beautymeongdang.domain.quote.entity.Quote;
 import com.beautymeongdang.domain.quote.entity.SelectedQuote;
-import com.beautymeongdang.domain.user.entity.Groomer;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -101,9 +100,6 @@ public interface SelectedQuoteRepository extends JpaRepository<SelectedQuote, Lo
 
     @Query("SELECT sq FROM SelectedQuote sq WHERE sq.customerId.customerId = :customerId AND sq.isDeleted = false")
     List<SelectedQuote> findAllByCustomerId(@Param("customerId") Long customerId);
-
-    // 매장 논리적 삭제
-    List<SelectedQuote> findAllByQuoteIdGroomerIdAndIsDeletedFalse(Groomer groomerId);
 
     // 미용사 프로필 논리적 삭제
     SelectedQuote findByQuoteId(Quote quote);

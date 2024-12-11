@@ -2,6 +2,7 @@ package com.beautymeongdang.domain.shop.repository;
 
 import com.beautymeongdang.domain.shop.entity.Favorite;
 import com.beautymeongdang.domain.shop.entity.FavoriteId;
+import com.beautymeongdang.domain.shop.entity.Shop;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -28,5 +29,9 @@ public interface FavoriteRepository extends JpaRepository<Favorite, FavoriteId> 
     AND s.isDeleted = false
 """)
     List<Favorite> findByFavoriteIdCustomerId(@Param("customerId") Long customerId);
+
+    // 매장에 대한 찜 목록 조회 (매장삭제)
+    @Query("SELECT f FROM Favorite f WHERE f.favoriteId.shopId = :shop")
+    List<Favorite> findByFavoriteIdShopId(@Param("shop") Shop shop);
 
 }
