@@ -11,7 +11,7 @@ public class GetGroomerSelectedQuoteResponseDto {
     private final Long quoteId;
     private final String profileImage;
     private final String customerName;
-    private final String nickName;
+    private final String nickname;
     private final String phone;
     private final String dogName;
     private final LocalDateTime beautyDate;
@@ -24,7 +24,7 @@ public class GetGroomerSelectedQuoteResponseDto {
             Long quoteId,
             String profileImage,
             String customerName,
-            String nickName,
+            String nickname,
             String phone,
             String dogName,
             LocalDateTime beautyDate,
@@ -34,7 +34,7 @@ public class GetGroomerSelectedQuoteResponseDto {
         this.quoteId = quoteId;
         this.profileImage = profileImage;
         this.customerName = customerName;
-        this.nickName = nickName;
+        this.nickname = nickname;
         this.phone = phone;
         this.dogName = dogName;
         this.beautyDate = beautyDate;
