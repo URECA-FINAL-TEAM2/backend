@@ -38,6 +38,7 @@ public class StompHandler implements ChannelInterceptor {
 
         // CONNECT: 사용자 인증 처리
         if (StompCommand.CONNECT.equals(accessor.getCommand())) {
+            log.info("연결 시도 - Headers: {}", accessor.toNativeHeaderMap());
             String authToken = extractToken(accessor);
             if (!StringUtils.hasText(authToken)) {
                 log.error("[웹소켓 연결 실패] 토큰이 없습니다. sessionId: {}", accessor.getSessionId());
