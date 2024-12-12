@@ -132,5 +132,17 @@ public class ChatMessageServiceImpl implements ChatMessageService {
                 .build();
     }
 
+    // 채팅 논리적 삭제
+    @Override
+    @Transactional
+    public DeleteChatMessageResponseDto deleteChatMessage(Long messageId) {
+        ChatMessage chatMessage = chatMessageRepository.findById(messageId)
+                .orElseThrow(() -> NotFoundException.entityNotFound("메시지"));
+
+        chatMessage.delete();
+
+        return new DeleteChatMessageResponseDto(chatMessage.getMessageId());
+    }
+
 
 }
