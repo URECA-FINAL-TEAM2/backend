@@ -1,6 +1,8 @@
 package com.beautymeongdang.global.login.service.impl;
 
 import com.beautymeongdang.domain.user.dto.UserDTO;
+import com.beautymeongdang.domain.user.repository.CustomerRepository;
+import com.beautymeongdang.domain.user.repository.GroomerRepository;
 import com.beautymeongdang.global.jwt.JwtProvider;
 import com.beautymeongdang.global.login.entity.GoogleToken;
 import com.beautymeongdang.global.login.entity.GoogleUserInfo;
@@ -39,6 +41,8 @@ public class CustomOAuth2UserServiceImpl extends DefaultOAuth2UserService implem
     private final UserRepository userRepository;
     private final OAuth2AuthorizationClient oauth2Client;
     private final JwtProvider jwtProvider;
+    private final CustomerRepository customerRepository;
+    private final GroomerRepository groomerRepository;
 
     @Override
     public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
@@ -92,6 +96,17 @@ public class CustomOAuth2UserServiceImpl extends DefaultOAuth2UserService implem
         return new CustomOAuth2User(userDTO);
     }
 
+    private Map<String, Object> addUserRoleIds(User user, Map<String, Object> responseData) {
+        // Customer ID 확인 및 추가
+        customerRepository.findCustomerIdByUserId(user)
+                .ifPresent(customerId -> responseData.put("customerId", customerId));
+
+        // Groomer ID 확인 및 추가
+        groomerRepository.findGroomerIdByUserId(user)
+                .ifPresent(groomerId -> responseData.put("groomerId", groomerId));
+
+        return responseData;
+    }
 
     @Override
     public Map<String, Object> processKakaoLogin(String code, HttpServletResponse response) {
@@ -149,7 +164,7 @@ public class CustomOAuth2UserServiceImpl extends DefaultOAuth2UserService implem
         responseData.put("isNewUser", !user.isRegister());             // 신규 사용자 여부
 
         // 7. 최종 응답 데이터 반환
-        return responseData;
+        return addUserRoleIds(user, responseData);
     }
 
     @Override
@@ -195,6 +210,7 @@ public class CustomOAuth2UserServiceImpl extends DefaultOAuth2UserService implem
                 .username(user.getUserName())
                 .nickname(user.getNickname())
                 .profileImage(user.getProfileImage())
+                .roles(user.getRoles())
                 .isRegister(user.isRegister())
                 .build();
 
@@ -205,6 +221,6 @@ public class CustomOAuth2UserServiceImpl extends DefaultOAuth2UserService implem
         responseData.put("email", user.getEmail());
         responseData.put("isNewUser", !user.isRegister());
 
-        return responseData;
+        return addUserRoleIds(user, responseData);
     }
 }
