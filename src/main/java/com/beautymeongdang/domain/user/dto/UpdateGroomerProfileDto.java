@@ -12,7 +12,7 @@ public class UpdateGroomerProfileDto {
     private String profileImage;
     private String nickname;
     private String phone;
-    private String skills;
+    private String skill;
 
     @Builder
     public UpdateGroomerProfileDto(Long groomerId, String profileImage, String nickname, String phone, String skills) {
@@ -20,6 +20,6 @@ public class UpdateGroomerProfileDto {
         this.profileImage = profileImage;
         this.nickname = nickname;
         this.phone = phone;
-        this.skills = skills;
+        this.skill = skills;
     }
 }
