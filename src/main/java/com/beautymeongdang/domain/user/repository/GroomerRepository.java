@@ -18,7 +18,10 @@ public interface GroomerRepository extends JpaRepository<Groomer, Long> {
             "FROM Groomer g JOIN g.userId u " +
             "WHERE g.groomerId = :groomerId")
     GetGroomerProfileResponseDto findGroomerInfoById(@Param("groomerId") Long groomerId);
-
+  
     // 미용사 토글
     Optional<Groomer> findByUserId(User user);
+  
+    @Query("SELECT g.groomerId FROM Groomer g WHERE g.userId = :user AND g.isDeleted = false")
+    Optional<Long> findGroomerIdByUserId(@Param("user") User user);
 }
