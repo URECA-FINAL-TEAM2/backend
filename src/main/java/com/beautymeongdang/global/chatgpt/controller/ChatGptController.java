@@ -1,7 +1,7 @@
 package com.beautymeongdang.global.chatgpt.controller;
 
-import com.beautymeongdang.global.chatgpt.dto.ChatCompletionDto;
-import com.beautymeongdang.global.chatgpt.dto.CompletionDto;
+import com.beautymeongdang.global.chatgpt.dto.CreateChatCompletionDto;
+import com.beautymeongdang.global.chatgpt.dto.CreateCompletionDto;
 import com.beautymeongdang.global.chatgpt.service.ChatGptService;
 import com.beautymeongdang.global.common.dto.ApiResponse;
 import lombok.RequiredArgsConstructor;
@@ -49,7 +49,7 @@ public class ChatGptController {
     // legacy chat gpt 프롬프트 명령을 수행
     @PostMapping("/legacyPrompt")
     public ResponseEntity<ApiResponse<Map<String, Object>>> selectLegacyPrompt(
-            @RequestBody CompletionDto completionDto) {
+            @RequestBody CreateCompletionDto completionDto) {
         try {
             log.debug("param :: " + completionDto.toString());
             Map<String, Object> result = chatGptService.selectLegacyPrompt(completionDto);
@@ -62,7 +62,7 @@ public class ChatGptController {
     // 최신 chat gpt 프롬프트 명령을 수행
     @PostMapping("/prompt")
     public ResponseEntity<ApiResponse<Map<String, Object>>> selectPrompt(
-            @RequestBody ChatCompletionDto completionDto) {
+            @RequestBody CreateChatCompletionDto completionDto) {
         try {
             log.debug("param :: " + completionDto.toString());
             Map<String, Object> result = chatGptService.selectPrompt(completionDto);

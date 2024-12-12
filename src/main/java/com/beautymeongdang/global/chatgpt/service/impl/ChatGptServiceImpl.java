@@ -1,8 +1,8 @@
 package com.beautymeongdang.global.chatgpt.service.impl;
 
 import com.beautymeongdang.global.chatgpt.config.ChatGptConfig;
-import com.beautymeongdang.global.chatgpt.dto.ChatCompletionDto;
-import com.beautymeongdang.global.chatgpt.dto.CompletionDto;
+import com.beautymeongdang.global.chatgpt.dto.CreateChatCompletionDto;
+import com.beautymeongdang.global.chatgpt.dto.CreateCompletionDto;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonMappingException;
@@ -102,11 +102,11 @@ public class ChatGptServiceImpl implements ChatGptService {
     }
 
     @Override
-    public Map<String, Object> selectLegacyPrompt(CompletionDto completionDto) {
+    public Map<String, Object> selectLegacyPrompt(CreateCompletionDto completionDto) {
         log.debug("[+] 레거시 프롬프트를 수행합니다.");
 
         HttpHeaders headers = chatGptConfig.httpHeaders();
-        HttpEntity<CompletionDto> requestEntity = new HttpEntity<>(completionDto, headers);
+        HttpEntity<CreateCompletionDto> requestEntity = new HttpEntity<>(completionDto, headers);
         ResponseEntity<String> response = chatGptConfig
                 .restTemplate()
                 .exchange(legacyPromptUrl, HttpMethod.POST, requestEntity, String.class);
@@ -125,13 +125,13 @@ public class ChatGptServiceImpl implements ChatGptService {
     }
 
     @Override
-    public Map<String, Object> selectPrompt(ChatCompletionDto chatCompletionDto) {
+    public Map<String, Object> selectPrompt(CreateChatCompletionDto chatCompletionDto) {
         log.debug("[+] 신규 프롬프트를 수행합니다.");
 
         Map<String, Object> resultMap = new HashMap<>();
 
         HttpHeaders headers = chatGptConfig.httpHeaders();
-        HttpEntity<ChatCompletionDto> requestEntity = new HttpEntity<>(chatCompletionDto, headers);
+        HttpEntity<CreateChatCompletionDto> requestEntity = new HttpEntity<>(chatCompletionDto, headers);
 
         log.debug("Request Headers: {}", headers);
         log.debug("Request Body: {}", chatCompletionDto);

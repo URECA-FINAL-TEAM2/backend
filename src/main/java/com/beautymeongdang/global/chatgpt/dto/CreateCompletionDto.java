@@ -4,7 +4,7 @@ import lombok.*;
 
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class CompletionDto {
+public class CreateCompletionDto {
     // 사용할 모델
     private String model;
 
@@ -18,7 +18,7 @@ public class CompletionDto {
     private int max_tokens = 16;
 
     @Builder
-    public CompletionDto(String model, String prompt, float temperature, int max_tokens) {
+    public CreateCompletionDto(String model, String prompt, float temperature, int max_tokens) {
         this.model = model;
         this.prompt = prompt;
         this.temperature = temperature;

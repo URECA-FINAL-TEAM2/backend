@@ -9,14 +9,14 @@ import java.util.List;
 
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class ChatCompletionDto {
+public class CreateChatCompletionDto {
 
     private String model;
 
-    private List<ChatRequestMsgDto> messages;
+    private List<CreateChatRequestMsgDto> messages;
 
     @Builder
-    public ChatCompletionDto(List<ChatRequestMsgDto> messages) {
+    public CreateChatCompletionDto(List<CreateChatRequestMsgDto> messages) {
         this.model = "gpt-3.5-turbo";
         this.messages = messages;
     }

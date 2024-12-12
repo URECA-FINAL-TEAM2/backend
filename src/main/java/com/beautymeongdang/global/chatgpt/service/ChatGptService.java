@@ -1,7 +1,7 @@
 package com.beautymeongdang.global.chatgpt.service;
 
-import com.beautymeongdang.global.chatgpt.dto.ChatCompletionDto;
-import com.beautymeongdang.global.chatgpt.dto.CompletionDto;
+import com.beautymeongdang.global.chatgpt.dto.CreateChatCompletionDto;
+import com.beautymeongdang.global.chatgpt.dto.CreateCompletionDto;
 
 import java.util.List;
 import java.util.Map;
@@ -11,7 +11,7 @@ public interface ChatGptService {
 
     Map<String, Object> isValidModel(String modelName);
 
-    Map<String, Object> selectLegacyPrompt(CompletionDto completionDto);
+    Map<String, Object> selectLegacyPrompt(CreateCompletionDto completionDto);
 
-    Map<String, Object> selectPrompt(ChatCompletionDto chatCompletionDto);
+    Map<String, Object> selectPrompt(CreateChatCompletionDto chatCompletionDto);
 }
