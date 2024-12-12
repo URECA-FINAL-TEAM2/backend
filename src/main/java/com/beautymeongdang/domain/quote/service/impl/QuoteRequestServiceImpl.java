@@ -3,6 +3,8 @@ package com.beautymeongdang.domain.quote.service.impl;
 
 import com.beautymeongdang.domain.dog.entity.Dog;
 import com.beautymeongdang.domain.dog.repository.DogRepository;
+import com.beautymeongdang.domain.notification.enums.NotificationType;
+import com.beautymeongdang.domain.notification.service.NotificationService;
 import com.beautymeongdang.domain.quote.dto.*;
 import com.beautymeongdang.domain.quote.entity.*;
 import com.beautymeongdang.domain.quote.repository.DirectQuoteRequestRepository;
@@ -53,6 +55,8 @@ public class QuoteRequestServiceImpl implements QuoteRequestService {
     private final UserRepository userRepository;
     private final ShopRepository shopRepository;
     private final CommonCodeRepository commonCodeRepository;
+    private final NotificationService notificationService;
+    private final NotificationType notificationType;
 
     private static final String REQUEST_STATUS_GROUP_CODE = "100";
     private static final String DOG_BREED_GROUP_CODE = "400";
@@ -217,6 +221,22 @@ public class QuoteRequestServiceImpl implements QuoteRequestService {
 
             savedImages = quoteRequestImageRepository.saveAll(quoteImages);
         }
+
+        // 알림 저장 로직 추가
+        String notificationMessage = String.format(
+                "고객에게 견적서 요청이 도착하였습니다. 고객: %s, 강아지: %s, 미용 일자: %s",
+                customer.getUserId().getUserName(),
+                dog.getDogName(),
+                requestDto.getBeautyDate()
+        );
+
+        // 알림 저장
+        notificationService.saveNotification(
+                groomer.getUserId().getUserId(),
+                "groomer",
+                NotificationType.QUOTE_REQUEST.getDescription(),
+                notificationMessage
+        );
 
         return CreateInsertRequestGroomerResponseDto.builder()
                 .requestId(savedRequest.getRequestId())
