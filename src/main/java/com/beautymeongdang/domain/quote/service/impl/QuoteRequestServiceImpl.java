@@ -56,7 +56,6 @@ public class QuoteRequestServiceImpl implements QuoteRequestService {
     private final ShopRepository shopRepository;
     private final CommonCodeRepository commonCodeRepository;
     private final NotificationService notificationService;
-    private final NotificationType notificationType;
 
     private static final String REQUEST_STATUS_GROUP_CODE = "100";
     private static final String DOG_BREED_GROUP_CODE = "400";
