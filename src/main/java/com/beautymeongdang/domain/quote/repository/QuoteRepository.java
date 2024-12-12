@@ -50,9 +50,6 @@ public interface QuoteRepository extends JpaRepository<Quote, Long> {
     @Query("SELECT q FROM Quote q WHERE q.dogId.customerId.customerId = :customerId AND q.isDeleted = false")
     List<Quote> findAllByCustomerDogs(@Param("customerId") Long customerId);
 
-    // 매장 논리적 삭제
-    List<Quote> findAllByGroomerIdAndIsDeletedFalse(Groomer groomerId);
-
     // 미용사 프로필 논리적 삭제
     List<Quote> findAllByGroomerId(Groomer groomer);
 
