@@ -210,6 +210,7 @@ public class CustomOAuth2UserServiceImpl extends DefaultOAuth2UserService implem
                 .username(user.getUserName())
                 .nickname(user.getNickname())
                 .profileImage(user.getProfileImage())
+                .roles(user.getRoles())
                 .isRegister(user.isRegister())
                 .build();
 
