@@ -13,6 +13,9 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.HashMap;
+import java.util.Map;
+
 @RestController
 @RequestMapping("/mypage")
 @RequiredArgsConstructor
@@ -41,8 +44,19 @@ public class MypageController {
     @GetMapping("/customer/toggle/{userId}")
     public ResponseEntity<?> getCustomerIdByUserId(@PathVariable Long userId) {
         try {
+            Map<String, Object> response = new HashMap<>();
             Long customerId = mypageService.getCustomerIdByUserId(userId);
-            return ApiResponse.ok(200, customerId, "Get Customer ID Success");
+            response.put("customerId", customerId);
+
+            // 미용사 ID 확인 (선택)
+            try {
+                Long groomerId = mypageService.getGroomerIdByUserId(userId);
+                response.put("groomerId", groomerId);
+            } catch (EntityNotFoundException e) {
+                // groomerId가 없는 경우 무시
+            }
+
+            return ApiResponse.ok(200, response, "Get Customer ID Success");
         } catch (EntityNotFoundException e) {
             return ApiResponse.badRequest(404, "새로 등록이 필요합니다.");
         } catch (Exception e) {
@@ -53,8 +67,19 @@ public class MypageController {
     @GetMapping("/groomer/toggle/{userId}")
     public ResponseEntity<?> getGroomerIdByUserId(@PathVariable Long userId) {
         try {
+            Map<String, Object> response = new HashMap<>();
             Long groomerId = mypageService.getGroomerIdByUserId(userId);
-            return ApiResponse.ok(200, groomerId, "Get Groomer ID Success");
+            response.put("groomerId", groomerId);
+
+            // 고객 ID 확인 (선택)
+            try {
+                Long customerId = mypageService.getCustomerIdByUserId(userId);
+                response.put("customerId", customerId);
+            } catch (EntityNotFoundException e) {
+                // customerId가 없는 경우 무시
+            }
+
+            return ApiResponse.ok(200, response, "Get Groomer ID Success");
         } catch (EntityNotFoundException e) {
             return ApiResponse.badRequest(404, "새로 등록이 필요합니다.");
         } catch (Exception e) {

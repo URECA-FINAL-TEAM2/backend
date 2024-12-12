@@ -19,7 +19,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -109,9 +111,19 @@ public class MypageServiceImpl implements MypageService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new EntityNotFoundException("User not found"));
 
-        return customerRepository.findByUserId(user)
+        Map<String, Object> response = new HashMap<>();
+
+        // 고객 ID 조회 (필수)
+        Long customerId = customerRepository.findByUserId(user)
                 .map(Customer::getCustomerId)
                 .orElseThrow(() -> new EntityNotFoundException("Customer registration required"));
+
+        // 미용사 ID 조회 (선택)
+        groomerRepository.findByUserId(user)
+                .map(Groomer::getGroomerId)
+                .ifPresent(groomerId -> response.put("groomerId", groomerId));
+
+        return customerId;
     }
 
     @Override
@@ -119,9 +131,19 @@ public class MypageServiceImpl implements MypageService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new EntityNotFoundException("User not found"));
 
-        return groomerRepository.findByUserId(user)
+        Map<String, Object> response = new HashMap<>();
+
+        // 미용사 ID 조회 (필수)
+        Long groomerId = groomerRepository.findByUserId(user)
                 .map(Groomer::getGroomerId)
                 .orElseThrow(() -> new EntityNotFoundException("Groomer registration required"));
+
+        // 고객 ID 조회 (선택)
+        customerRepository.findByUserId(user)
+                .map(Customer::getCustomerId)
+                .ifPresent(customerId -> response.put("customerId", customerId));
+
+        return groomerId;
     }
 
 }
