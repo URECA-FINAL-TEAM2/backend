@@ -210,8 +210,8 @@ public class CustomOAuth2UserServiceImpl extends DefaultOAuth2UserService implem
                 .username(user.getUserName())
                 .nickname(user.getNickname())
                 .profileImage(user.getProfileImage())
-                .isRegister(user.isRegister())
                 .roles(user.getRoles())
+                .isRegister(user.isRegister())
                 .build();
 
         // 6. 응답 데이터 구성
