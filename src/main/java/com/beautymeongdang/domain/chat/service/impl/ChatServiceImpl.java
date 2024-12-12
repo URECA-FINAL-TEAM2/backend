@@ -105,8 +105,8 @@ public class ChatServiceImpl implements ChatService {
 
     // 고객 채팅방 목록 검색 조회
     @Override
-    public List<GetCustomerChatListResponseDto> getCustomerChatListBySearchKeyword(GetCustomerKeywordChatListRequestDto requestDto) {
-        return chatRepository.getCustomerChatListBySearchKeyword(requestDto.getCustomerId(), requestDto.getSearchWord());
+    public List<GetCustomerChatListResponseDto> getCustomerChatListBySearchKeyword(Long customerId, String searchWord) {
+        return chatRepository.getCustomerChatListBySearchKeyword(customerId, searchWord);
     }
 
     // 미용사 채팅방 목록 조회
@@ -117,7 +117,7 @@ public class ChatServiceImpl implements ChatService {
 
     // 미용사 채팅방 목록 검색 조회
     @Override
-    public List<GetGroomerChatListResponseDto> getGroomerChatListBySearchKeyword(GetGroomerKeywordChatListRequestDto requestDto) {
-        return chatRepository.getGroomerChatListBySearchKeyword(requestDto.getGroomerId(), requestDto.getSearchWord());
+    public List<GetGroomerChatListResponseDto> getGroomerChatListBySearchKeyword(Long groomerId, String searchWord) {
+        return chatRepository.getGroomerChatListBySearchKeyword(groomerId, searchWord);
     }
 }

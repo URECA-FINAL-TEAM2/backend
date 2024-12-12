@@ -33,9 +33,9 @@ public class ChatController {
     }
 
     // 고객 채팅방 목록 검색 조회
-    @GetMapping("/customer")
-    public ResponseEntity<?> getCustomerChatListBySearchKeyword(@RequestBody GetCustomerKeywordChatListRequestDto requestDto) {
-        return ApiResponse.ok(200, chatService.getCustomerChatListBySearchKeyword(requestDto), "Get CustomerSearchWordChat Success");
+    @GetMapping("/customer/{customerId}/{searchWord}")
+    public ResponseEntity<?> getCustomerChatListBySearchKeyword(@PathVariable Long customerId, @PathVariable String searchWord) {
+        return ApiResponse.ok(200, chatService.getCustomerChatListBySearchKeyword(customerId, searchWord), "Get CustomerSearchWordChat Success");
     }
 
     // 미용사 채팅방 목록 조회
@@ -45,9 +45,9 @@ public class ChatController {
     }
 
     // 미용사 채팅방 목록 검색 조회
-    @GetMapping("/groomer")
-    public ResponseEntity<?> getGroomerChatListBySearchKeyword(@RequestBody GetGroomerKeywordChatListRequestDto requestDto) {
-        return ApiResponse.ok(200, chatService.getGroomerChatListBySearchKeyword(requestDto), "Get GroomerSearchWordChat Success");
+    @GetMapping("/groomer/{groomerId}/{searchWord}")
+    public ResponseEntity<?> getGroomerChatListBySearchKeyword(@PathVariable Long groomerId, @PathVariable String searchWord) {
+        return ApiResponse.ok(200, chatService.getGroomerChatListBySearchKeyword(groomerId, searchWord), "Get GroomerSearchWordChat Success");
     }
 
 }
