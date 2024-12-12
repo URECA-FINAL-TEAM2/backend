@@ -46,8 +46,8 @@ public class SecurityConfig {
                 // 기본 로그인 방식 비활성화
                 .formLogin((auth) -> auth.disable())
                 .httpBasic((auth) -> auth.disable())
-                .oauth2Login((auth) -> auth.disable()) // 커스텀 방식(프론트 인가 코드)을 사용하기 떄문에 사용 X 
-          
+                .oauth2Login((auth) -> auth.disable()) // 커스텀 방식(프론트 인가 코드)을 사용하기 떄문에 사용 X
+
                 // 로그아웃 설정
                 .logout(logout -> logout
                         .logoutUrl("/api/auth/logout")
@@ -78,7 +78,8 @@ public class SecurityConfig {
                                 "/",                    // 루트 경로
                                 "/selectRole",         // 역할 선택 페이지
                                 "/login",             // 로그인 페이지
-                                "/oauth2/**"          // OAuth2 관련 모든 경로
+                                "/oauth2/**",          // OAuth2 관련 모든 경로
+                                "/chats/**"         //채팅
                         ).permitAll()
                         // API 및 Swagger 관련 경로
                         .requestMatchers(
@@ -123,7 +124,13 @@ public class SecurityConfig {
         ));
 
         // 허용할 헤더 설정
-        configuration.setAllowedHeaders(Arrays.asList("*"));
+        configuration.setAllowedHeaders(Arrays.asList(
+                "*",
+                "Sec-WebSocket-Extensions", //웹소켓
+                "Sec-WebSocket-Key",
+                "Sec-WebSocket-Version",
+                "Sec-WebSocket-Protocol"
+        ));
         configuration.setExposedHeaders(Arrays.asList(
                 "Authorization",
                 "Refresh-Token",
