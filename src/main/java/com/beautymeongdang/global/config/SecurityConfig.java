@@ -124,7 +124,14 @@ public class SecurityConfig {
 
         // 허용할 헤더 설정
         configuration.setAllowedHeaders(Arrays.asList("*"));
-        configuration.setExposedHeaders(Arrays.asList("Authorization"));
+        configuration.setExposedHeaders(Arrays.asList(
+                "Authorization",
+                "Refresh-Token",
+                "Access-Control-Allow-Origin",
+                "Access-Control-Allow-Credentials",
+                "Access-Token",
+                "Access-Control-Expose-Headers"
+        ));
 
         // 자격증명 허용
         configuration.setAllowCredentials(true);
