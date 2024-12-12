@@ -54,8 +54,8 @@ public interface ShopRepository extends JpaRepository<Shop, Long> {
     INNER JOIN FETCH s.groomerId g
     LEFT JOIN Reviews r ON r.groomerId = g AND r.isDeleted = false
     WHERE s.sigunguId.sigunguId = (
-        SELECT c.sigunguId.sigunguId 
-        FROM Customer c 
+        SELECT c.sigunguId.sigunguId
+        FROM Customer c
         WHERE c.customerId = :customerId
     )
     AND s.isDeleted = false
@@ -68,7 +68,6 @@ public interface ShopRepository extends JpaRepository<Shop, Long> {
     // 매장 찜 개수
     @Query("SELECT COUNT(f) FROM Favorite f WHERE f.favoriteId.shopId = :shop")
     Integer countFavoritesByShop(@Param("shop") Shop shop);
-
 
 
 }
