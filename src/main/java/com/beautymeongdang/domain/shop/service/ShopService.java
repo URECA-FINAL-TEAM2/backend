@@ -10,8 +10,11 @@ public interface ShopService {
     // 매장 생성
     CreateShopResponseDto createShop(Long groomerId, CreateShopRequestDto requestDto, MultipartFile shopLogo);
 
-    // 매장 상세 조회
+    // 매장 상세 조회 (customer)
     GetShopDetailResponseDto getShopDetail(Long shopId, Long customerId);
+
+    // 자기 매장 상세 조회 (groomer)
+    GetMyGroomerShopDetailResponseDto getMyShopDetail(Long groomerId);
 
     // 매장 조회 (미용사 마이 페이지)
     GetShopResponseDto getGroomerShop(Long groomerId);

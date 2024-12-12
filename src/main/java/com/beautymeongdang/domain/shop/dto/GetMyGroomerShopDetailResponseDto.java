@@ -9,7 +9,7 @@ import java.util.List;
 @Getter
 @Builder
 @AllArgsConstructor
-public class GetShopDetailResponseDto {
+public class GetMyGroomerShopDetailResponseDto {
     private Long groomerId;
     private Long shopId;
     private String shopLogo;
@@ -22,7 +22,6 @@ public class GetShopDetailResponseDto {
     private Double latitude;
     private Double longitude;
     private Integer favoriteCount;
-    private Boolean isFavorite;
     private String description;
     private List<String> groomerPortfolioImages;
     private String groomerUsername;
@@ -40,6 +39,5 @@ public class GetShopDetailResponseDto {
         private Integer recommendCount;
         private List<String> reviewsImage;
         private LocalDateTime createdAt;
-        private Boolean isRecommended;
     }
 }

@@ -2,6 +2,8 @@ package com.beautymeongdang.domain.quote.service.impl;
 
 import com.beautymeongdang.domain.dog.entity.Dog;
 import com.beautymeongdang.domain.dog.repository.DogRepository;
+import com.beautymeongdang.domain.notification.repository.NotificationRepository;
+import com.beautymeongdang.domain.notification.service.NotificationService;
 import com.beautymeongdang.domain.quote.dto.*;
 import com.beautymeongdang.domain.quote.entity.DirectQuoteRequest;
 import com.beautymeongdang.domain.quote.entity.Quote;
@@ -46,9 +48,13 @@ public class QuoteServiceImpl implements QuoteService {
     private final CustomerRepository customerRepository;
     private final UserRepository userRepository;
     private final CommonCodeRepository commonCodeRepository;
+    private final NotificationRepository notificationRepository;
+    private final NotificationService notificationService;
 
     private static final String QUOTE_REQUEST_STATUS_GROUP_CODE = "100";
     private static final String QUOTE_STATUS_GROUP_CODE = "200";
+    private static final String DOG_BREED_GROUP_CODE = "400";
+
 
     /**
      * 고객이 자기가 보낸 견적(1:1) 요청을 조회
@@ -175,6 +181,13 @@ public class QuoteServiceImpl implements QuoteService {
         List<QuoteRequestImage> requestImages = quoteRequestImageRepository
                 .findAllByRequestId(quote.getRequestId().getRequestId());
 
+        // db에 있는 견종 코드를 견종명으로 변환
+        CommonCodeId breedCodeId = new CommonCodeId(quote.getDogId().getDogBreed(), DOG_BREED_GROUP_CODE);
+        CommonCode breedCode = commonCodeRepository.findById(breedCodeId)
+                .orElseThrow(() -> NotFoundException.entityNotFound("견종 코드"));
+        String dogBreedName = breedCode.getCommonName();
+
+
         return GetQuoteDetailResponseDto.builder()
                 .groomer(GetQuoteDetailResponseDto.GroomerInfo.builder()
                         .shopLogo(shop.getImageUrl())
@@ -189,6 +202,7 @@ public class QuoteServiceImpl implements QuoteService {
                         .dogWeight(quote.getDogId().getDogWeight())
                         .dogAge(String.valueOf(quote.getDogId().getDogAge()))
                         .dogGender(quote.getDogId().getDogGender().toString())
+                        .dogBreed(dogBreedName)
                         .neutering(quote.getDogId().getNeutering())
                         .experience(quote.getDogId().getExperience())
                         .significant(quote.getDogId().getSignificant())
@@ -245,6 +259,22 @@ public class QuoteServiceImpl implements QuoteService {
 
             quoteRequestRepository.save(updateQuoteRequest);
         }
+        // 알림 저장 로직 추가
+        String notificationMessage = String.format(
+                "견적서가 생성되었습니다. 미용사: %s, 강아지: %s, 비용: %d원",
+                groomer.getUserId().getNickname(),
+                dog.getDogName(),
+                requestDto.getQuoteCost()
+        );
+
+        // 알림 저장
+        notificationService.saveNotification(
+                quoteRequest.getDogId().getCustomerId().getUserId().getUserId(), // 고객의 userId
+                "customer", // 역할
+                "견적서 알림", // 알림 유형
+                notificationMessage // 알림 내용
+        );
+
 
         CommonCodeId commonCodeId = new CommonCodeId(saveQuote.getStatus(), "100");
         CommonCode commonCode = commonCodeRepository.findById(commonCodeId)
