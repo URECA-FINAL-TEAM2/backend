@@ -47,6 +47,9 @@ public interface CustomerRepository extends JpaRepository<Customer, Long> {
     WHERE c.customerId = :customerId AND c.isDeleted = false""")
     GetCustomerAddressResponseDto findCustomerAddressById(@Param("customerId") Long customerId);
 
+    // 고객 토글
+    Optional<Customer> findByUserId(User user);
+
     @Query("SELECT c.customerId FROM Customer c WHERE c.userId = :user AND c.isDeleted = false")
     Optional<Long> findCustomerIdByUserId(@Param("user") User user);
 }
