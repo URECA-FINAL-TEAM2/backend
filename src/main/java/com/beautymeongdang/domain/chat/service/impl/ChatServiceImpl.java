@@ -126,19 +126,19 @@ public class ChatServiceImpl implements ChatService {
      */
     @Override
     @Transactional
-    public UpdateChatExitResponseDto exitChat(UpdateChatExitRequestDto requestDto) {
-        Chat chat = chatRepository.findById(requestDto.getChatId())
+    public UpdateChatExitResponseDto exitChat(Long chatId, Long userId, Boolean customerYn) {
+        Chat chat = chatRepository.findById(chatId)
                 .orElseThrow(() -> NotFoundException.entityNotFound("채팅방"));
 
-        validateChatRoomAccess(chat.getChatId(), requestDto.getUserId(), requestDto.getCustomerYn());
+        validateChatRoomAccess(chatId, userId, customerYn);
 
-        if (requestDto.getCustomerYn()) {
+        if (customerYn) {
             chat.customerExited();
         } else {
             chat.groomerExited();
         }
 
-        // 양쪽 모두 퇴장하면 채팅방 논리적 삭제
+        // 양쪽 모두 퇴장했는지 확인하고 채팅방 논리적 삭제
         if (chat.getCustomerExitedYn() && chat.getGroomerExitedYn()) {
             chat.delete();
         }
@@ -147,18 +147,17 @@ public class ChatServiceImpl implements ChatService {
         String destination = "/sub/chat/room/" + chat.getChatId();
         CreateChatMessageResponseDto quitMessage = CreateChatMessageResponseDto.builder()
                 .chatId(chat.getChatId())
-                .senderId(requestDto.getUserId())
+                .senderId(userId)
                 .messageType(ChatMessage.MessageType.QUIT)
                 .content("상대방이 퇴장하였습니다.")
-                .customerYn(requestDto.getCustomerYn())
+                .customerYn(customerYn)
                 .createdAt(LocalDateTime.now())
                 .build();
 
         messagingTemplate.convertAndSend(destination, quitMessage);
 
-        return UpdateChatExitResponseDto.from(chat, requestDto.getUserId(), requestDto.getCustomerYn());
+        return UpdateChatExitResponseDto.from(chat, userId, customerYn);
     }
-
 
 
     // 고객 채팅방 목록 조회

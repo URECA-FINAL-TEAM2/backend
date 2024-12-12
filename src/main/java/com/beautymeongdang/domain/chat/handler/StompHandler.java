@@ -35,9 +35,8 @@ public class StompHandler implements ChannelInterceptor {
         StompHeaderAccessor accessor = MessageHeaderAccessor.getAccessor(message, StompHeaderAccessor.class);
 
 
-        /**
-         * CONNECT: 사용자 인증 처리
-         */
+
+        // CONNECT: 사용자 인증 처리
         if (StompCommand.CONNECT.equals(accessor.getCommand())) {
             String authToken = extractToken(accessor);
             if (!StringUtils.hasText(authToken)) {
@@ -73,9 +72,8 @@ public class StompHandler implements ChannelInterceptor {
                     accessor.getSessionId(), userId, customerYnStr);
         }
 
-        /**
-         * SUBSCRIBE: 채팅방 입장 처리
-         */
+
+         // SUBSCRIBE: 채팅방 입장 처리
         else if (StompCommand.SUBSCRIBE.equals(accessor.getCommand())) {
             String destination = accessor.getDestination();
             if (destination == null) {
@@ -119,9 +117,7 @@ public class StompHandler implements ChannelInterceptor {
                     accessor.getSessionId(), destination, userId);
         }
 
-        /**
-         * DISCONNECT: 웹소켓 연결 종료
-         */
+         // DISCONNECT: 웹소켓 연결 종료
         else if (StompCommand.DISCONNECT.equals(accessor.getCommand())) {
             String userId = (String) accessor.getSessionAttributes().get("UserId");
             log.info("[웹소켓 연결 종료] sessionId: {}, userId: {}",

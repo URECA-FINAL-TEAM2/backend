@@ -6,7 +6,6 @@ import lombok.Getter;
 @Getter
 @Builder
 public class UpdateChatExitRequestDto {
-    private Long chatId;
     private Long userId;
     private Boolean customerYn;
 }

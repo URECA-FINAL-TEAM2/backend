@@ -12,7 +12,7 @@ public interface ChatService {
     void validateChatRoomAccess(Long chatId, Long userId, Boolean customerYn);
 
     // 채팅방 나가기
-    UpdateChatExitResponseDto exitChat(UpdateChatExitRequestDto requestDto);
+    UpdateChatExitResponseDto exitChat(Long chatId, Long userId, Boolean customerYn);
 
     // 고객 채팅방 목록 조회
     List<GetCustomerChatListResponseDto> getCustomerChatList(Long customerId);

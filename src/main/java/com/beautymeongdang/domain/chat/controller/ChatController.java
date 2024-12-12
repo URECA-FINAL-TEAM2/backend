@@ -28,10 +28,8 @@ public class ChatController {
      * 채팅방 퇴장
      */
     @PutMapping("/{chatId}/exit")
-    public ResponseEntity<?> exitChat(
-            @PathVariable Long chatId,
-            @RequestBody UpdateChatExitRequestDto requestDto) {
-        return ApiResponse.ok(200, chatService.exitChat(requestDto), "채팅방 나가기 성공");
+    public ResponseEntity<?> exitChat(@PathVariable Long chatId, @RequestBody UpdateChatExitRequestDto requestDto) {
+        return ApiResponse.ok(200, chatService.exitChat(chatId, requestDto.getUserId(), requestDto.getCustomerYn()),"채팅방 나가기 성공");
     }
 
 
