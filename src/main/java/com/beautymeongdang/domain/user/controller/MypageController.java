@@ -37,4 +37,28 @@ public class MypageController {
             return ApiResponse.badRequest(400, "마이페이지 조회 실패: " + e.getMessage());
         }
     }
+
+    @GetMapping("/customer/toggle/{userId}")
+    public ResponseEntity<?> getCustomerIdByUserId(@PathVariable Long userId) {
+        try {
+            Long customerId = mypageService.getCustomerIdByUserId(userId);
+            return ApiResponse.ok(200, customerId, "Get Customer ID Success");
+        } catch (EntityNotFoundException e) {
+            return ApiResponse.badRequest(404, "새로 등록이 필요합니다.");
+        } catch (Exception e) {
+            return ApiResponse.badRequest(400, "조회 실패: " + e.getMessage());
+        }
+    }
+
+    @GetMapping("/groomer/toggle/{userId}")
+    public ResponseEntity<?> getGroomerIdByUserId(@PathVariable Long userId) {
+        try {
+            Long groomerId = mypageService.getGroomerIdByUserId(userId);
+            return ApiResponse.ok(200, groomerId, "Get Groomer ID Success");
+        } catch (EntityNotFoundException e) {
+            return ApiResponse.badRequest(404, "새로 등록이 필요합니다.");
+        } catch (Exception e) {
+            return ApiResponse.badRequest(400, "조회 실패: " + e.getMessage());
+        }
+    }
 }

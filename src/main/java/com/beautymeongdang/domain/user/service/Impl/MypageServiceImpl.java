@@ -104,4 +104,24 @@ public class MypageServiceImpl implements MypageService {
                 .build();
     }
 
+    @Override
+    public Long getCustomerIdByUserId(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new EntityNotFoundException("User not found"));
+
+        return customerRepository.findByUserId(user)
+                .map(Customer::getCustomerId)
+                .orElseThrow(() -> new EntityNotFoundException("Customer registration required"));
+    }
+
+    @Override
+    public Long getGroomerIdByUserId(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new EntityNotFoundException("User not found"));
+
+        return groomerRepository.findByUserId(user)
+                .map(Groomer::getGroomerId)
+                .orElseThrow(() -> new EntityNotFoundException("Groomer registration required"));
+    }
+
 }
