@@ -200,7 +200,7 @@ public class GroomerServiceImpl implements GroomerService {
         Groomer updateGroomer = Groomer.builder()
                 .groomerId(groomer.getGroomerId())
                 .userId(groomer.getUserId())
-                .skill(updateGroomerProfileDto.getSkills())
+                .skill(updateGroomerProfileDto.getSkill())
                 .build();
 
         Groomer saveGroomer = groomerRepository.save(updateGroomer);
@@ -241,7 +241,7 @@ public class GroomerServiceImpl implements GroomerService {
                 .profileImage(saveUser.getProfileImage())
                 .nickname(saveUser.getNickname())
                 .phone(saveUser.getPhone())
-                .skills(saveGroomer.getSkill())
+                .skill(saveGroomer.getSkill())
                 .build();
     }
 }
