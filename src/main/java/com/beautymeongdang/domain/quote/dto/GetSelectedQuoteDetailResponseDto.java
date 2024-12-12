@@ -13,6 +13,7 @@ public class GetSelectedQuoteDetailResponseDto {
     private String customerName;
     private String groomerName;
     private String shopName;
+    private String shopLogo;
     private String address;
     private String phone;
     private String dogName;
@@ -30,12 +31,14 @@ public class GetSelectedQuoteDetailResponseDto {
     private String quoteContent;
     private Integer amount;
     private List<String> requestImage;
+    private String paymentKey;
 
     @Builder
     public GetSelectedQuoteDetailResponseDto(
             String customerName,
             String groomerName,
             String shopName,
+            String shopLogo,
             String address,
             String phone,
             String dogName,
@@ -51,11 +54,13 @@ public class GetSelectedQuoteDetailResponseDto {
             LocalDateTime beautyDate,
             String requestContent,
             String quoteContent,
-            Integer amount
+            Integer amount,
+            String paymentKey
     ) {
         this.customerName = customerName;
         this.groomerName = groomerName;
         this.shopName = shopName;
+        this.shopLogo = shopLogo;
         this.address = address;
         this.phone = phone;
         this.dogName = dogName;
@@ -72,5 +77,6 @@ public class GetSelectedQuoteDetailResponseDto {
         this.requestContent = requestContent;
         this.quoteContent = quoteContent;
         this.amount = amount;
+        this.paymentKey = paymentKey;
     }
 }

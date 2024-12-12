@@ -6,7 +6,6 @@ import com.beautymeongdang.domain.quote.dto.GetSelectedQuoteDetailResponseDto;
 import com.beautymeongdang.domain.quote.dto.GetGroomerSelectedQuoteResponseDto;
 import com.beautymeongdang.domain.quote.entity.Quote;
 import com.beautymeongdang.domain.quote.entity.SelectedQuote;
-import com.beautymeongdang.domain.user.entity.Groomer;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -46,13 +45,13 @@ public interface SelectedQuoteRepository extends JpaRepository<SelectedQuote, Lo
     List<GetGroomerSelectedQuoteResponseDto> findGroomerSelectedQuotes(@Param("groomerId") Long groomerId);
 
     @Query("SELECT new com.beautymeongdang.domain.quote.dto.GetSelectedQuoteDetailResponseDto(" +
-            "c.userId.userName, g.userId.nickname, s.shopName, s.address, g.userId.phone, " +
+            "c.userId.userName, g.userId.nickname, s.shopName, s.imageUrl, s.address, g.userId.phone, " +
             "d.dogName, d.profileImage, " +
             "cc.commonName, " +
             "d.dogWeight, d.dogAge, " +
             "CAST(d.dogGender AS string), " +
             "d.neutering, d.experience, d.significant, " +
-            "q.quoteId, q.beautyDate, qr.content, q.content, q.cost) " +
+            "q.quoteId, q.beautyDate, qr.content, q.content, q.cost, p.paymentKey) " +
             "FROM SelectedQuote sq " +
             "JOIN sq.quoteId q " +
             "JOIN q.requestId qr " +
@@ -60,6 +59,7 @@ public interface SelectedQuoteRepository extends JpaRepository<SelectedQuote, Lo
             "JOIN q.groomerId g " +
             "JOIN Shop s ON s.groomerId = g " +
             "JOIN sq.customerId c " +
+            "JOIN Payment p ON p.selectedQuoteId = sq " +
             "JOIN CommonCode cc ON cc.id.codeId = d.dogBreed AND cc.id.groupId = '400'" +
             "WHERE sq.selectedQuoteId = :selectedQuoteId AND sq.isDeleted = false")
     GetSelectedQuoteDetailResponseDto findQuoteDetailById(@Param("selectedQuoteId") Long selectedQuoteId);
@@ -101,9 +101,6 @@ public interface SelectedQuoteRepository extends JpaRepository<SelectedQuote, Lo
     @Query("SELECT sq FROM SelectedQuote sq WHERE sq.customerId.customerId = :customerId AND sq.isDeleted = false")
     List<SelectedQuote> findAllByCustomerId(@Param("customerId") Long customerId);
 
-    // 매장 논리적 삭제
-    List<SelectedQuote> findAllByQuoteIdGroomerIdAndIsDeletedFalse(Groomer groomerId);
-
     // 미용사 프로필 논리적 삭제
     SelectedQuote findByQuoteId(Quote quote);
 
@@ -125,4 +122,11 @@ public interface SelectedQuoteRepository extends JpaRepository<SelectedQuote, Lo
             "AND sq.status = '030' " +
             "AND sq.isDeleted = false")
     Integer countCompletedServicesByCustomerId(@Param("customerId") Long customerId);
+
+    // 미용 완료 상태 변경
+    @Query("SELECT sq FROM SelectedQuote sq " +
+            "JOIN sq.quoteId q " +
+            "WHERE sq.status = :status AND q.beautyDate < :currentDate AND sq.isDeleted = false")
+    List<SelectedQuote> findByStatusAndBeautyDateBefore(@Param("status") String status, @Param("currentDate") LocalDateTime currentDate);
+
 }

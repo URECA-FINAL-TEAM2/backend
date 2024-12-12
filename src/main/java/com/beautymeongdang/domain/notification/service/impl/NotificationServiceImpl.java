@@ -1,71 +1,78 @@
 package com.beautymeongdang.domain.notification.service.impl;
 
+import com.beautymeongdang.domain.notification.controller.NotificationController;
+import com.beautymeongdang.domain.notification.repository.NotificationRepository;
+import com.beautymeongdang.domain.notification.service.NotificationEventPublisher;
 import com.beautymeongdang.domain.notification.service.NotificationService;
-import org.springframework.data.redis.core.RedisTemplate;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.stereotype.Service;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
-import java.time.LocalDateTime;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 public class NotificationServiceImpl implements NotificationService {
 
-    private final RedisTemplate<String, Object> redisTemplate;
+    private final NotificationRepository notificationRepository;
+    private final NotificationEventPublisher notificationEventPublisher;
+    private final ObjectMapper objectMapper;
 
-    public NotificationServiceImpl(RedisTemplate<String, Object> redisTemplate) {
-        this.redisTemplate = redisTemplate;
-    }
-
-    // 공통 코드 검증
-    private void validateRoleType(String roleType) {
-        if (!roleType.equals("customer") && !roleType.equals("groomer")) {
-            throw new IllegalArgumentException("Invalid role type: " + roleType);
-        }
+    public NotificationServiceImpl(
+            NotificationRepository notificationRepository,
+            NotificationEventPublisher notificationEventPublisher,
+            ObjectMapper objectMapper
+    ) {
+        this.notificationRepository = notificationRepository;
+        this.notificationEventPublisher = notificationEventPublisher;
+        this.objectMapper = objectMapper;
     }
 
     @Override
-    public void saveNotification(Long userId, String roleType, String notifyType, String notifyContent, String link) {
-        validateRoleType(roleType);
-        String key = String.format("notifications:%d:%s", userId, roleType);
-
+    public void saveNotification(Long userId, String roleType, String notifyType, String notifyContent) {
         Map<String, Object> notification = new HashMap<>();
+        notification.put("id", UUID.randomUUID().toString());
+        notification.put("userId", userId);
+        notification.put("roleType", roleType);
         notification.put("notifyType", notifyType);
-        notification.put("notifyContent", notifyContent);
-        notification.put("link", link);
+        notification.put("content", notifyContent);
         notification.put("readCheckYn", false);
-        notification.put("createdAt", LocalDateTime.now().toString());
+        notification.put("createdAt", System.currentTimeMillis());
 
-        redisTemplate.opsForList().rightPush(key, notification);
+        notificationRepository.saveNotification(userId, roleType, notification);
+
+        sendRealTimeNotification(userId, roleType, notifyContent);
+    }
+
+
+    private void sendRealTimeNotification(Long userId, String roleType, String message) {
+        notificationEventPublisher.publishNotification(userId, roleType, message);
     }
 
     @Override
     public List<Object> getNotifications(Long userId, String roleType) {
-        validateRoleType(roleType); // 역할 검증
-        String key = String.format("notifications:%d:%s", userId, roleType);
-        return redisTemplate.opsForList().range(key, 0, -1);
+        List<Object> notifications = notificationRepository.getNotifications(userId, roleType);
+        return notifications.stream()
+                .map(notification -> objectMapper.convertValue(notification, Map.class))
+                .collect(Collectors.toList());
     }
 
     @Override
-    public void markAsRead(Long userId, String roleType, int index) {
-        validateRoleType(roleType);
-        String key = String.format("notifications:%d:%s", userId, roleType);
-        List<Object> notifications = redisTemplate.opsForList().range(key, 0, -1);
-
-        if (notifications != null && index < notifications.size()) {
-            Map<String, Object> notification = (Map<String, Object>) notifications.get(index);
-            notification.put("readCheckYn", true);
-            redisTemplate.opsForList().set(key, index, notification); // Redis 데이터 업데이트
-        } else {
-            throw new IllegalArgumentException("Invalid notification index.");
-        }
+    public int getUnreadNotificationCount(Long userId, String roleType) {
+        return notificationRepository.getUnreadNotificationCount(userId, roleType);
     }
 
     @Override
-    public void clearNotifications(Long userId, String roleType) {
-        validateRoleType(roleType);
-        String key = String.format("notifications:%d:%s", userId, roleType);
-        redisTemplate.delete(key);
+    public void deleteNotification(Long userId, String roleType, String notificationId) {
+        notificationRepository.deleteNotificationById(userId, roleType, notificationId);
+    }
+
+    @Override
+    public void clearAllNotifications(Long userId, String roleType) {
+        notificationRepository.clearNotifications(userId, roleType);
     }
 }

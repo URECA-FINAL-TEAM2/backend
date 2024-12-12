@@ -6,7 +6,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 /**
  * 1:1 미용사에게 견적 요청
@@ -21,7 +20,5 @@ public class CreateInsertRequestGroomerRequestDto {
     private String requestType;
     private String requestContent;
     private LocalDateTime beautyDate;
-    private String status;
     private Long groomerId;
-    private List<String> quoteRequestImage;
 }

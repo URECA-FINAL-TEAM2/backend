@@ -19,4 +19,7 @@ public interface GroomerPortfolioImageRepository extends JpaRepository<GroomerPo
 
     // 미용사 포트폴리오 수정 - 미용사 포트폴리오 이미지 삭제
     void deleteAllByGroomerId(Groomer groomer);
+
+    // 미용사 포트폴리오 수정
+    void deleteAllByGroomerIdAndImageUrlIn(Groomer groomer, List<String> imagesToDelete);
 }

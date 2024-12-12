@@ -39,6 +39,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -75,36 +76,53 @@ public class GroomerServiceImpl implements GroomerService {
         Groomer groomer = groomerRepository.findById(updateGroomerPortfolioDto.getGroomerId())
                 .orElseThrow(() -> NotFoundException.entityNotFound("미용사"));
 
-        List<GroomerPortfolioImage> groomerPortfolioImages = groomerPortfolioImageRepository.findAllByGroomerId(groomer);
+        // 1. 기존 등록된 포트폴리오 이미지 확인
+        List<GroomerPortfolioImage> existingImages = groomerPortfolioImageRepository.findAllByGroomerId(groomer);
+        List<String> existingImageUrls = existingImages.stream()
+                .map(GroomerPortfolioImage::getImageUrl)
+                .toList();
 
-        // 이미지 S3 삭제
-        for (GroomerPortfolioImage groomerImage: groomerPortfolioImages) {
-            fileStore.deleteFile(groomerImage.getImageUrl());
+        // 2. 기존 등록된 이미지 중 새로 받아온 이미지 목록에 없는 이미지를 삭제
+        if (updateGroomerPortfolioDto.getImages() == null || updateGroomerPortfolioDto.getImages().isEmpty()) {
+            fileStore.deleteFiles(existingImageUrls);
+            groomerPortfolioImageRepository.deleteAllByGroomerId(groomer);
+        } else {
+            List<String> imagesToDelete = existingImageUrls.stream()  // 삭제한 이미지
+                    .filter(existingImageUrl -> !updateGroomerPortfolioDto.getImages().contains(existingImageUrl))
+                    .collect(Collectors.toList());
+            fileStore.deleteFiles(imagesToDelete);
+            groomerPortfolioImageRepository.deleteAllByGroomerIdAndImageUrlIn(groomer, imagesToDelete);
         }
 
-        // 이미지 DB 삭제
-        groomerPortfolioImageRepository.deleteAllByGroomerId(groomer);
-
-        // 이미지 저장
+        // 3. 새로 업로드해야 하는 파일을 S3에 저장
         List<GroomerPortfolioImage> savedImages = new ArrayList<>();
         if (images != null && !images.isEmpty()) {
             List<UploadedFile> uploadedFiles = fileStore.storeFiles(images, FileStore.GROOMER_PORTFOLIO);
-
-            List<GroomerPortfolioImage> groomerPortfolioImageList = uploadedFiles.stream()
+            List<GroomerPortfolioImage> newPortfolioImages = uploadedFiles.stream()
                     .map(uploadedFile -> GroomerPortfolioImage.builder()
                             .groomerId(groomer)
                             .imageUrl(uploadedFile.getFileUrl())
                             .build())
                     .collect(Collectors.toList());
 
-            savedImages = groomerPortfolioImageRepository.saveAll(groomerPortfolioImageList);
+            // 4. DB에 새 이미지 정보 저장
+            savedImages = groomerPortfolioImageRepository.saveAll(newPortfolioImages);
         }
+
+        // 5. 최종 남아 있는 이미지 URL 목록 생성
+        List<String> finalImageUrls = new ArrayList<>();
+        // DTO에서 받아온 이미지 URL 추가
+        if (updateGroomerPortfolioDto.getImages() != null) {
+            finalImageUrls.addAll(updateGroomerPortfolioDto.getImages());
+        }
+        // 새로 저장된 이미지 URL 추가
+        finalImageUrls.addAll(savedImages.stream()
+                .map(GroomerPortfolioImage::getImageUrl)
+                .toList());
 
         return UpdateGroomerPortfolioDto.builder()
                 .groomerId(groomer.getGroomerId())
-                .images(savedImages.stream()
-                        .map(GroomerPortfolioImage::getImageUrl)
-                        .collect(Collectors.toList()))
+                .images(finalImageUrls)
                 .build();
     }
 
@@ -123,9 +141,10 @@ public class GroomerServiceImpl implements GroomerService {
         groomer.delete();
 
         // 매장
-        Shop shop = shopRepository.findByGroomerId(groomerId)
-                .orElseThrow(() -> NotFoundException.entityNotFound("매장"));
-        shop.delete();
+        Optional<Shop> shop = shopRepository.findByGroomerId(groomerId);
+        if (shop.isPresent()) {
+            shop.get().delete();
+        }
 
         // 채팅방, 채팅 메시지
         List<Chat> chats = chatRepository.findAllByGroomerId(groomer);

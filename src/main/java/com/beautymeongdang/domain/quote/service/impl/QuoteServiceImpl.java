@@ -2,6 +2,8 @@ package com.beautymeongdang.domain.quote.service.impl;
 
 import com.beautymeongdang.domain.dog.entity.Dog;
 import com.beautymeongdang.domain.dog.repository.DogRepository;
+import com.beautymeongdang.domain.notification.repository.NotificationRepository;
+import com.beautymeongdang.domain.notification.service.NotificationService;
 import com.beautymeongdang.domain.quote.dto.*;
 import com.beautymeongdang.domain.quote.entity.DirectQuoteRequest;
 import com.beautymeongdang.domain.quote.entity.Quote;
@@ -46,6 +48,8 @@ public class QuoteServiceImpl implements QuoteService {
     private final CustomerRepository customerRepository;
     private final UserRepository userRepository;
     private final CommonCodeRepository commonCodeRepository;
+    private final NotificationRepository notificationRepository;
+    private final NotificationService notificationService;
 
     private static final String QUOTE_REQUEST_STATUS_GROUP_CODE = "100";
     private static final String QUOTE_STATUS_GROUP_CODE = "200";
@@ -66,19 +70,33 @@ public class QuoteServiceImpl implements QuoteService {
                             .orElseThrow(() -> NotFoundException.entityNotFound("직접 견적 요청"));
 
                     Groomer groomer = directRequest.getDirectQuoteRequestId().getGroomerId();
-
                     Shop shop = shopRepository.findByGroomerId(groomer.getGroomerId())
                             .orElseThrow(() -> NotFoundException.entityNotFound("미용실"));
+
+                    CommonCodeId requestStatusCodeId = new CommonCodeId(request.getStatus(), QUOTE_REQUEST_STATUS_GROUP_CODE);
+                    CommonCode requestStatusCode = commonCodeRepository.findById(requestStatusCodeId)
+                            .orElseThrow(() -> NotFoundException.entityNotFound("견적 요청 상태 코드"));
+
+                    // Quote 조회 - 거절이 아닐 때만
+                    Long quoteId = null;
+                    if (!request.getStatus().equals("020")) {
+                        Quote quote = quoteRepository.findByRequestIdAndGroomerIdAndIsDeletedFalse(request, groomer);
+                        if (quote != null) {
+                            quoteId = quote.getQuoteId();
+                        }
+                    }
 
                     return GetQuotesGroomerResponseDto.QuoteRequestInfo.builder()
                             .quoteRequestId(request.getRequestId())
                             .petName(request.getDogId().getDogName())
                             .petImage(request.getDogId().getProfileImage())
-                            .status(request.getStatus())
+                            .status(requestStatusCode.getCommonName())
                             .shopName(shop.getShopName())
                             .groomerName(groomer.getUserId().getNickname())
                             .beautyDate(request.getBeautyDate())
                             .requestContent(request.getContent())
+                            .quoteId(quoteId)
+                            .rejectReason(directRequest.getReasonForRejection())
                             .build();
                 })
                 .collect(Collectors.toList());
@@ -111,11 +129,17 @@ public class QuoteServiceImpl implements QuoteService {
                                         .orElseThrow(() -> NotFoundException.entityNotFound("견적서 상태 코드"));
                                 String quoteStatusName = quoteStatusCode.getCommonName();
 
+                                Shop shop = shopRepository.findByGroomerId(quote.getGroomerId().getGroomerId())
+                                        .orElseThrow(() -> NotFoundException.entityNotFound("미용실"));
+
+                                String shopSidoSigungu = shop.getSigunguId().getSidoId().getSidoName() + " "
+                                        + shop.getSigunguId().getSigunguName();
+
                                 return GetQuotesAllResponseDto.QuoteInfo.builder()
                                         .quoteId(quote.getQuoteId())
-                                        .shopName(shopRepository.findByGroomerId(quote.getGroomerId().getGroomerId())
-                                                .orElseThrow(() -> NotFoundException.entityNotFound("미용실"))
-                                                .getShopName())
+                                        .shopName(shop.getShopName())
+                                        .shopLogo(shop.getImageUrl())
+                                        .shopSidoSigungu(shopSidoSigungu)
                                         .groomerName(quote.getGroomerId().getUserId().getNickname())
                                         .quoteStatus(quoteStatusName)
                                         .cost(quote.getCost())
@@ -125,20 +149,12 @@ public class QuoteServiceImpl implements QuoteService {
                             })
                             .collect(Collectors.toList());
 
-                    Dog dog = request.getDogId();
-                    CommonCodeId breedCodeId = new CommonCodeId(dog.getDogBreed(), DOG_BREED_GROUP_CODE);
-                    CommonCode breedCode = commonCodeRepository.findById(breedCodeId)
-                            .orElseThrow(() -> NotFoundException.entityNotFound("견종 코드"));
-
                     return GetQuotesAllResponseDto.QuoteRequestInfo.builder()
                             .quoteRequestId(request.getRequestId())
                             .requestStatus(requestStatusName)
                             .beautyDate(request.getBeautyDate())
                             .dogName(request.getDogId().getDogName())
-                            .image(request.getDogId().getProfileImage())
-                            .dogWeight(request.getDogId().getDogWeight())
-                            .dogBreed(breedCode.getCommonName())
-                            .dogAge(String.valueOf(request.getDogId().getDogAge()))
+                            .dogImage(request.getDogId().getProfileImage())
                             .requestContent(request.getContent())
                             .quotes(quoteInfos)
                             .build();
@@ -165,6 +181,13 @@ public class QuoteServiceImpl implements QuoteService {
         List<QuoteRequestImage> requestImages = quoteRequestImageRepository
                 .findAllByRequestId(quote.getRequestId().getRequestId());
 
+        // db에 있는 견종 코드를 견종명으로 변환
+        CommonCodeId breedCodeId = new CommonCodeId(quote.getDogId().getDogBreed(), DOG_BREED_GROUP_CODE);
+        CommonCode breedCode = commonCodeRepository.findById(breedCodeId)
+                .orElseThrow(() -> NotFoundException.entityNotFound("견종 코드"));
+        String dogBreedName = breedCode.getCommonName();
+
+
         return GetQuoteDetailResponseDto.builder()
                 .groomer(GetQuoteDetailResponseDto.GroomerInfo.builder()
                         .shopLogo(shop.getImageUrl())
@@ -179,6 +202,7 @@ public class QuoteServiceImpl implements QuoteService {
                         .dogWeight(quote.getDogId().getDogWeight())
                         .dogAge(String.valueOf(quote.getDogId().getDogAge()))
                         .dogGender(quote.getDogId().getDogGender().toString())
+                        .dogBreed(dogBreedName)
                         .neutering(quote.getDogId().getNeutering())
                         .experience(quote.getDogId().getExperience())
                         .significant(quote.getDogId().getSignificant())
@@ -235,6 +259,22 @@ public class QuoteServiceImpl implements QuoteService {
 
             quoteRequestRepository.save(updateQuoteRequest);
         }
+        // 알림 저장 로직 추가
+        String notificationMessage = String.format(
+                "견적서가 생성되었습니다. 미용사: %s, 강아지: %s, 비용: %d원",
+                groomer.getUserId().getNickname(),
+                dog.getDogName(),
+                requestDto.getQuoteCost()
+        );
+
+        // 알림 저장
+        notificationService.saveNotification(
+                quoteRequest.getDogId().getCustomerId().getUserId().getUserId(), // 고객의 userId
+                "customer", // 역할
+                "견적서 알림", // 알림 유형
+                notificationMessage // 알림 내용
+        );
+
 
         CommonCodeId commonCodeId = new CommonCodeId(saveQuote.getStatus(), "100");
         CommonCode commonCode = commonCodeRepository.findById(commonCodeId)
@@ -255,8 +295,8 @@ public class QuoteServiceImpl implements QuoteService {
 
     // 미용사가 보낸 견적서 상세 조회
     @Override
-    public GetGroomerQuoteDetailResponseDto getGroomerQuoteDetail(GetGroomerQuoteDetailRequestDto requestDto) {
-        QuoteRequest quoteRequest = quoteRequestRepository.findById(requestDto.getRequestId())
+    public GetGroomerQuoteDetailResponseDto getGroomerQuoteDetail(Long requestId, Long groomerId) {
+        QuoteRequest quoteRequest = quoteRequestRepository.findById(requestId)
                 .orElseThrow(() -> NotFoundException.entityNotFound("견적서 요청"));
 
         Dog dog = dogRepository.findById(quoteRequest.getDogId().getDogId())
@@ -273,12 +313,15 @@ public class QuoteServiceImpl implements QuoteService {
         User user = userRepository.findById(customer.getUserId().getUserId())
                 .orElseThrow(() -> NotFoundException.entityNotFound("사용자"));
 
-        Groomer groomer = groomerRepository.findById(requestDto.getGroomerId())
+        Groomer groomer = groomerRepository.findById(groomerId)
                 .orElseThrow(() -> NotFoundException.entityNotFound("미용사"));
 
         Quote quote = quoteRepository.findByRequestIdAndGroomerId(quoteRequest, groomer);
+        if (quote == null) {
+            throw NotFoundException.entityNotFound("해당 견적서를 찾을 수 없습니다.");
+        }
 
-        List<QuoteRequestImage> getQuoteRequestImageList = quoteRequestImageRepository.findAllByRequestId(requestDto.getRequestId());
+        List<QuoteRequestImage> getQuoteRequestImageList = quoteRequestImageRepository.findAllByRequestId(requestId);
         List<String> quoteRequestImageList = new ArrayList<>();
         for (QuoteRequestImage quoteRequestImage : getQuoteRequestImageList) {
             quoteRequestImageList.add(quoteRequestImage.getImageUrl());

@@ -1,13 +1,5 @@
 package com.beautymeongdang.domain.shop.service.impl;
 
-import com.beautymeongdang.domain.payment.entity.Payment;
-import com.beautymeongdang.domain.payment.repository.PaymentRepository;
-import com.beautymeongdang.domain.quote.entity.Quote;
-import com.beautymeongdang.domain.quote.entity.QuoteRequest;
-import com.beautymeongdang.domain.quote.entity.SelectedQuote;
-import com.beautymeongdang.domain.quote.repository.QuoteRepository;
-import com.beautymeongdang.domain.quote.repository.QuoteRequestRepository;
-import com.beautymeongdang.domain.quote.repository.SelectedQuoteRepository;
 import com.beautymeongdang.domain.review.entity.Reviews;
 import com.beautymeongdang.domain.review.entity.ReviewsImage;
 import com.beautymeongdang.domain.review.repository.RecommendRepository;
@@ -59,10 +51,6 @@ public class ShopServiceImpl implements ShopService {
     private final SigunguRepository sigunguRepository;
     private final FileStore fileStore;
     private final FavoriteRepository favoriteRepository;
-    private final QuoteRepository quoteRepository;
-    private final QuoteRequestRepository quoteRequestRepository;
-    private final SelectedQuoteRepository selectedQuoteRepository;
-    private final PaymentRepository paymentRepository;
 
     /**
      * 매장 등록
@@ -115,13 +103,13 @@ public class ShopServiceImpl implements ShopService {
      * 매장 조회 (미용사 마이 페이지)
      */
     @Override
-    public GetShopResponseDto getGroomerShop(Long shopId, Long groomerId) {
-        Shop shop = shopRepository.findById(shopId)
-                .orElseThrow(() -> NotFoundException.entityNotFound("매장"));
+    public GetShopResponseDto getGroomerShop(Long groomerId) {
+        Shop shop = shopRepository.findByGroomerId(groomerId)
+                .orElseThrow(() -> NotFoundException.entityNotFound("등록된 매장"));
 
-        if (!shop.getGroomerId().getGroomerId().equals(groomerId)) {
-            throw new BadRequestException("해당 매장에 대한 접근 권한이 없습니다.");
-        }
+        Integer favoriteCount = shopRepository.countFavoritesByShop(shop);
+        Integer reviewCount = reviewRepository.countGroomerReviews(groomerId);
+        List<String> portfolioImages = groomerPortfolioImageRepository.findImageUrlsByGroomerId(groomerId);
 
         return GetShopResponseDto.builder()
                 .shopId(shop.getShopId())
@@ -132,9 +120,11 @@ public class ShopServiceImpl implements ShopService {
                 .sigunguName(shop.getSigunguId().getSigunguName())
                 .address(shop.getAddress())
                 .shopLogo(shop.getImageUrl())
+                .favoriteCount(favoriteCount)
+                .reviewCount(reviewCount)
+                .groomerPortfolioImages(portfolioImages)
                 .build();
     }
-
 
 
     /**
@@ -195,7 +185,7 @@ public class ShopServiceImpl implements ShopService {
 
 
     /**
-     * 매장 상세 조회
+     * 매장 상세 조회 (customer)
      */
     @Override
     public GetShopDetailResponseDto getShopDetail(Long shopId, Long customerId) {
@@ -203,7 +193,7 @@ public class ShopServiceImpl implements ShopService {
                 .orElseThrow(() -> NotFoundException.entityNotFound("매장"));
 
         Groomer groomer = shop.getGroomerId();
-        Double starScore = shopRepository.getAverageStarRatingByGroomerId(groomer.getGroomerId());
+        Double starScoreAvg = shopRepository.getAverageStarRatingByGroomerId(groomer.getGroomerId());
         Integer starCount = reviewRepository.countGroomerReviews(groomer.getGroomerId());
 
         List<String> portfolioImages = groomerPortfolioImageRepository.findImageUrlsByGroomerId(groomer.getGroomerId());
@@ -242,17 +232,73 @@ public class ShopServiceImpl implements ShopService {
                 .shopId(shop.getShopId())
                 .shopLogo(shop.getImageUrl())
                 .shopName(shop.getShopName())
-                .starScore(starScore)
+                .starScoreAvg(starScoreAvg)
                 .starCount(starCount)
                 .address(shop.getAddress())
                 .businessTime(shop.getBusinessTime())
                 .skills(groomer.getSkill())
                 .latitude(shop.getLatitude().doubleValue())
                 .longitude(shop.getLongitude().doubleValue())
-                .favorite(shopRepository.countFavoritesByShop(shop))
+                .favoriteCount(shopRepository.countFavoritesByShop(shop))
                 .isFavorite(isFavorite)
                 .description(shop.getDescription())
+                .groomerPortfolioImages(portfolioImages)
+                .groomerUsername(groomer.getUserId().getNickname())
+                .groomerProfileImage(groomer.getUserId().getProfileImage())
+                .reviews(reviewDtos)
+                .build();
+    }
+
+
+    /**
+     * 자기 매장 상세 조회 (groomer)
+     */
+    @Override
+    public GetMyGroomerShopDetailResponseDto getMyShopDetail(Long groomerId) {
+        Shop shop = shopRepository.findByGroomerId(groomerId)
+                .orElseThrow(() -> NotFoundException.entityNotFound("매장"));
+
+        Groomer groomer = shop.getGroomerId();
+        Double starScoreAvg = shopRepository.getAverageStarRatingByGroomerId(groomer.getGroomerId());
+        Integer starCount = reviewRepository.countGroomerReviews(groomer.getGroomerId());
+
+        List<String> portfolioImages = groomerPortfolioImageRepository.findImageUrlsByGroomerId(groomer.getGroomerId());
+
+        List<Reviews> reviews = reviewRepository.findGroomerReviews(groomer.getGroomerId());
+        List<GetMyGroomerShopDetailResponseDto.ReviewDetailDto> reviewDtos = reviews.stream()
+                .map(review -> {
+                    Integer recommendCount = reviewRepository.countRecommendsByReviewId(review.getReviewId());
+                    List<ReviewsImage> reviewImages = reviewsImageRepository.findReviewImagesByReviewId(review.getReviewId());
+                    List<String> reviewImageUrls = reviewImages.stream()
+                            .map(ReviewsImage::getImageUrl)
+                            .collect(Collectors.toList());
+
+                    return GetMyGroomerShopDetailResponseDto.ReviewDetailDto.builder()
+                            .reviewId(review.getReviewId())
+                            .customerNickname(review.getCustomerId().getUserId().getNickname())
+                            .starScore(review.getStarRating().doubleValue())
+                            .content(review.getContent())
+                            .recommendCount(recommendCount)
+                            .reviewsImage(reviewImageUrls)
+                            .createdAt(review.getCreatedAt())
+                            .build();
+                })
+                .collect(Collectors.toList());
+
+        return GetMyGroomerShopDetailResponseDto.builder()
+                .groomerId(groomer.getGroomerId())
+                .shopId(shop.getShopId())
                 .shopLogo(shop.getImageUrl())
+                .shopName(shop.getShopName())
+                .starScoreAvg(starScoreAvg)
+                .starCount(starCount)
+                .address(shop.getAddress())
+                .businessTime(shop.getBusinessTime())
+                .skills(groomer.getSkill())
+                .latitude(shop.getLatitude().doubleValue())
+                .longitude(shop.getLongitude().doubleValue())
+                .favoriteCount(shopRepository.countFavoritesByShop(shop))
+                .description(shop.getDescription())
                 .groomerPortfolioImages(portfolioImages)
                 .groomerUsername(groomer.getUserId().getNickname())
                 .groomerProfileImage(groomer.getUserId().getProfileImage())
@@ -263,7 +309,7 @@ public class ShopServiceImpl implements ShopService {
 
 
     /**
-     * 매장 논리적 삭제
+     * 매장 삭제
      */
     @Override
     @Transactional
@@ -271,58 +317,49 @@ public class ShopServiceImpl implements ShopService {
         Shop shop = shopRepository.findById(shopId)
                 .orElseThrow(() -> NotFoundException.entityNotFound("매장"));
 
-        if (shop.isDeleted()) {
-            throw BadRequestException.invalidRequest("이미 삭제된 매장");
-        }
-
         if (!shop.getGroomerId().getGroomerId().equals(groomerId)) {
             throw BadRequestException.invalidRequest("매장 삭제 권한");
         }
 
-        Groomer groomer = shop.getGroomerId();
+        // 해당 매장의 찜 데이터 삭제
+        List<Favorite> favorites = favoriteRepository.findByFavoriteIdShopId(shop);
+        favoriteRepository.deleteAll(favorites);
 
-        paymentRepository.findAllBySelectedQuoteIdQuoteIdGroomerIdAndIsDeletedFalse(groomer).forEach(Payment::delete);
-        selectedQuoteRepository.findAllByQuoteIdGroomerIdAndIsDeletedFalse(groomer).forEach(SelectedQuote::delete);
-        reviewRepository.findGroomerReviews(groomer.getGroomerId()).forEach(Reviews::delete);
-        quoteRepository.findAllByGroomerIdAndIsDeletedFalse(groomer).forEach(Quote::delete);
-        quoteRequestRepository.findAllByGroomerIdAndIsDeletedFalse(groomer).forEach(QuoteRequest::delete);
-
-        // 매장 논리적 삭제
-        shop.delete();
+        shopRepository.delete(shop);
 
         return DeleteShopResponseDto.builder()
-                .shopId(shop.getShopId())
+                .shopId(shopId)
                 .shopName(shop.getShopName())
                 .build();
     }
-
 
     /**
      * 미용사 찾기 매장 리스트 조회
      */
     @Override
     public GetGroomerShopListResponseDto.ShopListResponse getShopList(Long customerId) {
-        Customer customer = customerRepository.findById(customerId)
-                .orElseThrow(() -> NotFoundException.entityNotFound("고객"));
+        List<Object[]> results = shopRepository.findShopsByCustomerSigunguWithStats(customerId);
 
-        List<Shop> shops = shopRepository.findShopsByCustomerSigunguOrderByStarScore(customer.getSigunguId().getSigunguId());
+        List<ShopDto> shopDtos = results.stream()
+                .map(result -> {
+                    Shop shop = (Shop) result[0];
+                    Groomer groomer = (Groomer) result[1];
+                    Double avgRating = ((Double) result[2]);
+                    Long reviewCount = ((Long) result[3]);
 
-        List<ShopDto> shopDtos = shops.stream()
-                .map(shop -> {
-                    Groomer groomer = shop.getGroomerId();
                     return ShopDto.builder()
                             .groomerId(groomer.getGroomerId())
                             .shopId(shop.getShopId())
                             .shopLogo(shop.getImageUrl())
                             .shopName(shop.getShopName())
-                            .starScoreAvg(shopRepository.getAverageStarRatingByGroomerId(groomer.getGroomerId()))
-                            .reviewCount(reviewRepository.countGroomerReviews(groomer.getGroomerId()))
+                            .starScoreAvg(avgRating)
+                            .reviewCount(reviewCount.intValue())
                             .address(shop.getAddress())
                             .businessTime(shop.getBusinessTime())
                             .skills(groomer.getSkill())
                             .latitude(shop.getLatitude().doubleValue())
                             .longitude(shop.getLongitude().doubleValue())
-                            .favorite(shopRepository.countFavoritesByShop(shop))
+                            .favoriteCount(shopRepository.countFavoritesByShop(shop))
                             .build();
                 })
                 .collect(Collectors.toList());
@@ -331,7 +368,6 @@ public class ShopServiceImpl implements ShopService {
                 .shopLists(shopDtos)
                 .build();
     }
-
 
 
     /**
@@ -401,8 +437,11 @@ public class ShopServiceImpl implements ShopService {
                     // 별점 평균 및 리뷰 개수 계산
                     Double starScoreAvg = Optional.ofNullable(reviewRepository.getAverageStarRatingByGroomerId(groomer.getGroomerId()))
                             .orElse(0.0);
+                    // 리뷰 개수
                     Integer reviewCount = Optional.ofNullable(reviewRepository.countGroomerReviews(groomer.getGroomerId()))
                             .orElse(0);
+                    // 매장 찜 개수
+                    Integer favoriteCount = shopRepository.countFavoritesByShop(shop);
 
                     return GetFavoriteShopListResponseDto.builder()
                             .groomerId(groomer.getGroomerId())
@@ -413,6 +452,7 @@ public class ShopServiceImpl implements ShopService {
                             .businessTime(shop.getBusinessTime())
                             .skill(groomer.getSkill())
                             .starScoreAvg(starScoreAvg)
+                            .favoriteCount(favoriteCount)
                             .reviewCount(reviewCount)
                             .build();
                 })

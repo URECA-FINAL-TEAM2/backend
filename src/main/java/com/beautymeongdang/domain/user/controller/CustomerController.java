@@ -1,9 +1,6 @@
 package com.beautymeongdang.domain.user.controller;
 
-import com.beautymeongdang.domain.user.dto.CustomerProfileResponseDto;
-import com.beautymeongdang.domain.user.dto.GetCustomerMypageResponseDto;
-import com.beautymeongdang.domain.user.dto.UpdateAddressRequestDto;
-import com.beautymeongdang.domain.user.dto.UpdateCustomerProfileDto;
+import com.beautymeongdang.domain.user.dto.*;
 import com.beautymeongdang.domain.user.service.CustomerService;
 import com.beautymeongdang.global.common.dto.ApiResponse;
 import jakarta.persistence.EntityNotFoundException;
@@ -47,7 +44,15 @@ public class CustomerController {
         return ApiResponse.ok(200, updatedProfile, "고객 프로필 수정 성공");
     }
 
-
+    // 고객 주소 조회
+    @GetMapping("/{customerId}/address")
+    public ResponseEntity<ApiResponse<GetCustomerAddressResponseDto>> getCustomerAddress(@PathVariable Long customerId) {
+        GetCustomerAddressResponseDto responseDto = customerService.getCustomerAddress(customerId);
+        if (responseDto == null) {
+            return ApiResponse.ok(404, null, "고객 주소를 찾을 수 없습니다.");
+        }
+        return ApiResponse.ok(200, responseDto, "고객 주소 조회 성공");
+    }
 
     // 고객 주소 수정
     @PutMapping("/{customerId}/address")
@@ -57,17 +62,5 @@ public class CustomerController {
         customerService.updateAddress(customerId, request.getSidoName(), request.getSigunguName());
         return ApiResponse.ok(200, null, "고객 주소 업데이트 성공");
     }
-    
-    // 마이페이지 조회 API 추가
-    @GetMapping("/{customerId}/mypage")
-    public ResponseEntity<ApiResponse<GetCustomerMypageResponseDto>> getCustomerMypage(@PathVariable Long customerId) {
-        try {
-            GetCustomerMypageResponseDto responseDto = customerService.getCustomerMypage(customerId);
-            return ApiResponse.ok(200, responseDto, "Get Customer MyPage Success");
-        } catch (EntityNotFoundException e) {
-            return ApiResponse.badRequest(404, "고객을 찾을 수 없습니다: " + e.getMessage());
-        } catch (Exception e) {
-            return ApiResponse.badRequest(400, "마이페이지 조회 실패: " + e.getMessage());
-        }
-    }
+
 }
