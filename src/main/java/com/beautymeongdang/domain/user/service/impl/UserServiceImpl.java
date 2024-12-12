@@ -44,7 +44,7 @@ public class UserServiceImpl implements UserService {
                     .orElseThrow(() -> new EntityNotFoundException("User not found with id: " + userId));
 
             if (customerRepository.existsByUserId(user)) {
-                throw new RuntimeException("User is already registered as a customer");
+                throw new RuntimeException("이미 회원가입된 고객입니다.");
             }
 
             // 이미지 처리 로직 수정
@@ -70,13 +70,16 @@ public class UserServiceImpl implements UserService {
                     .sigunguId(sigungu)
                     .build();
 
-            customerRepository.save(customer);
+            Customer savedCustomer = customerRepository.save(customer);
 
             Map<String, Object> responseData = Map.of(
                     "userId", user.getUserId(),
+                    "customerId", savedCustomer.getCustomerId(),
                     "nickname", user.getNickname(),
                     "isRegister", user.isRegister(),
                     "roles", user.getRoles(),
+                    "sigunguId", sigungu.getSigunguId(),
+                    "sidoId", sigungu.getSidoId().getSidoId(),
                     "profileImage", profileImageUrl != null ? profileImageUrl : user.getProfileImage()
             );
             return responseData;
@@ -117,10 +120,11 @@ public class UserServiceImpl implements UserService {
                     .skill(requestDto.getSkill())
                     .build();
 
-            groomerRepository.save(groomer);
+            Groomer savedGroomer = groomerRepository.save(groomer);
 
             Map<String, Object> responseData = Map.of(
                     "userId", user.getUserId(),
+                    "groomerId", savedGroomer.getGroomerId(),
                     "nickname", user.getNickname(),
                     "isRegister", user.isRegister(),
                     "roles", user.getRoles(),
