@@ -11,22 +11,22 @@ import lombok.NoArgsConstructor;
 public class GetGroomerProfileResponseDto {
     private Long groomerId;
     private String profileImage;
-    private String username;
+    private String userName;
     private String email;
     private String nickname;
     private String phone;
-    private String skills;
+    private String skill;
 
     @Builder
     public GetGroomerProfileResponseDto(Long groomerId, String profileImage, String username, String email,
                                         String nickname, String phone, String skill) {
         this.groomerId = groomerId;
         this.profileImage = profileImage;
-        this.username = username;
+        this.userName = username;
         this.email = email;
         this.nickname = nickname;
         this.phone = phone;
-        this.skills = skill;
+        this.skill = skill;
     }
 
 }

@@ -2,6 +2,7 @@ package com.beautymeongdang.domain.chat.controller;
 
 import com.beautymeongdang.domain.chat.dto.CreateChatMessageRequestDto;
 import com.beautymeongdang.domain.chat.dto.CreateChatMessageResponseDto;
+import com.beautymeongdang.domain.chat.dto.DeleteChatMessageResponseDto;
 import com.beautymeongdang.domain.chat.dto.GetChatMessageListResponseDto;
 import com.beautymeongdang.domain.chat.service.ChatMessageService;
 import com.beautymeongdang.global.common.dto.ApiResponse;
@@ -40,6 +41,12 @@ public class ChatMessageController {
     @GetMapping("/{chatId}")
     public ResponseEntity<ApiResponse<GetChatMessageListResponseDto>> getChatMessageList(@PathVariable("chatId") Long chatId) {
         return ApiResponse.ok(200, chatMessageService.getChatMessageList(chatId), "Get Message success");
+    }
+
+    // 채팅 논리적 삭제
+    @PutMapping("/{messageId}")
+    public ResponseEntity<ApiResponse<DeleteChatMessageResponseDto>> deleteChatMessage(@PathVariable("messageId") Long messageId) {
+        return ApiResponse.ok(200, chatMessageService.deleteChatMessage(messageId), "Delete Message Success");
     }
 
 }

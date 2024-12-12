@@ -1,5 +1,7 @@
 package com.beautymeongdang.domain.payment.service.impl;
 
+import com.beautymeongdang.domain.notification.enums.NotificationType;
+import com.beautymeongdang.domain.notification.service.NotificationService;
 import com.beautymeongdang.domain.payment.dto.PaymentCancelRequestDto;
 import com.beautymeongdang.domain.payment.dto.PaymentCancelResponseDto;
 import com.beautymeongdang.domain.payment.dto.PaymentRequestDto;
@@ -43,6 +45,7 @@ public class PaymentServiceImpl implements PaymentService {
     private final CustomerRepository customerRepository;
     private final WebClient webClient;
     private final CommonCodeRepository commonCodeRepository;
+    private final NotificationService notificationService;
 
     private static final String TOSS_PAYMENTS_CONFIRM_URL = "https://api.tosspayments.com/v1/payments/confirm";
 
@@ -118,6 +121,39 @@ public class PaymentServiceImpl implements PaymentService {
 
                 paymentRepository.save(payment);
 
+                // 알림 메시지 생성
+                String notificationMessageForCustomer = String.format(
+                        "예약이 완료되었습니다. 미용사: %s, 강아지: %s, 비용: %d원, 미용 날짜: %s",
+                        quote.getGroomerId().getUserId().getNickname(),
+                        quote.getDogId().getDogName(),
+                        request.getAmount(),
+                        quote.getBeautyDate()
+                );
+
+                String notificationMessageForGroomer = String.format(
+                        "예약이 완료되었습니다. 고객: %s, 강아지: %s, 비용: %d원, 미용 날짜: %s",
+                        customer.getUserId().getUserName(),
+                        quote.getDogId().getDogName(),
+                        request.getAmount(),
+                        quote.getBeautyDate()
+                );
+
+                // 고객 알림 저장 (예약 알림)
+                notificationService.saveNotification(
+                        customer.getUserId().getUserId(),
+                        "customer",
+                        NotificationType.RESERVATION.getDescription(),
+                        notificationMessageForCustomer
+                );
+
+                // 미용사 알림 저장 (예약 알림)
+                notificationService.saveNotification(
+                        quote.getGroomerId().getUserId().getUserId(),
+                        "groomer",
+                        NotificationType.RESERVATION.getDescription(),
+                        notificationMessageForGroomer
+                );
+
                 String statusName = commonCodeRepository.findByCodeAndGroupCode(payment.getStatus(), PAYMENT_GROUP)
                         .map(CommonCode::getCommonName)
                         .orElse("알 수 없는 상태");
@@ -180,6 +216,40 @@ public class PaymentServiceImpl implements PaymentService {
                 SelectedQuote selectedQuote = payment.getSelectedQuoteId();
                 selectedQuote = selectedQuote.updateStatus(RESERVATION_CANCELLED);
                 selectedQuoteRepository.save(selectedQuote);
+
+                // 예약 취소 알림 메시지 생성
+                String notificationMessageForCustomer = String.format(
+                        "예약이 취소되었습니다. 미용사: %s, 강아지: %s, 취소 비용: %d원, 취소 사유: %s",
+                        selectedQuote.getQuoteId().getGroomerId().getUserId().getNickname(),
+                        selectedQuote.getQuoteId().getDogId().getDogName(),
+                        selectedQuote.getQuoteId().getCost(),
+                        request.getCancelReason()
+
+                );
+
+                String notificationMessageForGroomer = String.format(
+                        "예약이 취소되었습니다. 고객: %s, 강아지: %s, 취소 비용: %d원, 취소 사유: %s",
+                        selectedQuote.getCustomerId().getUserId().getUserName(),
+                        selectedQuote.getQuoteId().getDogId().getDogName(),
+                        selectedQuote.getQuoteId().getCost(),
+                        request.getCancelReason()
+                );
+
+                // 고객 알림 저장 (예약 취소 알림)
+                notificationService.saveNotification(
+                        selectedQuote.getCustomerId().getUserId().getUserId(),
+                        "customer",
+                        NotificationType.CANCELLATION.getDescription(),
+                        notificationMessageForCustomer
+                );
+
+                // 미용사 알림 저장 (예약 취소 알림)
+                notificationService.saveNotification(
+                        selectedQuote.getQuoteId().getGroomerId().getUserId().getUserId(),
+                        "groomer",
+                        NotificationType.CANCELLATION.getDescription(),
+                        notificationMessageForGroomer
+                );
 
                 String statusName = commonCodeRepository.findByCodeAndGroupCode(payment.getStatus(), PAYMENT_GROUP)
                         .map(CommonCode::getCommonName)

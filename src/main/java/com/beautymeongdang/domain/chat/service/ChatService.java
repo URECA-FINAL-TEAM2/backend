@@ -18,12 +18,12 @@ public interface ChatService {
     List<GetCustomerChatListResponseDto> getCustomerChatList(Long customerId);
 
     // 고객 채팅방 목록 검색 조회
-    List<GetCustomerChatListResponseDto> getCustomerChatListBySearchKeyword(GetCustomerKeywordChatListRequestDto requestDto);
+    List<GetCustomerChatListResponseDto> getCustomerChatListBySearchKeyword(Long customerId, String searchWord);
 
     // 미용사 채팅방 목록 조회
     List<GetGroomerChatListResponseDto> getGroomerChatList(Long customerId);
 
     // 미용사 채팅방 목록 검색 조회
-    List<GetGroomerChatListResponseDto> getGroomerChatListBySearchKeyword(GetGroomerKeywordChatListRequestDto requestDto);
+    List<GetGroomerChatListResponseDto> getGroomerChatListBySearchKeyword(Long groomerId, String searchWord);
 
 }

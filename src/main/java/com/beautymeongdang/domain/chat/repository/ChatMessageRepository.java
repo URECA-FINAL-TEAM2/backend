@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 
@@ -26,5 +27,14 @@ public interface ChatMessageRepository extends JpaRepository<ChatMessage, Long> 
             "AND cm.isDeleted = false " +
             "ORDER BY cm.createdAt ASC")
     List<GetChatMessageResponseDto> findChatMessagesWithImages(@Param("chatId") Long chatId);
+
+    // 채팅 물리적 삭제 스케줄러
+    @Query("""
+    SELECT cm
+    FROM ChatMessage cm
+    WHERE cm.isDeleted = true
+      AND cm.updatedAt < :deleteDay
+    """)
+    List<ChatMessage> findDeletedMessagesBeforeDate(@Param("deleteDay") LocalDateTime deleteDay);
 
 }

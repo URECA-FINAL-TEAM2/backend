@@ -10,4 +10,10 @@ public interface MypageService {
 
     // 마이페이지 조회
     GetCustomerMypageResponseDto getCustomerMypage(Long customerId);
+
+    // 고객 토글
+    Long getCustomerIdByUserId(Long userId);
+    
+    // 미용사 토글
+    Long getGroomerIdByUserId(Long userId);
 }
