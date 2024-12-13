@@ -2,6 +2,7 @@ package com.beautymeongdang.domain.chat.config;
 
 import com.beautymeongdang.domain.chat.handler.StompHandler;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.simp.config.ChannelRegistration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
@@ -10,6 +11,7 @@ import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
 import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer;
 import org.springframework.web.socket.config.annotation.WebSocketTransportRegistration;
 
+@Slf4j
 @Configuration
 @EnableWebSocketMessageBroker
 @RequiredArgsConstructor
@@ -19,14 +21,19 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     @Override
     public void configureMessageBroker(MessageBrokerRegistry config) {
+        log.info("Configuring message broker...");
         config.enableSimpleBroker("/sub");  // 구독 prefix
         config.setApplicationDestinationPrefixes("/pub");  // 발행 prefix
+        log.info("Message broker configured with prefix /sub and /pub");
     }
 
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
+        log.info("Registering STOMP endpoints...");
         registry.addEndpoint("/ws")
-                .setAllowedOriginPatterns("*");
+                .setAllowedOriginPatterns("*")
+                .withSockJS();
+        log.info("STOMP endpoints registered successfully");
     }
 
     @Override
