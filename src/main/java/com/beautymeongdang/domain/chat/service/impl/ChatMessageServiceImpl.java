@@ -53,16 +53,19 @@ public class ChatMessageServiceImpl implements ChatMessageService {
         String senderNickname;
         String senderProfileImage;
         if (messageRequestDto.getCustomerYn()) {
-            Customer customer = customerRepository.findById(messageRequestDto.getSenderId())
-                    .orElseThrow(() -> NotFoundException.entityNotFound("고객"));
+            Customer customer = customerRepository.findByUserId(
+                    User.builder().userId(messageRequestDto.getSenderId()).build()
+            ).orElseThrow(() -> NotFoundException.entityNotFound("고객"));
             senderNickname = customer.getUserId().getNickname();
             senderProfileImage = customer.getUserId().getProfileImage();
         } else {
-            Groomer groomer = groomerRepository.findById(messageRequestDto.getSenderId())
-                    .orElseThrow(() -> NotFoundException.entityNotFound("미용사"));
+            Groomer groomer = groomerRepository.findByUserId(
+                    User.builder().userId(messageRequestDto.getSenderId()).build()
+            ).orElseThrow(() -> NotFoundException.entityNotFound("미용사"));
             senderNickname = groomer.getUserId().getNickname();
             senderProfileImage = groomer.getUserId().getProfileImage();
         }
+
 
         String imageUrl = null;
         if (StringUtils.hasText(messageRequestDto.getBase64Image())) {
