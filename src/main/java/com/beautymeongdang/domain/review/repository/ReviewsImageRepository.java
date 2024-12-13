@@ -22,6 +22,8 @@ public interface ReviewsImageRepository extends JpaRepository<ReviewsImage, Long
     Optional<String> findFirstImageUrlByReviewId(@Param("reviewId") Long reviewId);
 
     // 리뷰 수정
-    List<ReviewsImage> deleteAllByReviewId(Reviews reviewId);
+    void deleteAllByReviewId(Reviews reviewId);
 
+    // 리뷰 물리적 삭제 스케줄러
+    List<ReviewsImage> findAllByReviewId(Reviews review);
 }
