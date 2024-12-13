@@ -23,4 +23,7 @@ public interface CustomerService {
 
     // 고객 주소 수정
     void updateAddress(Long customerId, String sidoName, String sigunguName);
+
+    // 고객 프로필 물리적 삭제
+    void deleteExpiredLogicalDeletedCustomers();
 }

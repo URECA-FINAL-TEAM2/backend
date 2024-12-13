@@ -35,6 +35,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -158,5 +159,19 @@ public class CustomerServiceImpl implements CustomerService {
 
         customer.updateSigungu(sigungu);
     }
+    
+    // 고객 프로필 물리적 삭제
+    @Override
+    @Transactional
+    public void deleteExpiredLogicalDeletedCustomers() {
+        // 30일 이전 데이터를 삭제 기준으로 설정
+        LocalDateTime deleteDay = LocalDateTime.now().minusDays(30);
+        List<Customer> expiredCustomers = customerRepository.findAllByIsDeletedAndUpdatedAtBefore(deleteDay);
+
+        // 물리적 삭제 실행
+        expiredCustomers.forEach(customerRepository::delete);
+    }
+
+
 
 }
