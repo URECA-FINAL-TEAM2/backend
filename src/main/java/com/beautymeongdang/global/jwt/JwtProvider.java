@@ -56,4 +56,25 @@ public class JwtProvider {
 
         return tokenInfo;
     }
+
+    public boolean validateToken(String token) {
+        try {
+            // JWTUtil에 토큰 검증 메서드 추가 필요
+            return jwtUtil.validateToken(token);
+        } catch (Exception e) {
+            log.error("Token validation error: {}", e.getMessage());
+            return false;
+        }
+    }
+
+    public Long getUserIdFromToken(String token) {
+        try {
+            // JWTUtil에서 userId를 추출하는 메서드 추가 필요
+            String userIdString = jwtUtil.getUserId(token);
+            return Long.parseLong(userIdString);
+        } catch (Exception e) {
+            log.error("Error extracting userId from token: {}", e.getMessage());
+            throw new IllegalArgumentException("Invalid token");
+        }
+    }
 }
