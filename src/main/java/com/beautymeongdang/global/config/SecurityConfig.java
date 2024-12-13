@@ -16,71 +16,7 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
-import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-
-import java.util.Arrays;
-
-@Configuration
-@EnableWebSecurity
-@RequiredArgsConstructor
-public class SecurityConfig {
-
-    private final CustomOAuth2UserServiceImpl customOAuth2UserService;
-    private final CustomSuccessHandler customSuccessHandler;
-    private final JWTUtil jwtUtil;
-    private final UserRepository userRepository;
-    private final JwtProvider jwtProvider;
-
-    @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        // JWT 필터 인스턴스를 한 번만 생성
-        JWTFilter jwtFilter = new JWTFilter(jwtUtil, userRepository, jwtProvider);
-
-        http
-                // CORS 설정
-                .cors(corsCustomizer -> corsCustomizer.configurationSource(corsConfigurationSource()))
-
-                // CSRF 비활성
-                .csrf((auth) -> auth.disable())
-
-                // 기본 로그인 방식 비활성화
-                .formLogin((auth) -> auth.disable())
-                .httpBasic((auth) -> auth.disable())
-                .oauth2Login((auth) -> auth.disable()) // 커스텀 방식(프론트 인가 코드)을 사용하기 떄문에 사용 X
-
-                // 로그아웃 설정
-                .logout(logout -> logout
-                        .logoutUrl("/api/auth/logout")
-                        .logoutSuccessUrl("/login.html")
-                        .deleteCookies("JSESSIONID", "refreshToken")
-                        .clearAuthentication(true)
-                        .invalidateHttpSession(true)
-                        .permitAll()
-                )
-
-                // URL 접근 권한 설정
-                .authorizeHttpRequests((auth) -> auth
-                        .requestMatchers("/api/users/register/**").authenticated()  // JWT 헤더에 인증이 필요함
-                        // 인증이 필요없는 public 접근 경로
-                        .requestMatchers(
-                                "/api/users/register/**",
-                                "/login/oauth2/code/**",
-                                "/selectRole.html",
-                                "/login.html",
-                                "/InfoRequired.jsx",
-                                "/login.jsx",
-                                "/index.html",
-                                "/index1.html",
-                                "/login/**",
-                                "/api/auth/**",
-                                "/oauth2/**",
-                                // 프론트엔드 라우트들
-                                "/",                    // 루트 경로
-                                "/selectRole",         // 역할 선택 페이지
-                                "/login",             // 로그인 페이지
-                                "/oauth2/**",          // OAuth2 관련 모든 경로
-                                "/chats/**",         //채팅
-                                "/ws/**"  
+imp팅
                         ).permitAll()
                         // API 및 Swagger 관련 경로
                         .requestMatchers(
@@ -125,13 +61,7 @@ public class SecurityConfig {
         ));
 
         // 허용할 헤더 설정
-        configuration.setAllowedHeaders(Arrays.asList(
-                "*",
-                "Sec-WebSocket-Extensions", //웹소켓
-                "Sec-WebSocket-Key",
-                "Sec-WebSocket-Version",
-                "Sec-WebSocket-Protocol"
-        ));
+        configuration.setAllowedHeaders(Arrays.asList("*"));
         configuration.setExposedHeaders(Arrays.asList(
                 "Authorization",
                 "Refresh-Token",
