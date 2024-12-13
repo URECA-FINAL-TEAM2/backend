@@ -9,6 +9,7 @@ import com.beautymeongdang.domain.notification.enums.NotificationType;
 import com.beautymeongdang.domain.notification.service.NotificationService;
 import com.beautymeongdang.domain.user.entity.Customer;
 import com.beautymeongdang.domain.user.entity.Groomer;
+import com.beautymeongdang.domain.user.entity.User;
 import com.beautymeongdang.domain.user.repository.CustomerRepository;
 import com.beautymeongdang.domain.user.repository.GroomerRepository;
 import com.beautymeongdang.global.exception.handler.BadRequestException;
@@ -112,10 +113,9 @@ public class ChatServiceImpl implements ChatService {
                 .orElseThrow(() -> NotFoundException.entityNotFound("채팅방"));
 
         if (customerYn) {
-            Customer customer = customerRepository.findById(userId)
-                    .orElseThrow(() -> NotFoundException.entityNotFound("고객"));
+            User user = User.builder().userId(userId).build();
 
-            if (!chat.getCustomerId().getCustomerId().equals(customer.getCustomerId())) {
+            if (!chat.getCustomerId().getUserId().getUserId().equals(userId)) {
                 throw UnauthorizedException.invalidAccess("해당 채팅방에 접근 권한이 없습니다.");
             }
 
@@ -125,10 +125,9 @@ public class ChatServiceImpl implements ChatService {
             }
 
         } else {
-            Groomer groomer = groomerRepository.findById(userId)
-                    .orElseThrow(() -> NotFoundException.entityNotFound("미용사"));
+            User user = User.builder().userId(userId).build();
 
-            if (!chat.getGroomerId().getGroomerId().equals(groomer.getGroomerId())) {
+            if (!chat.getGroomerId().getUserId().getUserId().equals(userId)) {
                 throw UnauthorizedException.invalidAccess("해당 채팅방에 접근 권한이 없습니다.");
             }
 
