@@ -42,7 +42,16 @@ public class JWTFilter extends OncePerRequestFilter {
                 accessToken = accessToken.substring(7);
                 log.debug("Extracted token: {}", accessToken);
                 processAccessToken(accessToken);
-            } else {
+            }
+            // 쿼리 파라미터에서 토큰 추출
+            else if (request.getParameter("token") != null) {
+                accessToken = request.getParameter("token");
+                log.debug("Extracted token from query parameter: {}", accessToken);
+                processAccessToken(accessToken);
+
+                // 3. Refresh Token 처리
+            }
+            else {
                 log.debug("No access token found, checking refresh token");
                 processRefreshToken(request, response);
             }
