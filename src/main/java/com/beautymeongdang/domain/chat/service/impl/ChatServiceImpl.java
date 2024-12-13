@@ -5,6 +5,8 @@ import com.beautymeongdang.domain.chat.entity.Chat;
 import com.beautymeongdang.domain.chat.entity.ChatMessage;
 import com.beautymeongdang.domain.chat.repository.ChatRepository;
 import com.beautymeongdang.domain.chat.service.ChatService;
+import com.beautymeongdang.domain.notification.enums.NotificationType;
+import com.beautymeongdang.domain.notification.service.NotificationService;
 import com.beautymeongdang.domain.user.entity.Customer;
 import com.beautymeongdang.domain.user.entity.Groomer;
 import com.beautymeongdang.domain.user.repository.CustomerRepository;
@@ -31,6 +33,7 @@ public class ChatServiceImpl implements ChatService {
     private final CustomerRepository customerRepository;
     private final GroomerRepository groomerRepository;
     private final SimpMessageSendingOperations messagingTemplate;
+    private final NotificationService notificationService;
 
 
     /**
@@ -79,6 +82,21 @@ public class ChatServiceImpl implements ChatService {
                 .build();
 
         Chat savedChat = chatRepository.save(newChat);
+
+        // 알림 저장 로직 추가
+        String notificationMessage = String.format(
+                "새 채팅방이 생성되었습니다. 고객: %s",
+                customer.getUserId().getUserName()
+        );
+
+        // 알림 저장
+        notificationService.saveNotification(
+                groomer.getUserId().getUserId(),
+                "groomer",
+                NotificationType.CHAT_ROOM.getDescription(),
+                notificationMessage
+        );
+
         return CreateChatResponseDto.from(savedChat);
     }
 
