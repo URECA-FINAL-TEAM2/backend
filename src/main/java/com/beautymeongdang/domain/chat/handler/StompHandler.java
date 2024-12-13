@@ -39,7 +39,14 @@ public class StompHandler implements ChannelInterceptor {
         // CONNECT: 사용자 인증 처리
         if (StompCommand.CONNECT.equals(accessor.getCommand())) {
             log.info("연결 시도 - Headers: {}", accessor.toNativeHeaderMap());
+            log.info("SessionId: {}", accessor.getSessionId());
+            log.info("Headers: {}", accessor.toNativeHeaderMap());
+
+
             String authToken = extractToken(accessor);
+            log.debug("Extracted token: {}", authToken != null ? "exists" : "null");
+
+
             if (!StringUtils.hasText(authToken)) {
                 log.error("[웹소켓 연결 실패] 토큰이 없습니다. sessionId: {}", accessor.getSessionId());
                 throw new RuntimeException("UNAUTHORIZED");
@@ -76,6 +83,14 @@ public class StompHandler implements ChannelInterceptor {
 
          // SUBSCRIBE: 채팅방 입장 처리
         else if (StompCommand.SUBSCRIBE.equals(accessor.getCommand())) {
+            log.info("=== 구독 시도 ===");
+            log.info("SessionId: {}", accessor.getSessionId());
+            log.info("Destination: {}", accessor.getDestination());
+            log.info("Session Attributes: {}", accessor.getSessionAttributes());
+
+
+
+
             String destination = accessor.getDestination();
             if (destination == null) {
                 log.error("[구독 실패] 구독 대상이 없습니다. sessionId: {}", accessor.getSessionId());
@@ -133,10 +148,18 @@ public class StompHandler implements ChannelInterceptor {
 
     private String extractToken(StompHeaderAccessor accessor) {
         String bearerToken = accessor.getFirstNativeHeader("Authorization");
+        log.debug("Raw Authorization header: {}", bearerToken);
+
 
         if (StringUtils.hasText(bearerToken) && bearerToken.startsWith("Bearer ")) {
+
+            String token = bearerToken.substring(7);
+            log.debug("Extracted token: {}", token.substring(0, Math.min(token.length(), 10)) + "...");
+
+
             return bearerToken.substring(7);
         }
+        log.warn("No valid bearer token found in headers");
         return null;
     }
 
