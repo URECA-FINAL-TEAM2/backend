@@ -41,7 +41,6 @@ dependencies {
 	// login
 	implementation 'com.fasterxml.jackson.core:jackson-databind'
 	implementation 'org.springframework.boot:spring-boot-starter-security'
-	implementation 'org.springframework.boot:spring-boot-starter-security'
 	implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
 	implementation 'io.jsonwebtoken:jjwt-api:0.12.3'
 	implementation 'io.jsonwebtoken:jjwt-impl:0.12.3'
@@ -71,6 +70,11 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-websocket'
 	implementation 'org.webjars:sockjs-client:1.5.1'
 	implementation 'org.webjars:stomp-websocket:2.3.4'
+
+	// 메시지 브로커 관련 (웹소켓 임시 추가)
+	implementation 'org.springframework.boot:spring-boot-starter-reactor-netty'
+	implementation 'io.projectreactor:reactor-core'
+	implementation 'org.springframework.security:spring-security-messaging'
 
 	// cahtGPT
 	implementation 'org.springframework.boot:spring-boot-starter-web'
