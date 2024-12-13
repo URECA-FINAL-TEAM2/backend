@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Repository
@@ -67,5 +68,14 @@ public interface ReviewRepository extends JpaRepository<Reviews, Long> {
             "WHERE r.customerId.customerId = :customerId " +
             "AND r.isDeleted = false")
     Integer countByCustomerId(@Param("customerId") Long customerId);
+
+    // 리뷰 물리적 삭제 스케줄러
+    @Query("""
+    SELECT r
+    FROM Reviews r
+    WHERE r.isDeleted = true
+      AND r.updatedAt < :deleteDay
+    """)
+    List<Reviews> findAllByIsDeletedAndAndUpdatedAt(@Param("deleteDay") LocalDateTime deleteDay);
 }
 
