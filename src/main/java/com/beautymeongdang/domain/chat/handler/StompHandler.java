@@ -2,12 +2,16 @@ package com.beautymeongdang.domain.chat.handler;
 
 
 import com.beautymeongdang.domain.chat.service.ChatService;
+import com.beautymeongdang.domain.user.entity.User;
+import com.beautymeongdang.domain.user.repository.CustomerRepository;
+import com.beautymeongdang.domain.user.repository.GroomerRepository;
 import com.beautymeongdang.global.jwt.JWTUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageChannel;
+import org.springframework.messaging.simp.SimpMessageSendingOperations;
 import org.springframework.messaging.simp.stomp.StompCommand;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.messaging.support.ChannelInterceptor;
@@ -15,7 +19,6 @@ import org.springframework.messaging.support.MessageHeaderAccessor;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
-import java.util.HashMap;
 
 @Slf4j
 @Component
@@ -24,6 +27,9 @@ public class StompHandler implements ChannelInterceptor {
 
     private final JWTUtil jwtUtil;
     private final ObjectProvider<ChatService> chatServiceProvider;
+    private final CustomerRepository customerRepository;
+    private final GroomerRepository groomerRepository;
+
 
     private ChatService getChatService() {
         return chatServiceProvider.getObject();
@@ -33,7 +39,6 @@ public class StompHandler implements ChannelInterceptor {
     @Override
     public Message<?> preSend(Message<?> message, MessageChannel channel) {
         StompHeaderAccessor accessor = MessageHeaderAccessor.getAccessor(message, StompHeaderAccessor.class);
-
 
 
         // CONNECT: 사용자 인증 처리
@@ -69,13 +74,13 @@ public class StompHandler implements ChannelInterceptor {
                 throw new RuntimeException("USER_ID_REQUIRED");
             }
 
+
             // 세션에 사용자 정보 저장
-            accessor.setSessionAttributes(new HashMap<>());
             accessor.getSessionAttributes().put("CustomerYn", customerYnStr);
             accessor.getSessionAttributes().put("UserId", userId);
-            accessor.setUser(() -> userId);
 
 
+            log.info("[CONNECT] 현재 세션 정보: {}", accessor.getSessionAttributes());
             log.info("[웹소켓 연결 성공] sessionId: {}, userId: {}, customerYn: {}",
                     accessor.getSessionId(), userId, customerYnStr);
         }
@@ -83,12 +88,11 @@ public class StompHandler implements ChannelInterceptor {
 
          // SUBSCRIBE: 채팅방 입장 처리
         else if (StompCommand.SUBSCRIBE.equals(accessor.getCommand())) {
+            log.info("[CONNECT] 현재 세션 정보: {}", accessor.getSessionAttributes());
             log.info("=== 구독 시도 ===");
             log.info("SessionId: {}", accessor.getSessionId());
             log.info("Destination: {}", accessor.getDestination());
             log.info("Session Attributes: {}", accessor.getSessionAttributes());
-
-
 
 
             String destination = accessor.getDestination();
