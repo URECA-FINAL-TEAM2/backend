@@ -12,10 +12,10 @@ import org.springframework.transaction.annotation.Transactional;
 public class QuoteScheduledService {
     private final SelectedQuoteService selectedQuoteService;
 
-    @Scheduled(cron = "0 0 0 * * ?") // 매일 자정에 실행
+    // 예약 상태 미용 완료 변경
+    @Scheduled(cron = "0 0 * * * *") //매 시간마다 실행
     public void updateExpiredQuotesStatus() {
         selectedQuoteService.updateStatusToCompletedIfPastBeautyDate();
     }
-
 
 }

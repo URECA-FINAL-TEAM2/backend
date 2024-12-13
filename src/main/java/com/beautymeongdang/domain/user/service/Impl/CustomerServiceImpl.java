@@ -20,7 +20,7 @@ import com.beautymeongdang.domain.user.dto.UpdateCustomerProfileDto;
 import com.beautymeongdang.domain.user.entity.Customer;
 import com.beautymeongdang.domain.user.entity.User;
 import com.beautymeongdang.domain.user.repository.CustomerRepository;
-import com.beautymeongdang.domain.user.repository.DeleteCustomerResponseDto;
+import com.beautymeongdang.domain.user.dto.DeleteCustomerResponseDto;
 import com.beautymeongdang.domain.user.repository.UserRepository;
 import com.beautymeongdang.domain.user.service.CustomerService;
 import com.beautymeongdang.global.common.entity.UploadedFile;

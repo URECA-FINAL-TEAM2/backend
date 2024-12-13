@@ -1,4 +1,4 @@
-package com.beautymeongdang.domain.user.repository;
+package com.beautymeongdang.domain.user.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

@@ -3,7 +3,7 @@ package com.beautymeongdang.domain.user.service;
 import com.beautymeongdang.domain.user.dto.CustomerProfileResponseDto;
 import com.beautymeongdang.domain.user.dto.GetCustomerAddressResponseDto;
 import com.beautymeongdang.domain.user.dto.UpdateCustomerProfileDto;
-import com.beautymeongdang.domain.user.repository.DeleteCustomerResponseDto;
+import com.beautymeongdang.domain.user.dto.DeleteCustomerResponseDto;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
