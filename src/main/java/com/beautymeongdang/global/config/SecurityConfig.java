@@ -79,7 +79,7 @@ public class SecurityConfig {
                                 "/selectRole",         // 역할 선택 페이지
                                 "/login",             // 로그인 페이지
                                 "/oauth2/**",          // OAuth2 관련 모든 경로
-                                "/chats/**"         //채팅
+                                "/ws/**"         //채팅
                         ).permitAll()
                         // API 및 Swagger 관련 경로
                         .requestMatchers(
