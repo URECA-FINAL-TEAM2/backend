@@ -125,13 +125,7 @@ public class SecurityConfig {
         ));
 
         // 허용할 헤더 설정
-        configuration.setAllowedHeaders(Arrays.asList(
-                "*",
-                "Sec-WebSocket-Extensions", //웹소켓
-                "Sec-WebSocket-Key",
-                "Sec-WebSocket-Version",
-                "Sec-WebSocket-Protocol"
-        ));
+        configuration.setAllowedHeaders(Arrays.asList("*"));
         configuration.setExposedHeaders(Arrays.asList(
                 "Authorization",
                 "Refresh-Token",
