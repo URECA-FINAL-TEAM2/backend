@@ -1,5 +1,7 @@
 package com.beautymeongdang.domain.review.service.impl;
 
+import com.beautymeongdang.domain.notification.enums.NotificationType;
+import com.beautymeongdang.domain.notification.service.NotificationService;
 import com.beautymeongdang.domain.quote.entity.SelectedQuote;
 import com.beautymeongdang.domain.quote.repository.SelectedQuoteRepository;
 import com.beautymeongdang.domain.review.dto.*;
@@ -40,6 +42,7 @@ public class ReviewServiceImpl implements ReviewService {
     private final SelectedQuoteRepository selectedQuoteRepository;
     private final FileStore fileStore;
     private final ReviewsImageRepository reviewsImageRepository;
+    private final NotificationService notificationService;
 
 
     // 리뷰 작성
@@ -83,6 +86,22 @@ public class ReviewServiceImpl implements ReviewService {
 
             savedImages = reviewsImageRepository.saveAll(reviewsImages);
         }
+
+        // 알림 저장 로직 추가
+        String notificationMessage = String.format(
+                "매장에 리뷰가 작성되었습니다. 작성자: %s, 별점: %f, 리뷰 내용: %s",
+                customer.getUserId().getUserName(),
+                requestDto.getStarScore(),
+                requestDto.getContent()
+        );
+
+        // 알림 저장
+        notificationService.saveNotification(
+                groomer.getUserId().getUserId(),
+                "groomer",
+                NotificationType.SHOP_REVIEW.getDescription(),
+                notificationMessage
+        );
 
         return CreateUpdateReviewResponseDto.builder()
                 .reviewId(savedReview.getReviewId())
