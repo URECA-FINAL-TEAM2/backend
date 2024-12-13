@@ -62,4 +62,26 @@ public class JWTUtil {
                 .signWith(secretKey)
                 .compact();
     }
+
+    public boolean validateToken(String token) {
+        try {
+            // 토큰이 null이거나 비어있는 경우
+            if (token == null || token.trim().isEmpty()) {
+                return false;
+            }
+
+            // 만료 및 서명 확인
+            Jwts.parser()
+                    .verifyWith(secretKey)
+                    .build()
+                    .parseSignedClaims(token);
+
+            // 토큰 만료 여부 추가 확인
+            return !isExpired(token);
+
+        } catch (Exception e) {
+            log.warn("Token validation failed: {}", e.getMessage());
+            return false;
+        }
+    }
 }
