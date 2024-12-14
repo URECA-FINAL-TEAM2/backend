@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GPT API Test Interface</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+    <style>
+        .hidden {
+            display: none;
+        }
+        .chat-message {
+            margin: 8px 0;
+            padding: 8px;
+            border-radius: 4px;
+        }
+        .user-message {
+            background-color: #e3f2fd;
+        }
+        .assistant-message {
+            background-color: #f0f9f0;
+        }
+        pre {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        .loading {
+            opacity: 0.5;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+<div class="container mx-auto p-4 max-w-4xl">
+    <div class="bg-white rounded-lg shadow p-6">
+        <h1 class="text-2xl font-bold mb-6">GPT API Test Interface</h1>
+
+        <!-- Tab Buttons -->
+        <div class="mb-6">
+            <button id="completionTab" class="px-4 py-2 rounded bg-blue-500 text-white mr-2">단일 프롬프트</button>
+            <button id="chatTab" class="px-4 py-2 rounded bg-gray-200">채팅 프롬프트</button>
+        </div>
+
+        <!-- Completion Form -->
+        <div id="completionForm" class="space-y-4">
+            <div>
+                <label class="block text-sm font-medium mb-1">Model</label>
+                <select id="model" class="w-full p-2 border rounded">
+                    <option value="gpt-3.5-turbo">gpt-3.5-turbo</option>
+                    <option value="gpt-4">gpt-4</option>
+                </select>
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium mb-1">Temperature (0-2)</label>
+                <input type="range" id="temperature" value="1" min="0" max="2" step="0.1"
+                       class="w-full" oninput="this.nextElementSibling.value = this.value">
+                <output>1</output>
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium mb-1">Max Tokens</label>
+                <input type="number" id="maxTokens" value="150" min="1" max="4000"
+                       class="w-full p-2 border rounded">
+            </div>
+        </div>
+
+        <!-- Common Prompt Input -->
+        <div class="mt-4">
+            <label class="block text-sm font-medium mb-1">Prompt</label>
+            <textarea id="prompt" rows="4"
+                      class="w-full p-2 border rounded resize-y"
+                      placeholder="Enter your prompt here..."></textarea>
+        </div>
+
+        <!-- Submit Button -->
+        <button id="submitBtn" class="mt-4 w-full bg-blue-500 text-white p-2 rounded hover:bg-blue-600">
+            Send Request
+        </button>
+
+        <!-- Chat History -->
+        <div id="chatHistory" class="mt-6 hidden">
+            <h3 class="font-medium mb-2">Chat History</h3>
+            <div id="messageList" class="space-y-2"></div>
+        </div>
+
+        <!-- Response Section -->
+        <div id="responseSection" class="mt-6">
+            <h3 class="font-medium mb-2">Response:</h3>
+            <pre id="response" class="bg-gray-50 p-4 rounded border overflow-x-auto"></pre>
+        </div>
+    </div>
+</div>
+
+<script>
+    let messages = [];
+    let activeTab = 'completion';
+
+    // DOM Elements
+    const completionTab = document.getElementById('completionTab');
+    const chatTab = document.getElementById('chatTab');
+    const completionForm = document.getElementById('completionForm');
+    const chatHistory = document.getElementById('chatHistory');
+    const submitBtn = document.getElementById('submitBtn');
+    const responseSection = document.getElementById('responseSection');
+    const response = document.getElementById('response');
+
+    // Tab Switching
+    completionTab.addEventListener('click', () => switchTab('completion'));
+    chatTab.addEventListener('click', () => switchTab('chat'));
+
+    function switchTab(tab) {
+        activeTab = tab;
+        if (tab === 'completion') {
+            completionTab.classList.add('bg-blue-500', 'text-white');
+            completionTab.classList.remove('bg-gray-200');
+            chatTab.classList.add('bg-gray-200');
+            chatTab.classList.remove('bg-blue-500', 'text-white');
+            completionForm.classList.remove('hidden');
+            chatHistory.classList.add('hidden');
+        } else {
+            chatTab.classList.add('bg-blue-500', 'text-white');
+            chatTab.classList.remove('bg-gray-200');
+            completionTab.classList.add('bg-gray-200');
+            completionTab.classList.remove('bg-blue-500', 'text-white');
+            completionForm.classList.add('hidden');
+            chatHistory.classList.remove('hidden');
+        }
+    }
+
+    // Submit Handler
+    submitBtn.addEventListener('click', async () => {
+        const prompt = document.getElementById('prompt').value;
+        if (!prompt) {
+            alert('Please enter a prompt');
+            return;
+        }
+
+        setLoading(true);
+
+        try {
+            if (activeTab === 'completion') {
+                await handleCompletionSubmit();
+            } else {
+                await handleChatSubmit();
+            }
+        } catch (error) {
+            showResponse({ error: error.message });
+        } finally {
+            setLoading(false);
+        }
+    });
+
+    async function handleCompletionSubmit() {
+        const model = document.getElementById('model').value;
+        const temperature = parseFloat(document.getElementById('temperature').value);
+        const maxTokens = parseInt(document.getElementById('maxTokens').value);
+        const prompt = document.getElementById('prompt').value;
+
+        try {
+            const res = await fetch('/gpt/completion', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    model,
+                    prompt,
+                    temperature,
+                    max_tokens: maxTokens
+                }),
+            });
+
+            if (!res.ok) {
+                throw new Error(`HTTP error! status: ${res.status}`);
+            }
+
+            const data = await res.json();
+            showResponse(data);
+        } catch (error) {
+            showResponse({ error: `Request failed: ${error.message}` });
+        }
+    }
+
+    async function handleChatSubmit() {
+        const prompt = document.getElementById('prompt').value;
+        const newMessage = { role: 'user', content: prompt };
+        const updatedMessages = [...messages, newMessage];
+        messages = updatedMessages;
+        updateChatHistory();
+
+        try {
+            const res = await fetch('/gpt/chat-completion', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(updatedMessages),
+            });
+
+            if (!res.ok) {
+                throw new Error(`HTTP error! status: ${res.status}`);
+            }
+
+            const data = await res.json();
+            showResponse(data);
+
+            if (data.choices && data.choices[0]?.message) {
+                messages.push(data.choices[0].message);
+                updateChatHistory();
+            }
+        } catch (error) {
+            showResponse({ error: `Request failed: ${error.message}` });
+        }
+
+        document.getElementById('prompt').value = '';
+    }
+
+    function updateChatHistory() {
+        const messageList = document.getElementById('messageList');
+        messageList.innerHTML = messages.map(msg => `
+                <div class="chat-message ${msg.role === 'user' ? 'user-message' : 'assistant-message'}">
+                    <strong>${msg.role}:</strong> ${msg.content}
+                </div>
+            `).join('');
+    }
+
+    function showResponse(data) {
+        responseSection.classList.remove('hidden');
+        response.textContent = JSON.stringify(data, null, 2);
+    }
+
+    function setLoading(isLoading) {
+        submitBtn.disabled = isLoading;
+        submitBtn.textContent = isLoading ? 'Processing...' : 'Send Request';
+        if (isLoading) {
+            submitBtn.classList.add('loading');
+        } else {
+            submitBtn.classList.remove('loading');
+        }
+    }
+</script>
+</body>
+</html>
