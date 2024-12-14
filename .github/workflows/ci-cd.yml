@@ -72,6 +72,8 @@ jobs:
             export GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}
             export GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }}
             export CHATGPT_SECRET_KEY=${{ secrets.CHATGPT_SECRET_KEY }}
+            export SMTP_USERNAME=${{ secrets.SMTP_USERNAME }}
+            export SMTP_PASSWORD=${{ secrets.SMTP_PASSWORD }}
             
             docker stop spring-app || true
             docker rm spring-app || true

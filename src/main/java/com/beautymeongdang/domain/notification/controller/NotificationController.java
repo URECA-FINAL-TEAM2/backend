@@ -4,7 +4,6 @@ import com.beautymeongdang.domain.notification.service.NotificationEventPublishe
 import com.beautymeongdang.domain.notification.service.NotificationService;
 import com.beautymeongdang.global.exception.handler.UnauthorizedException;
 import com.beautymeongdang.global.jwt.JwtProvider;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;

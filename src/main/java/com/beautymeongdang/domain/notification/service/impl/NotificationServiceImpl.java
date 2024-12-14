@@ -1,14 +1,14 @@
 package com.beautymeongdang.domain.notification.service.impl;
 
-import com.beautymeongdang.domain.notification.controller.NotificationController;
 import com.beautymeongdang.domain.notification.repository.NotificationRepository;
+import com.beautymeongdang.domain.notification.service.NotificationEmailService;
 import com.beautymeongdang.domain.notification.service.NotificationEventPublisher;
 import com.beautymeongdang.domain.notification.service.NotificationService;
+import com.beautymeongdang.domain.user.entity.User;
+import com.beautymeongdang.domain.user.repository.UserRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.stereotype.Service;
-import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -21,15 +21,21 @@ public class NotificationServiceImpl implements NotificationService {
     private final NotificationRepository notificationRepository;
     private final NotificationEventPublisher notificationEventPublisher;
     private final ObjectMapper objectMapper;
+    private final NotificationEmailService notificationEmailService;
+    private final UserRepository userRepository;
 
     public NotificationServiceImpl(
             NotificationRepository notificationRepository,
             NotificationEventPublisher notificationEventPublisher,
-            ObjectMapper objectMapper
+            ObjectMapper objectMapper,
+            NotificationEmailService notificationEmailService,
+            UserRepository userRepository
     ) {
         this.notificationRepository = notificationRepository;
         this.notificationEventPublisher = notificationEventPublisher;
         this.objectMapper = objectMapper;
+        this.notificationEmailService = notificationEmailService;
+        this.userRepository = userRepository;
     }
 
     @Override
@@ -46,11 +52,36 @@ public class NotificationServiceImpl implements NotificationService {
         notificationRepository.saveNotification(userId, roleType, notification);
 
         sendRealTimeNotification(userId, roleType, notifyContent);
+
+        sendEmailNotification(userId, notifyType, notifyContent);
     }
 
 
     private void sendRealTimeNotification(Long userId, String roleType, String message) {
         notificationEventPublisher.publishNotification(userId, roleType, message);
+    }
+
+    private void sendEmailNotification(Long userId, String notifyType, String content) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다: " + userId));
+
+        String userName = user.getUserName();
+        String userEmail = user.getEmail();
+
+        if (!"예약 알림".equals(notifyType) && !"예약 취소 알림".equals(notifyType)) {
+            return;
+        }
+
+        String subject = String.format("미용멍당 - 새로운 %s", notifyType);
+
+        // 템플릿 변수 설정
+        Map<String, Object> variables = Map.of(
+                "userName", userName,
+                "notifyType", notifyType,
+                "content", content
+        );
+
+        notificationEmailService.sendEmail(userEmail, subject, "email", variables);
     }
 
     @Override
