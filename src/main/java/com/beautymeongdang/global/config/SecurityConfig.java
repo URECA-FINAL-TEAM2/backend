@@ -46,13 +46,8 @@ public class SecurityConfig {
                 // 기본 로그인 방식 비활성화
                 .formLogin((auth) -> auth.disable())
                 .httpBasic((auth) -> auth.disable())
-//                .oauth2Login((auth) -> auth.disable()) // 커스텀 방식(프론트 인가 코드)을 사용하기 떄문에 사용 X
-                .oauth2Login(oauth2 -> oauth2           // 자동인증 방식 백앤드 로컬 테스트용
-                        .userInfoEndpoint(userInfo -> userInfo
-                                .userService(customOAuth2UserService))
-                        .successHandler(customSuccessHandler)
-                        .authorizationEndpoint(authorization -> authorization
-                                .baseUri("/oauth2/authorization")))
+                .oauth2Login((auth) -> auth.disable()) // 커스텀 방식(프론트 인가 코드)을 사용하기 떄문에 사용 X
+
                 // 로그아웃 설정
                 .logout(logout -> logout
                         .logoutUrl("/api/auth/logout")
