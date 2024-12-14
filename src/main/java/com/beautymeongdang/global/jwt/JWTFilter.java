@@ -42,6 +42,7 @@ public class JWTFilter extends OncePerRequestFilter {
                 accessToken = accessToken.substring(7);
                 log.debug("Extracted token: {}", accessToken);
                 processAccessToken(accessToken);
+
             }
             // 쿼리 파라미터에서 토큰 추출
             else if (request.getParameter("token") != null) {
@@ -106,6 +107,7 @@ public class JWTFilter extends OncePerRequestFilter {
             if (cookies == null) {
                 log.debug("No cookies found");
                 return;
+
             }
 
             String refreshToken = findRefreshToken(cookies);
@@ -132,6 +134,7 @@ public class JWTFilter extends OncePerRequestFilter {
                 log.debug("User not found for refresh token");
                 return;
             }
+
 
             Map<String, Object> tokenInfo = jwtProvider.createTokens(user, response);
             log.debug("Created new tokens for user: {}", user.getUserId());
@@ -162,6 +165,7 @@ public class JWTFilter extends OncePerRequestFilter {
         } catch (Exception e) {
             log.error("Failed to process user authentication", e);
         }
+
     }
 
     private String findRefreshToken(Cookie[] cookies) {
@@ -171,6 +175,7 @@ public class JWTFilter extends OncePerRequestFilter {
                 .map(Cookie::getValue)
                 .orElse(null);
     }
+
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {

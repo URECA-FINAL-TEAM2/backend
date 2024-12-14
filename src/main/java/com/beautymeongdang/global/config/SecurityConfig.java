@@ -53,6 +53,7 @@ public class SecurityConfig {
                         .successHandler(customSuccessHandler)
                         .authorizationEndpoint(authorization -> authorization
                                 .baseUri("/oauth2/authorization")))
+
                 // 로그아웃 설정
                 .logout(logout -> logout
                         .logoutUrl("/api/auth/logout")
