@@ -80,6 +80,7 @@ public class UserServiceImpl implements UserService {
                     "roles", user.getRoles(),
                     "sigunguId", sigungu.getSigunguId(),
                     "sidoId", sigungu.getSidoId().getSidoId(),
+
                     "profileImage", profileImageUrl != null ? profileImageUrl : user.getProfileImage()
             );
             return responseData;
@@ -125,6 +126,7 @@ public class UserServiceImpl implements UserService {
             Map<String, Object> responseData = Map.of(
                     "userId", user.getUserId(),
                     "groomerId", savedGroomer.getGroomerId(),
+
                     "nickname", user.getNickname(),
                     "isRegister", user.isRegister(),
                     "roles", user.getRoles(),
