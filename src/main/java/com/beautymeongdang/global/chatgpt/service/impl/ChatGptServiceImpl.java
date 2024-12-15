@@ -50,110 +50,112 @@ public class ChatGptServiceImpl implements ChatGptService {
     @Override
     public List<Map<String, Object>> selectModelList() {
         log.debug("[+] 모델 리스트를 조회합니다.");
-        List<Map<String, Object>> resultList = null;
 
-        HttpHeaders headers = chatGptConfig.httpHeaders();
-        ResponseEntity<String> response = restTemplate
-                .exchange(modelUrl, HttpMethod.GET, new HttpEntity<>(headers), String.class);
         try {
-            // [STEP3] Jackson을 기반으로 응답값을 가져옵니다.
+            HttpHeaders headers = chatGptConfig.createHeaders();
+            log.debug("Authorization Header: {}", headers.get(HttpHeaders.AUTHORIZATION));
+
+            HttpEntity<Void> requestEntity = new HttpEntity<>(headers);
+            ResponseEntity<String> response = restTemplate.exchange(
+                    modelUrl,
+                    HttpMethod.GET,
+                    requestEntity,
+                    String.class
+            );
+
             ObjectMapper om = new ObjectMapper();
-            Map<String, Object> data = om.readValue(response.getBody(), new TypeReference<>() {
+            Map<String, Object> data = om.readValue(response.getBody(), new TypeReference<>() {});
+
+            List<Map<String, Object>> resultList = (List<Map<String, Object>>) data.get("data");
+            resultList.forEach(object -> {
+                log.debug("ID: {}, Object: {}, Created: {}, Owned By: {}",
+                        object.get("id"), object.get("object"),
+                        object.get("created"), object.get("owned_by"));
             });
 
-            // [STEP4] 응답 값을 결과값에 넣고 출력을 해봅니다.
-            resultList = (List<Map<String, Object>>) data.get("data");
-            for (Map<String, Object> object : resultList) {
-                log.debug("ID: " + object.get("id"));
-                log.debug("Object: " + object.get("object"));
-                log.debug("Created: " + object.get("created"));
-                log.debug("Owned By: " + object.get("owned_by"));
-            }
-        } catch (JsonMappingException e) {
-            log.debug("JsonMappingException :: " + e.getMessage());
-        } catch (JsonProcessingException e) {
-            log.debug("JsonProcessingException :: " + e.getMessage());
-        } catch (RuntimeException e) {
-            log.debug("RuntimeException :: " + e.getMessage());
+            return resultList;
+        } catch (Exception e) {
+            log.error("모델 리스트 조회 실패", e);
+            return List.of();
         }
-        return resultList;
     }
 
     @Override
     public Map<String, Object> isValidModel(String modelName) {
-        log.debug("[+] 모델이 유효한지 조회합니다. 모델 : " + modelName);
-        Map<String, Object> result = new HashMap<>();
+        log.debug("[+] 모델 유효성 검증: {}", modelName);
 
-        HttpHeaders headers = chatGptConfig.httpHeaders();
-        ResponseEntity<String> response = chatGptConfig
-                .restTemplate()
-                .exchange(modelListUrl + "/" + modelName, HttpMethod.GET, new HttpEntity<>(headers), String.class);
         try {
-            // [STEP3] Jackson을 기반으로 응답값을 가져옵니다.
+            HttpHeaders headers = chatGptConfig.createHeaders();
+            HttpEntity<Void> requestEntity = new HttpEntity<>(headers);
+
+            ResponseEntity<String> response = restTemplate.exchange(
+                    modelListUrl + "/" + modelName,
+                    HttpMethod.GET,
+                    requestEntity,
+                    String.class
+            );
+
             ObjectMapper om = new ObjectMapper();
-            result = om.readValue(response.getBody(), new TypeReference<>() {
-            });
-        } catch (JsonProcessingException e) {
-            log.debug("JsonMappingException :: " + e.getMessage());
-        } catch (RuntimeException e) {
-            log.debug("RuntimeException :: " + e.getMessage());
+            return om.readValue(response.getBody(), new TypeReference<>() {});
+        } catch (Exception e) {
+            log.error("모델 유효성 검증 실패: {}", modelName, e);
+            return Map.of("error", e.getMessage());
         }
-        return result;
     }
 
     @Override
     public Map<String, Object> selectLegacyPrompt(CreateCompletionDto completionDto) {
-        log.debug("[+] 레거시 프롬프트를 수행합니다.");
+        log.debug("[+] 레거시 프롬프트 실행");
 
-        HttpHeaders headers = chatGptConfig.httpHeaders();
-        HttpEntity<CreateCompletionDto> requestEntity = new HttpEntity<>(completionDto, headers);
-        ResponseEntity<String> response = chatGptConfig
-                .restTemplate()
-                .exchange(legacyPromptUrl, HttpMethod.POST, requestEntity, String.class);
-
-        Map<String, Object> resultMap = new HashMap<>();
         try {
+            HttpHeaders headers = chatGptConfig.createHeaders();
+            log.debug("Request Headers: {}", headers);
+            log.debug("Request Body: {}", completionDto);
+
+            HttpEntity<CreateCompletionDto> requestEntity = new HttpEntity<>(completionDto, headers);
+            ResponseEntity<String> response = restTemplate.exchange(
+                    legacyPromptUrl,
+                    HttpMethod.POST,
+                    requestEntity,
+                    String.class
+            );
+
+            log.debug("Response Status: {}", response.getStatusCode());
+            log.debug("Response Body: {}", response.getBody());
+
             ObjectMapper om = new ObjectMapper();
-            resultMap = om.readValue(response.getBody(), new TypeReference<>() {
-            });
-        } catch (JsonProcessingException e) {
-            log.debug("JsonMappingException :: " + e.getMessage());
-        } catch (RuntimeException e) {
-            log.debug("RuntimeException :: " + e.getMessage());
+            return om.readValue(response.getBody(), new TypeReference<>() {});
+        } catch (Exception e) {
+            log.error("레거시 프롬프트 실행 실패", e);
+            return Map.of("error", e.getMessage());
         }
-        return resultMap;
     }
 
     @Override
     public Map<String, Object> selectPrompt(CreateChatCompletionDto chatCompletionDto) {
-        log.debug("[+] 신규 프롬프트를 수행합니다.");
-
-        Map<String, Object> resultMap = new HashMap<>();
-
-        HttpHeaders headers = chatGptConfig.httpHeaders();
-        HttpEntity<CreateChatCompletionDto> requestEntity = new HttpEntity<>(chatCompletionDto, headers);
-
-        log.debug("Request Headers: {}", headers);
-        log.debug("Request Body: {}", chatCompletionDto);
-
-        ResponseEntity<String> response = chatGptConfig
-                .restTemplate()
-                .exchange(promptUrl, HttpMethod.POST, requestEntity, String.class);
-
-        log.debug("Response Status Code: {}", response.getStatusCode());
-        log.debug("Response Body: {}", response.getBody());
+        log.debug("[+] 신규 프롬프트 실행");
 
         try {
+            HttpHeaders headers = chatGptConfig.createHeaders();
+            log.debug("Request Headers: {}", headers);
+            log.debug("Request Body: {}", chatCompletionDto);
+
+            HttpEntity<CreateChatCompletionDto> requestEntity = new HttpEntity<>(chatCompletionDto, headers);
+            ResponseEntity<String> response = restTemplate.exchange(
+                    promptUrl,
+                    HttpMethod.POST,
+                    requestEntity,
+                    String.class
+            );
+
+            log.debug("Response Status: {}", response.getStatusCode());
+            log.debug("Response Body: {}", response.getBody());
+
             ObjectMapper om = new ObjectMapper();
-            resultMap = om.readValue(response.getBody(), new TypeReference<>() {
-            });
-        } catch (JsonProcessingException e) {
-            log.error("JsonMappingException :: " + e.getMessage());
-            // 예외 처리 로직 추가
-        } catch (RuntimeException e) {
-            log.error("RuntimeException :: " + e.getMessage());
-            // 예외 처리 로직 추가
+            return om.readValue(response.getBody(), new TypeReference<>() {});
+        } catch (Exception e) {
+            log.error("신규 프롬프트 실행 실패", e);
+            return Map.of("error", e.getMessage());
         }
-        return resultMap;
     }
 }
