@@ -7,6 +7,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 public interface GroomerRepository extends JpaRepository<Groomer, Long> {
@@ -24,4 +26,13 @@ public interface GroomerRepository extends JpaRepository<Groomer, Long> {
   
     @Query("SELECT g.groomerId FROM Groomer g WHERE g.userId = :user AND g.isDeleted = false")
     Optional<Long> findGroomerIdByUserId(@Param("user") User user);
+
+    // 미용사 프로필 물리적 삭제 스케줄러
+    @Query("""
+    SELECT g
+    FROM Groomer g
+    WHERE g.isDeleted = true
+      AND g.updatedAt < :deleteDay
+    """)
+    List<Groomer> findAllByIsDeletedAndAndUpdatedAt(@Param("deleteDay") LocalDateTime deleteDay);
 }

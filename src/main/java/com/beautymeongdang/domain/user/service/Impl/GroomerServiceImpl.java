@@ -6,16 +6,16 @@ import com.beautymeongdang.domain.chat.repository.ChatMessageRepository;
 import com.beautymeongdang.domain.chat.repository.ChatRepository;
 import com.beautymeongdang.domain.payment.entity.Payment;
 import com.beautymeongdang.domain.payment.repository.PaymentRepository;
+import com.beautymeongdang.domain.quote.entity.DirectQuoteRequest;
 import com.beautymeongdang.domain.quote.entity.Quote;
 import com.beautymeongdang.domain.quote.entity.QuoteRequest;
 import com.beautymeongdang.domain.quote.entity.SelectedQuote;
+import com.beautymeongdang.domain.quote.repository.DirectQuoteRequestRepository;
 import com.beautymeongdang.domain.quote.repository.QuoteRepository;
 import com.beautymeongdang.domain.quote.repository.QuoteRequestRepository;
 import com.beautymeongdang.domain.quote.repository.SelectedQuoteRepository;
 import com.beautymeongdang.domain.review.entity.Reviews;
 import com.beautymeongdang.domain.review.repository.ReviewRepository;
-import com.beautymeongdang.domain.shop.entity.Shop;
-import com.beautymeongdang.domain.shop.repository.ShopRepository;
 import com.beautymeongdang.domain.user.dto.DeleteGroomerProfileResponseDto;
 import com.beautymeongdang.domain.user.dto.UpdateGroomerPortfolioDto;
 import com.beautymeongdang.domain.user.dto.GetGroomerProfileResponseDto;
@@ -39,7 +39,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -50,7 +49,6 @@ public class GroomerServiceImpl implements GroomerService {
     private final GroomerPortfolioImageRepository groomerPortfolioImageRepository;
     private final FileStore fileStore;
     private final SelectedQuoteRepository selectedQuoteRepository;
-    private final ShopRepository shopRepository;
     private final ChatRepository chatRepository;
     private final ChatMessageRepository chatMessageRepository;
     private final QuoteRepository quoteRepository;
@@ -58,6 +56,7 @@ public class GroomerServiceImpl implements GroomerService {
     private final QuoteRequestRepository quoteRequestRepository;
     private final ReviewRepository reviewRepository;
     private final UserRepository userRepository;
+    private final DirectQuoteRequestRepository directQuoteRequestRepository;
 
     // 미용사 정보 조회
     @Override
@@ -140,12 +139,6 @@ public class GroomerServiceImpl implements GroomerService {
                 .orElseThrow(() -> NotFoundException.entityNotFound("미용사"));
         groomer.delete();
 
-        // 매장
-        Optional<Shop> shop = shopRepository.findByGroomerId(groomerId);
-        if (shop.isPresent()) {
-            shop.get().delete();
-        }
-
         // 채팅방, 채팅 메시지
         List<Chat> chats = chatRepository.findAllByGroomerId(groomer);
         chats.forEach(chat -> {
@@ -175,8 +168,12 @@ public class GroomerServiceImpl implements GroomerService {
         });
 
         // 1:1 견적서 요청 삭제
-        List<QuoteRequest> quoteRequests = quoteRequestRepository.findAllByRequestType("020");
-        quoteRequests.forEach(DeletableBaseTimeEntity::delete);
+        List<DirectQuoteRequest> directQuoteRequests = directQuoteRequestRepository.findAllByDirectQuoteRequestIdGroomerId(groomer);
+        directQuoteRequests.forEach(directQuoteRequest -> {
+            QuoteRequest quoteRequest = quoteRequestRepository.findById(directQuoteRequest.getDirectQuoteRequestId().getRequestId().getRequestId())
+                    .orElseThrow(() -> NotFoundException.entityNotFound("견적서 요청"));
+            quoteRequest.delete();
+        });
 
         // 리뷰
         List<Reviews> reviews = reviewRepository.findAllByGroomerId(groomer);
