@@ -51,7 +51,7 @@ public interface SelectedQuoteRepository extends JpaRepository<SelectedQuote, Lo
             "d.dogWeight, d.dogAge, " +
             "CAST(d.dogGender AS string), " +
             "d.neutering, d.experience, d.significant, " +
-            "q.quoteId, q.beautyDate, qr.content, q.content, q.cost, p.paymentKey) " +
+            "q.quoteId, q.beautyDate, qr.content, q.content, q.cost, p.paymentKey, s.latitude, s.longitude) " +
             "FROM SelectedQuote sq " +
             "JOIN sq.quoteId q " +
             "JOIN q.requestId qr " +
