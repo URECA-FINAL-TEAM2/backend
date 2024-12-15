@@ -1,6 +1,7 @@
 package com.beautymeongdang.global.login.service.impl;
 
 import com.beautymeongdang.domain.user.dto.UserDTO;
+import com.beautymeongdang.domain.user.entity.Role;
 import com.beautymeongdang.domain.user.repository.CustomerRepository;
 import com.beautymeongdang.domain.user.repository.GroomerRepository;
 import com.beautymeongdang.global.jwt.JwtProvider;
@@ -26,9 +27,7 @@ import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 
 // CustomOAuth2UserServiceImpl.java
@@ -88,7 +87,7 @@ public class CustomOAuth2UserServiceImpl extends DefaultOAuth2UserService implem
                 .id(user.getUserId())
                 .username(user.getUserName())
                 .nickname(user.getNickname())
-                .roles(user.getRoles())
+                .roles(findActiveRoles(user))
                 .profileImage(user.getProfileImage())
                 .isRegister(user.isRegister())
                 .build();
@@ -151,7 +150,7 @@ public class CustomOAuth2UserServiceImpl extends DefaultOAuth2UserService implem
                 .id(user.getUserId())
                 .username(user.getUserName())
                 .nickname(user.getNickname())
-                .roles(user.getRoles())
+                .roles(findActiveRoles(user))  // 여기를 수정
                 .profileImage(user.getProfileImage())
                 .isRegister(user.isRegister())
                 .build();
@@ -209,8 +208,8 @@ public class CustomOAuth2UserServiceImpl extends DefaultOAuth2UserService implem
                 .id(user.getUserId())
                 .username(user.getUserName())
                 .nickname(user.getNickname())
+                .roles(findActiveRoles(user))
                 .profileImage(user.getProfileImage())
-                .roles(user.getRoles())
                 .isRegister(user.isRegister())
                 .build();
 
@@ -222,5 +221,24 @@ public class CustomOAuth2UserServiceImpl extends DefaultOAuth2UserService implem
         responseData.put("isNewUser", !user.isRegister());
 
         return addUserRoleIds(user, responseData);
+    }
+
+    // 활성화된 역할만 조회하는 메소드
+    private Set<Role> findActiveRoles(User user) {
+        Set<Role> activeRoles = new HashSet<>();
+
+        // 고객 역할 체크
+        if (user.getRoles().contains(Role.고객) &&
+                customerRepository.existsByUserIdAndIsDeletedFalse(user)) {
+            activeRoles.add(Role.고객);
+        }
+
+        // 미용사 역할 체크
+        if (user.getRoles().contains(Role.미용사) &&
+                groomerRepository.existsByUserIdAndIsDeletedFalse(user)) {
+            activeRoles.add(Role.미용사);
+        }
+
+        return activeRoles;
     }
 }

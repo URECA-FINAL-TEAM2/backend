@@ -1,4 +1,4 @@
-package com.beautymeongdang.domain.user.service.Impl;
+package com.beautymeongdang.domain.user.service.impl;
 
 import com.beautymeongdang.domain.chat.entity.Chat;
 import com.beautymeongdang.domain.chat.entity.ChatMessage;
@@ -58,6 +58,7 @@ public class GroomerServiceImpl implements GroomerService {
     private final QuoteRequestRepository quoteRequestRepository;
     private final ReviewRepository reviewRepository;
     private final UserRepository userRepository;
+    private final UserServiceImpl userService;
 
     // 미용사 정보 조회
     @Override
@@ -139,6 +140,9 @@ public class GroomerServiceImpl implements GroomerService {
         Groomer groomer = groomerRepository.findById(groomerId)
                 .orElseThrow(() -> NotFoundException.entityNotFound("미용사"));
         groomer.delete();
+
+        // 회원의 등록 상태 체크 및 업데이트
+        userService.checkAndUpdateRegistrationStatus(groomer.getUserId());
 
         // 매장
         Optional<Shop> shop = shopRepository.findByGroomerId(groomerId);

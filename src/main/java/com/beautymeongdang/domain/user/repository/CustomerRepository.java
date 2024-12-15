@@ -52,4 +52,7 @@ public interface CustomerRepository extends JpaRepository<Customer, Long> {
 
     @Query("SELECT c.customerId FROM Customer c WHERE c.userId = :user AND c.isDeleted = false")
     Optional<Long> findCustomerIdByUserId(@Param("user") User user);
+
+    // 고객 삭제
+    boolean existsByUserIdAndIsDeletedFalse(User userId);
 }

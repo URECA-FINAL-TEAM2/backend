@@ -53,7 +53,7 @@ public class CustomerServiceImpl implements CustomerService {
     private final QuoteRequestRepository quoteRequestRepository;
     private final FileStore fileStore;
     private final UserRepository userRepository;
-
+    private final UserServiceImpl userService;
 
     // 고객 프로필 조회
     @Override
@@ -87,6 +87,10 @@ public class CustomerServiceImpl implements CustomerService {
 
         // 고객 엔티티 논리적 삭제
         customer.delete();
+
+
+        // 회원의 등록 상태 체크 및 업데이트
+        userService.checkAndUpdateRegistrationStatus(customer.getUserId());
 
         // 응답 DTO 생성 및 반환
         return DeleteCustomerResponseDto.builder()
