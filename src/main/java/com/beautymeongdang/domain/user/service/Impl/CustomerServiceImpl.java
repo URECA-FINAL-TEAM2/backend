@@ -169,7 +169,7 @@ public class CustomerServiceImpl implements CustomerService {
         List<Customer> expiredCustomers = customerRepository.findAllByIsDeletedAndUpdatedAtBefore(deleteDay);
 
         // 물리적 삭제 실행
-        expiredCustomers.forEach(customerRepository::delete);
+        customerRepository.deleteAll(expiredCustomers);
     }
 
 
