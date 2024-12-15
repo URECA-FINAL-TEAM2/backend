@@ -4,6 +4,7 @@ import com.beautymeongdang.domain.chat.dto.CreateChatMessageRequestDto;
 import com.beautymeongdang.domain.chat.dto.CreateChatMessageResponseDto;
 import com.beautymeongdang.domain.chat.dto.DeleteChatMessageResponseDto;
 import com.beautymeongdang.domain.chat.dto.GetChatMessageListResponseDto;
+import com.beautymeongdang.domain.chat.pubsub.RedisPublisher;
 import com.beautymeongdang.domain.chat.service.ChatMessageService;
 import com.beautymeongdang.global.common.dto.ApiResponse;
 import lombok.RequiredArgsConstructor;
@@ -21,7 +22,11 @@ import org.springframework.web.bind.annotation.*;
 public class ChatMessageController {
 
     private final ChatMessageService chatMessageService;
+    private final RedisPublisher redisPublisher;
     private final SimpMessageSendingOperations messagingTemplate;
+
+
+
 
     /**
      *  메시지 보내기
@@ -32,10 +37,12 @@ public class ChatMessageController {
                 messageRequestDto.getChatId(), messageRequestDto.getSenderId());
 
         CreateChatMessageResponseDto response = chatMessageService.sendMessage(messageRequestDto);
-        messagingTemplate.convertAndSend("/sub/chat/room/" + messageRequestDto.getChatId(), response);
+        //messagingTemplate.convertAndSend("/sub/chat/room/" + messageRequestDto.getChatId(), response);
+         redisPublisher.publish(response);
 
         log.info("메시지 전송 완료. chatId: {}", messageRequestDto.getChatId());
     }
+
 
     // 채팅 조회
     @GetMapping("/{chatId}")
