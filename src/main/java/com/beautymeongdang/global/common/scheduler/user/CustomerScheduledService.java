@@ -4,9 +4,11 @@ import com.beautymeongdang.domain.user.service.CustomerService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class CustomerScheduledService {
     private final CustomerService customerService;
 

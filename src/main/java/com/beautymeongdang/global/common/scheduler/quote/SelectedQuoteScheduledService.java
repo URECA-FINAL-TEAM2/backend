@@ -9,13 +9,12 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @RequiredArgsConstructor
 @Transactional
-public class QuoteScheduledService {
+public class SelectedQuoteScheduledService {
     private final SelectedQuoteService selectedQuoteService;
 
-    // 예약 상태 미용 완료 변경
-    @Scheduled(cron = "0 0 * * * *") //매 시간마다 실행
-    public void updateExpiredQuotesStatus() {
-        selectedQuoteService.updateStatusToCompletedIfPastBeautyDate();
+    // 선택된 견적서 물리적 삭제
+    @Scheduled(cron = "0 0 0 * * ?")
+    public void deleteExpiredSelectedQuotes() {
+        selectedQuoteService.deleteExpiredLogicalDeletedSelectedQuotes();
     }
-
 }

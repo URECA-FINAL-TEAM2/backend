@@ -29,6 +29,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
+import java.util.List;
 import java.util.Map;
 
 @Service
@@ -295,6 +296,18 @@ public class PaymentServiceImpl implements PaymentService {
                 .message("결제 내역 조회 성공")
                 .cancelReason(payment.getCancelReason())
                 .build();
+    }
+
+    // 결제 물리적 삭제
+    @Override
+    @Transactional
+    public void deleteExpiredLogicalDeletedPayments() {
+        // 30일 이전 데이터를 삭제 기준으로 설정
+        LocalDateTime deleteDay = LocalDateTime.now().minusDays(30);
+        List<Payment> expiredPayments = paymentRepository.findAllByIsDeletedAndUpdatedAtBefore(deleteDay);
+
+        // 물리적 삭제 실행
+        paymentRepository.deleteAll(expiredPayments);
     }
 
 }

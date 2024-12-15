@@ -14,7 +14,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-@Transactional(readOnly = true)
+@Transactional
 public class ChatScheduledService {
     private final ChatMessageRepository chatMessageRepository;
     private final ChatMessageImageRepository chatMessageImageRepository;
