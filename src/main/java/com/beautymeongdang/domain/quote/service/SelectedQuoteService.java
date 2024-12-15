@@ -19,4 +19,7 @@ public interface SelectedQuoteService {
 
     // 미용 완료 변경
     void updateStatusToCompletedIfPastBeautyDate();
+
+    // 선택된 견적서 물리적 삭제
+    void deleteExpiredLogicalDeletedSelectedQuotes();
 }
