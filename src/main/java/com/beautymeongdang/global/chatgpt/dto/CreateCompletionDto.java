@@ -11,17 +11,14 @@ public class CreateCompletionDto {
     // 사용할 프롬프트 명령어
     private String prompt;
 
-    // 프롬프트의 다양성을 조절할 명령어(default : 1)
-    private float temperature = 1;
-
-    // 최대 사용할 토큰(default : 16)
-    private int max_tokens = 16;
+    private float temperature = 0.3f;    // 낮춰서 더 집중적인 응답
+    private int max_tokens = 16;         // 적절한 기본값으로 조정
 
     @Builder
     public CreateCompletionDto(String model, String prompt, float temperature, int max_tokens) {
-        this.model = model;
+        this.model = model != null ? model : "gpt-3.5-turbo";
         this.prompt = prompt;
-        this.temperature = temperature;
-        this.max_tokens = max_tokens;
+        this.temperature = temperature > 0 ? temperature : 0.3f;
+        this.max_tokens = max_tokens > 0 ? max_tokens : 50;
     }
 }
