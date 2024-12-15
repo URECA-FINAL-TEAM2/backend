@@ -25,6 +25,6 @@ public interface GroomerRepository extends JpaRepository<Groomer, Long> {
     @Query("SELECT g.groomerId FROM Groomer g WHERE g.userId = :user AND g.isDeleted = false")
     Optional<Long> findGroomerIdByUserId(@Param("user") User user);
 
-    // 미용사 삭제
+    // 삭제되지 않은(isDeleted가 false인) 데이터가 존재하는지 확인
     boolean existsByUserIdAndIsDeletedFalse(User userId);
 }
