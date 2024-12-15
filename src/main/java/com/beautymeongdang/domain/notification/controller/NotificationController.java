@@ -75,6 +75,19 @@ public class NotificationController {
         return ResponseEntity.ok(Map.of("status", "success", "unreadCount", unreadCount));
     }
 
+    // 특정 알림 읽음 처리 API
+    @PutMapping("/{notificationId}/read")
+    public ResponseEntity<Map<String, Object>> markNotificationAsRead(
+            @RequestParam("userId") Long userId,
+            @RequestParam("roleType") String roleType,
+            @PathVariable String notificationId,
+            @RequestBody Map<String, Boolean> readCheckYn) {
+        boolean isRead = readCheckYn.getOrDefault("readCheckYn", false);
+        notificationService.markAsRead(userId, roleType, notificationId, isRead);
+        return ResponseEntity.ok(Map.of("status", "success", "message", "Notification marked as read."));
+    }
+
+
     // 특정 알림 삭제 API
     @DeleteMapping("/{notificationId}")
     public ResponseEntity<Map<String, Object>> deleteNotification(
