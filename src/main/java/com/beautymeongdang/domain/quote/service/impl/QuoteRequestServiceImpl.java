@@ -460,6 +460,11 @@ public class QuoteRequestServiceImpl implements QuoteRequestService {
         Dog dog = dogRepository.findById(quoteRequest.getDogId().getDogId())
                 .orElseThrow(() -> NotFoundException.entityNotFound("강아지"));
 
+        CommonCodeId commonCodeId = new CommonCodeId(dog.getDogBreed(), "400");
+        CommonCode commonCode = commonCodeRepository.findById(commonCodeId)
+                .orElseThrow(() -> NotFoundException.entityNotFound("견종"));
+        String dogBreed = commonCode.getCommonName();
+
         GetCustomerRequestDetailResponseDto getCustomerRequestDetailResponseDto = new GetCustomerRequestDetailResponseDto();
 
         if ("010".equals(quoteRequest.getRequestType())) {
@@ -480,7 +485,7 @@ public class QuoteRequestServiceImpl implements QuoteRequestService {
                     .dogId(dog.getDogId())
                     .dogProfileImage(dog.getProfileImage())
                     .dogName(dog.getDogName())
-                    .dogBreed(dog.getDogBreed())
+                    .dogBreed(dogBreed)
                     .dogWeight(dog.getDogWeight())
                     .dogAge(dog.getDogAge())
                     .dogGender(String.valueOf(dog.getDogGender()))
@@ -515,7 +520,7 @@ public class QuoteRequestServiceImpl implements QuoteRequestService {
                         .dogId(dog.getDogId())
                         .dogProfileImage(dog.getProfileImage())
                         .dogName(dog.getDogName())
-                        .dogBreed(dog.getDogBreed())
+                        .dogBreed(dogBreed)
                         .dogWeight(dog.getDogWeight())
                         .dogAge(dog.getDogAge())
                         .dogGender(String.valueOf(dog.getDogGender()))
