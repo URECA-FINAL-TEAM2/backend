@@ -26,5 +26,5 @@ public interface DogRepository extends JpaRepository<Dog, Long> {
     WHERE d.isDeleted = true
       AND d.updatedAt < :deleteDay
     """)
-    List<Dog> findAllByIsDeletedAndAndUpdatedAt(@Param("deleteDay") LocalDateTime deleteDay);
+    List<Dog> findAllByIsDeletedAndUpdatedAt(@Param("deleteDay") LocalDateTime deleteDay);
 }

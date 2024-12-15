@@ -23,7 +23,7 @@ public class DogScheduledService {
     @Scheduled(cron = "0 0 1 * * *")
     @Transactional
     public void deleteDog() {
-        List<Dog> dogs = dogRepository.findAllByIsDeletedAndAndUpdatedAt(LocalDateTime.now().minusDays(30));
+        List<Dog> dogs = dogRepository.findAllByIsDeletedAndUpdatedAt(LocalDateTime.now().minusDays(30));
 
         dogs.forEach(dog -> {
             if (dog.getProfileImage() != null) {
