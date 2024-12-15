@@ -27,6 +27,7 @@ import com.beautymeongdang.domain.user.repository.GroomerPortfolioImageRepositor
 import com.beautymeongdang.domain.user.repository.GroomerRepository;
 import com.beautymeongdang.domain.user.repository.UserRepository;
 import com.beautymeongdang.domain.user.service.GroomerService;
+import com.beautymeongdang.domain.user.service.UserService;
 import com.beautymeongdang.global.common.entity.DeletableBaseTimeEntity;
 import com.beautymeongdang.global.common.entity.UploadedFile;
 import com.beautymeongdang.global.exception.handler.BadRequestException;
@@ -58,7 +59,7 @@ public class GroomerServiceImpl implements GroomerService {
     private final QuoteRequestRepository quoteRequestRepository;
     private final ReviewRepository reviewRepository;
     private final UserRepository userRepository;
-    private final UserServiceImpl userService;
+    private final UserService userService;
 
     // 미용사 정보 조회
     @Override
@@ -70,7 +71,7 @@ public class GroomerServiceImpl implements GroomerService {
     @Override
     @Transactional
     public UpdateGroomerPortfolioDto updateGroomerPortfolio(UpdateGroomerPortfolioDto updateGroomerPortfolioDto, List<MultipartFile> images) {
-        if(images!= null && images.size() > 9) {
+        if (images != null && images.size() > 9) {
             throw new BadRequestException("등록 가능한 포트폴리오 이미지 수를 초과하였습니다.");
         }
 
@@ -140,9 +141,13 @@ public class GroomerServiceImpl implements GroomerService {
         Groomer groomer = groomerRepository.findById(groomerId)
                 .orElseThrow(() -> NotFoundException.entityNotFound("미용사"));
         groomer.delete();
-
-        // 회원의 등록 상태 체크 및 업데이트
-        userService.checkAndUpdateRegistrationStatus(groomer.getUserId());
+        
+        // 미용사의 등록 상태 체크 및 업데이트
+        try {
+            userService.checkAndUpdateRegistrationStatus(groomer.getUserId());
+        } catch (Exception e) {
+            throw new RuntimeException("회원 상태 업데이트 중 오류가 발생했습니다", e);
+        }
 
         // 매장
         Optional<Shop> shop = shopRepository.findByGroomerId(groomerId);
@@ -215,7 +220,7 @@ public class GroomerServiceImpl implements GroomerService {
 
         // S3 회원 이미지 수정
         String groomerProfileUrl = user.getProfileImage();
-        if(images != null && !images.isEmpty()) {
+        if (images != null && !images.isEmpty()) {
             // S3 이미지 삭제
             fileStore.deleteFile(user.getProfileImage());
 
