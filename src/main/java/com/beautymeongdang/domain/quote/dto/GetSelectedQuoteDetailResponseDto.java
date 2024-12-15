@@ -2,6 +2,7 @@ package com.beautymeongdang.domain.quote.dto;
 
 import lombok.*;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -32,6 +33,8 @@ public class GetSelectedQuoteDetailResponseDto {
     private Integer amount;
     private List<String> requestImage;
     private String paymentKey;
+    private BigDecimal latitude;
+    private BigDecimal longitude;
 
     @Builder
     public GetSelectedQuoteDetailResponseDto(
@@ -55,7 +58,9 @@ public class GetSelectedQuoteDetailResponseDto {
             String requestContent,
             String quoteContent,
             Integer amount,
-            String paymentKey
+            String paymentKey,
+            BigDecimal latitude,
+            BigDecimal longitude
     ) {
         this.customerName = customerName;
         this.groomerName = groomerName;
@@ -78,5 +83,7 @@ public class GetSelectedQuoteDetailResponseDto {
         this.quoteContent = quoteContent;
         this.amount = amount;
         this.paymentKey = paymentKey;
+        this.latitude = latitude;
+        this.longitude = longitude;
     }
 }
