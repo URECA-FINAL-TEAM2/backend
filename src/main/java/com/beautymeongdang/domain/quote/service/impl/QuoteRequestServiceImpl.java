@@ -495,12 +495,6 @@ public class QuoteRequestServiceImpl implements QuoteRequestService {
             if (directQuoteRequest.isPresent()) {
                 Optional<Shop> shop = shopRepository.findByGroomerId(directQuoteRequest.get().getDirectQuoteRequestId().getGroomerId().getGroomerId());
 
-                Sigungu sigungu = sigunguRepository.findById(shop.get().getSigunguId().getSigunguId())
-                        .orElseThrow(() -> NotFoundException.entityNotFound("시/군/구"));
-
-                Sido sido = sidoRepository.findById(sigungu.getSidoId().getSidoId())
-                        .orElseThrow(() -> NotFoundException.entityNotFound("시/도"));
-
                 User user = userRepository.findById(directQuoteRequest.get().getDirectQuoteRequestId().getGroomerId().getUserId().getUserId())
                         .orElseThrow(() -> NotFoundException.entityNotFound("미용사 정보"));
 
@@ -508,7 +502,7 @@ public class QuoteRequestServiceImpl implements QuoteRequestService {
                         .shopImage(shop.get().getImageUrl())
                         .groomerName(user.getNickname())
                         .shopName(shop.get().getShopName())
-                        .address(sido.getSidoName() + " " + sigungu.getSigunguName() + " " + shop.get().getAddress())
+                        .address(shop.get().getAddress())
                         .phone(user.getPhone())
                         .build();
 
