@@ -11,6 +11,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -168,5 +169,17 @@ public interface ChatRepository extends JpaRepository<Chat, Long> {
             "JOIN cu.userId u " +
             "WHERE c.chatId = :chatId")
     User findCustomerByChatId(@Param("chatId") Long chatId);
+
+
+    // 채팅 물리적 삭제 스케줄러
+    @Query("""
+    SELECT c
+    FROM Chat c
+    WHERE c.isDeleted = true
+      AND c.updatedAt < :deleteDay
+    """)
+    List<Chat> findAllByDeletedAndUpdatedAt(@Param("deleteDay") LocalDateTime deleteDay);
+
+
 
 }
