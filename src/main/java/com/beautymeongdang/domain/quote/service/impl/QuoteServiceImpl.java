@@ -5,14 +5,8 @@ import com.beautymeongdang.domain.dog.repository.DogRepository;
 import com.beautymeongdang.domain.notification.enums.NotificationType;
 import com.beautymeongdang.domain.notification.service.NotificationService;
 import com.beautymeongdang.domain.quote.dto.*;
-import com.beautymeongdang.domain.quote.entity.DirectQuoteRequest;
-import com.beautymeongdang.domain.quote.entity.Quote;
-import com.beautymeongdang.domain.quote.entity.QuoteRequest;
-import com.beautymeongdang.domain.quote.entity.QuoteRequestImage;
-import com.beautymeongdang.domain.quote.repository.DirectQuoteRequestRepository;
-import com.beautymeongdang.domain.quote.repository.QuoteRepository;
-import com.beautymeongdang.domain.quote.repository.QuoteRequestImageRepository;
-import com.beautymeongdang.domain.quote.repository.QuoteRequestRepository;
+import com.beautymeongdang.domain.quote.entity.*;
+import com.beautymeongdang.domain.quote.repository.*;
 import com.beautymeongdang.domain.quote.service.QuoteService;
 import com.beautymeongdang.domain.shop.entity.Shop;
 import com.beautymeongdang.domain.shop.repository.ShopRepository;
@@ -49,6 +43,7 @@ public class QuoteServiceImpl implements QuoteService {
     private final UserRepository userRepository;
     private final CommonCodeRepository commonCodeRepository;
     private final NotificationService notificationService;
+    private final TotalQuoteRequestRepository totalQuoteRequestRepository;
 
     private static final String QUOTE_REQUEST_STATUS_GROUP_CODE = "100";
     private static final String QUOTE_STATUS_GROUP_CODE = "200";
@@ -131,14 +126,10 @@ public class QuoteServiceImpl implements QuoteService {
                                 Shop shop = shopRepository.findByGroomerId(quote.getGroomerId().getGroomerId())
                                         .orElseThrow(() -> NotFoundException.entityNotFound("미용실"));
 
-                                String shopSidoSigungu = shop.getSigunguId().getSidoId().getSidoName() + " "
-                                        + shop.getSigunguId().getSigunguName();
-
                                 return GetQuotesAllResponseDto.QuoteInfo.builder()
                                         .quoteId(quote.getQuoteId())
                                         .shopName(shop.getShopName())
                                         .shopLogo(shop.getImageUrl())
-                                        .shopSidoSigungu(shopSidoSigungu)
                                         .groomerName(quote.getGroomerId().getUserId().getNickname())
                                         .quoteStatus(quoteStatusName)
                                         .cost(quote.getCost())
@@ -148,6 +139,11 @@ public class QuoteServiceImpl implements QuoteService {
                             })
                             .collect(Collectors.toList());
 
+                    TotalQuoteRequest totalQuoteRequest = totalQuoteRequestRepository.findByRequestId_RequestId(request.getRequestId())
+                            .orElseThrow(() -> new NotFoundException("견적서 전체 요청"));
+
+                    String region = totalQuoteRequest.getSigunguId().getSidoId().getSidoName() + " " + totalQuoteRequest.getSigunguId().getSigunguName();
+
                     return GetQuotesAllResponseDto.QuoteRequestInfo.builder()
                             .quoteRequestId(request.getRequestId())
                             .requestStatus(requestStatusName)
@@ -155,6 +151,7 @@ public class QuoteServiceImpl implements QuoteService {
                             .dogName(request.getDogId().getDogName())
                             .dogImage(request.getDogId().getProfileImage())
                             .requestContent(request.getContent())
+                            .region(region)
                             .quotes(quoteInfos)
                             .build();
                 })
