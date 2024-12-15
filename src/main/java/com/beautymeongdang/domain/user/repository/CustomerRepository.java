@@ -64,4 +64,6 @@ public interface CustomerRepository extends JpaRepository<Customer, Long> {
     """)
     List<Customer> findAllByIsDeletedAndUpdatedAtBefore(@Param("deleteDay") LocalDateTime deleteDay);
 
+    // 삭제되지 않은(isDeleted가 false인) 데이터가 존재하는지 확인
+    boolean existsByUserIdAndIsDeletedFalse(User user);
 }

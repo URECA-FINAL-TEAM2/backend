@@ -23,6 +23,7 @@ import com.beautymeongdang.domain.user.repository.CustomerRepository;
 import com.beautymeongdang.domain.user.dto.DeleteCustomerResponseDto;
 import com.beautymeongdang.domain.user.repository.UserRepository;
 import com.beautymeongdang.domain.user.service.CustomerService;
+import com.beautymeongdang.domain.user.service.UserService;
 import com.beautymeongdang.global.common.entity.UploadedFile;
 import com.beautymeongdang.global.exception.handler.BadRequestException;
 import com.beautymeongdang.global.exception.handler.NotFoundException;
@@ -54,7 +55,7 @@ public class CustomerServiceImpl implements CustomerService {
     private final QuoteRequestRepository quoteRequestRepository;
     private final FileStore fileStore;
     private final UserRepository userRepository;
-
+    private final UserService userService;
 
     // 고객 프로필 조회
     @Override
@@ -88,6 +89,15 @@ public class CustomerServiceImpl implements CustomerService {
 
         // 고객 엔티티 논리적 삭제
         customer.delete();
+
+
+        // 회원의 등록 상태 체크 및 업데이트
+        try {
+            userService.checkAndUpdateRegistrationStatus(customer.getUserId());
+        } catch (Exception e) {
+            throw new RuntimeException("회원 상태 업데이트 중 오류가 발생했습니다", e);
+        }
+
 
         // 응답 DTO 생성 및 반환
         return DeleteCustomerResponseDto.builder()

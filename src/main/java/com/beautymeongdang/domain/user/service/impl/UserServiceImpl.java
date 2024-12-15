@@ -1,4 +1,4 @@
-package com.beautymeongdang.domain.user.service.Impl;
+package com.beautymeongdang.domain.user.service.impl;
 
 import com.beautymeongdang.domain.user.dto.*;
 import com.beautymeongdang.domain.user.entity.*;
@@ -21,8 +21,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.List;
-import java.util.Map;
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
+import java.util.*;
 
 @Slf4j
 @Service
@@ -43,11 +44,22 @@ public class UserServiceImpl implements UserService {
             User user = userRepository.findById(userId)
                     .orElseThrow(() -> new EntityNotFoundException("User not found with id: " + userId));
 
-            if (customerRepository.existsByUserId(user)) {
+            // 탈퇴한 고객인지 확인
+            Optional<Customer> deletedCustomer = customerRepository.findByUserId(user);
+            if (deletedCustomer.isPresent() && deletedCustomer.get().isDeleted()) {
+
+                // LocalDateTime을 사용하여 30일 체크
+                LocalDateTime deletedAt = deletedCustomer.get().getUpdatedAt();
+                if (deletedAt != null &&
+                        ChronoUnit.DAYS.between(deletedAt, LocalDateTime.now()) < 30) {
+                    throw new RuntimeException("탈퇴 후 30일이 지나지 않았습니다. 30일 이후에 다시 가입해주세요.");
+                }
+            }
+
+            if (customerRepository.existsByUserIdAndIsDeletedFalse(user)) {
                 throw new RuntimeException("이미 회원가입된 고객입니다.");
             }
 
-            // 이미지 처리 로직 수정
             String profileImageUrl = null;
             if (profileImage != null && !profileImage.isEmpty()) {
                 List<UploadedFile> uploadedFiles = fileStore.storeFiles(List.of(profileImage), FileStore.USER_PROFILE);
@@ -77,10 +89,9 @@ public class UserServiceImpl implements UserService {
                     "customerId", savedCustomer.getCustomerId(),
                     "nickname", user.getNickname(),
                     "isRegister", user.isRegister(),
-                    "roles", user.getRoles(),
+                    "roles", findActiveRoles(user),
                     "sigunguId", sigungu.getSigunguId(),
                     "sidoId", sigungu.getSidoId().getSidoId(),
-
                     "profileImage", profileImageUrl != null ? profileImageUrl : user.getProfileImage()
             );
             return responseData;
@@ -97,11 +108,20 @@ public class UserServiceImpl implements UserService {
             User user = userRepository.findById(userId)
                     .orElseThrow(() -> new EntityNotFoundException("User not found with id: " + userId));
 
-            if (groomerRepository.existsByUserId(user)) {
+            // 탈퇴한 미용사인지 확인
+            Optional<Groomer> deletedGroomer = groomerRepository.findByUserId(user);
+            if (deletedGroomer.isPresent() && deletedGroomer.get().isDeleted()) {
+                LocalDateTime deletedAt = deletedGroomer.get().getUpdatedAt();
+                if (deletedAt != null &&
+                        ChronoUnit.DAYS.between(deletedAt, LocalDateTime.now()) < 30) {
+                    throw new RuntimeException("탈퇴 후 30일이 지나지 않았습니다. 30일 이후에 다시 가입해주세요.");
+                }
+            }
+
+            if (groomerRepository.existsByUserIdAndIsDeletedFalse(user)) {
                 throw new RuntimeException("User is already registered as a groomer");
             }
 
-            // 이미지 처리 로직 수정
             String profileImageUrl = null;
             if (profileImage != null && !profileImage.isEmpty()) {
                 List<UploadedFile> uploadedFiles = fileStore.storeFiles(List.of(profileImage), FileStore.USER_PROFILE);
@@ -126,10 +146,9 @@ public class UserServiceImpl implements UserService {
             Map<String, Object> responseData = Map.of(
                     "userId", user.getUserId(),
                     "groomerId", savedGroomer.getGroomerId(),
-
                     "nickname", user.getNickname(),
                     "isRegister", user.isRegister(),
-                    "roles", user.getRoles(),
+                    "roles", findActiveRoles(user),
                     "profileImage", profileImageUrl != null ? profileImageUrl : user.getProfileImage()
             );
             return responseData;
@@ -171,5 +190,34 @@ public class UserServiceImpl implements UserService {
         }
         CustomOAuth2User oauth2User = (CustomOAuth2User) authentication.getPrincipal();
         return oauth2User.getUserId();
+    }
+
+    @Transactional
+    public void checkAndUpdateRegistrationStatus(User user) {
+        boolean hasCustomer = customerRepository.existsByUserIdAndIsDeletedFalse(user);
+        boolean hasGroomer = groomerRepository.existsByUserIdAndIsDeletedFalse(user);
+
+        if (!hasCustomer && !hasGroomer) {
+            user.resetRegistration();
+            userRepository.save(user);
+        }
+    }
+
+    private Set<Role> findActiveRoles(User user) {
+        Set<Role> activeRoles = new HashSet<>();
+
+        // 고객 역할 체크
+        if (user.getRoles().contains(Role.고객) &&
+                customerRepository.existsByUserIdAndIsDeletedFalse(user)) {
+            activeRoles.add(Role.고객);
+        }
+
+        // 미용사 역할 체크
+        if (user.getRoles().contains(Role.미용사) &&
+                groomerRepository.existsByUserIdAndIsDeletedFalse(user)) {
+            activeRoles.add(Role.미용사);
+        }
+
+        return activeRoles;
     }
 }

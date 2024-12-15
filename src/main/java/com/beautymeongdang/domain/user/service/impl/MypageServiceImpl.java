@@ -1,6 +1,5 @@
-package com.beautymeongdang.domain.user.service.Impl;
+package com.beautymeongdang.domain.user.service.impl;
 
-import com.beautymeongdang.domain.chat.repository.ChatRepository;
 import com.beautymeongdang.domain.dog.repository.DogRepository;
 import com.beautymeongdang.domain.quote.repository.SelectedQuoteRepository;
 import com.beautymeongdang.domain.review.repository.ReviewRepository;

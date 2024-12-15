@@ -59,4 +59,7 @@ public class User extends DeletableBaseTimeEntity {
     public void updateProfileImage(String profileImageUrl) {
         this.profileImage = profileImageUrl;
     }
+    public void resetRegistration() {
+        this.isRegister = false;
+    }
 }
