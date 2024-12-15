@@ -1,5 +1,6 @@
 package com.beautymeongdang.domain.notification.service;
 
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
@@ -20,6 +21,7 @@ public class NotificationEventPublisher {
         emitters.remove(key);
     }
 
+    @Async
     public void publishNotification(Long userId, String roleType, String message) {
         String key = String.format("%d:%s", userId, roleType);
         SseEmitter emitter = emitters.get(key);
