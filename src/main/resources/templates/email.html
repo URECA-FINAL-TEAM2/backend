@@ -1,96 +1,38 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Notification Email</title>
-    <style>
-        body {
-            font-family: 'Arial', sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #f9f9f9;
-        }
-        table {
-            border-spacing: 0;
-            width: 100%;
-            max-width: 600px;
-            margin: 0 auto;
-            background-color: #ffffff;
-            border: 1px solid #ddd;
-        }
-        td {
-            padding: 20px;
-        }
-        .email-header {
-            background-color: #5e60ce;
-            color: #ffffff;
-            text-align: center;
-            padding: 30px 20px;
-        }
-        .email-header h1 {
-            margin: 0;
-            font-size: 24px;
-        }
-        .email-body {
-            color: #333333;
-            line-height: 1.6;
-        }
-        .email-body h2 {
-            color: #5e60ce;
-            font-size: 20px;
-        }
-        .email-body p {
-            margin: 10px 0;
-            font-size: 16px;
-        }
-        .email-footer {
-            background-color: #f1f1f1;
-            text-align: center;
-            padding: 15px 20px;
-            font-size: 14px;
-            color: #888888;
-        }
-        .email-footer a {
-            color: #5e60ce;
-            text-decoration: none;
-        }
-        .action-button {
-            display: inline-block;
-            margin: 20px 0;
-            padding: 10px 20px;
-            background-color: #5e60ce;
-            color: #ffffff;
-            text-decoration: none;
-            border-radius: 5px;
-            font-size: 16px;
-        }
-        .action-button:hover {
-            background-color: #4a4db3;
-        }
-    </style>
 </head>
-<body>
-<table>
+<body style="font-family: 'Arial', sans-serif; margin: 0; padding: 0; background-color: #f9f9f9;">
+<table style="border-spacing: 0; width: 100%; max-width: 600px; margin: 0 auto; background-color: #ffffff; border: 1px solid #ddd;">
     <tr>
-        <td class="email-header">
-            <h1>뷰티멍당 알림</h1>
+        <td style="background-color: #ff8e8e; color: #ffffff; text-align: center; padding: 30px 20px;">
+            <h1 style="margin: 0; font-size: 24px;">미용멍당</h1>
         </td>
     </tr>
     <tr>
-        <td class="email-body">
-            <h2>안녕하세요, <span th:text="${userName}">[사용자 이름]</span>님!</h2>
-            <p>새로운 <strong><span th:text="${notifyType}">[알림 타입]</span></strong> 알림이 도착했습니다.</p>
-            <p><span th:text="${content}">[알림 내용]</span></p>
-            <a href="https://beautymeongdang.com" class="action-button">알림 확인하기</a>
+        <td style="text-align: center; color: #333333; line-height: 1.6; padding: 20px;">
+            <h2 style="color: #ff8e8e; font-size: 20px;">
+                안녕하세요, <span th:text="${userName}">[사용자 이름]</span>님!
+            </h2>
+            <p style="margin: 10px 0; font-size: 16px;">
+                새로운
+                <strong><span th:text="${notifyType}">[알림 타입]</span></strong>이 도착했습니다.
+            </p>
+            <p style="margin: 10px 0; font-size: 16px;"><span th:text="${content}">[알림 내용]</span></p>
+            <a href="https://beautymeongdang.vercel.app"
+               style="display: inline-block; margin: 20px 0; padding: 10px 20px; background-color: #ff8e8e; color: #ffffff; text-decoration: none; border-radius: 20px; font-size: 16px;">
+                알림 확인하기
+            </a>
         </td>
     </tr>
     <tr>
-        <td class="email-footer">
-            <p>감사합니다, <br>뷰티멍당 팀 드림</p>
+        <td style="background-color: #f1f1f1; text-align: center; padding: 15px 20px; font-size: 14px; color: #888888;">
+            <p>감사합니다, <br />미용멍당 - 이어조</p>
             <p>
-                <a href="https://beautymeongdang.com">구독 해지</a> |
-                <a href="https://beautymeongdang.com">뷰티멍당 홈페이지</a>
+                <a href="https://beautymeongdang.vercel.app" style="color: #ff8e8e; text-decoration: none;">뷰티멍당 홈페이지</a>
             </p>
         </td>
     </tr>
