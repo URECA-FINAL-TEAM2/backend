@@ -1,6 +1,7 @@
 package com.beautymeongdang.domain.quote.repository;
 
 import com.beautymeongdang.domain.dog.entity.Dog;
+import com.beautymeongdang.domain.payment.entity.Payment;
 import com.beautymeongdang.domain.quote.dto.GetCustomerSelectedQuoteResponseDto;
 import com.beautymeongdang.domain.quote.dto.GetSelectedQuoteDetailResponseDto;
 import com.beautymeongdang.domain.quote.dto.GetGroomerSelectedQuoteResponseDto;
@@ -51,7 +52,7 @@ public interface SelectedQuoteRepository extends JpaRepository<SelectedQuote, Lo
             "d.dogWeight, d.dogAge, " +
             "CAST(d.dogGender AS string), " +
             "d.neutering, d.experience, d.significant, " +
-            "q.quoteId, q.beautyDate, qr.content, q.content, q.cost, p.paymentKey) " +
+            "q.quoteId, q.beautyDate, qr.content, q.content, q.cost, p.paymentKey, s.latitude, s.longitude) " +
             "FROM SelectedQuote sq " +
             "JOIN sq.quoteId q " +
             "JOIN q.requestId qr " +
@@ -129,4 +130,12 @@ public interface SelectedQuoteRepository extends JpaRepository<SelectedQuote, Lo
             "WHERE sq.status = :status AND q.beautyDate < :currentDate AND sq.isDeleted = false")
     List<SelectedQuote> findByStatusAndBeautyDateBefore(@Param("status") String status, @Param("currentDate") LocalDateTime currentDate);
 
+    // 선택된 견적서 물리적 삭제
+    @Query("""
+    SELECT s
+    FROM SelectedQuote s
+    WHERE s.isDeleted = true
+      AND s.updatedAt < :deleteDay
+    """)
+    List<SelectedQuote> findAllByIsDeletedAndUpdatedAtBefore(@Param("deleteDay") LocalDateTime deleteDay);
 }

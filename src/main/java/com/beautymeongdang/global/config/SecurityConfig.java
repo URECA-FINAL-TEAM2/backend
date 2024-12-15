@@ -72,6 +72,7 @@ public class SecurityConfig {
                                 "/login.jsx",
                                 "/index.html",
                                 "/index1.html",
+                                "/templates/email.html",
                                 "/login/**",
                                 "/api/auth/**",
                                 "/oauth2/**",

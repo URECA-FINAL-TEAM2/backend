@@ -26,7 +26,9 @@ import com.beautymeongdang.global.common.entity.UploadedFile;
 import com.beautymeongdang.global.common.repository.CommonCodeRepository;
 import com.beautymeongdang.global.exception.handler.BadRequestException;
 import com.beautymeongdang.global.exception.handler.NotFoundException;
+import com.beautymeongdang.global.region.entity.Sido;
 import com.beautymeongdang.global.region.entity.Sigungu;
+import com.beautymeongdang.global.region.repository.SidoRepository;
 import com.beautymeongdang.global.region.repository.SigunguRepository;
 import com.beautymeongdang.infra.s3.FileStore;
 import lombok.RequiredArgsConstructor;
@@ -37,6 +39,7 @@ import com.beautymeongdang.domain.quote.dto.GetGroomerQuoteRequestResponseDto;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -60,6 +63,7 @@ public class QuoteRequestServiceImpl implements QuoteRequestService {
     private static final String REQUEST_STATUS_GROUP_CODE = "100";
     private static final String DOG_BREED_GROUP_CODE = "400";
     private static final String REQUEST_TYPE_GROUP_CODE = "900";
+    private final SidoRepository sidoRepository;
 
     /**
      * 전체 견적서 요청하기
@@ -439,6 +443,97 @@ public class QuoteRequestServiceImpl implements QuoteRequestService {
                 .groomerId(savedDirectQuoteRequest.getDirectQuoteRequestId().getGroomerId().getGroomerId())
                 .reasonForRejection(savedDirectQuoteRequest.getReasonForRejection())
                 .build();
+    }
+
+    // 고객(자신)이 보낸 견적 요청 상세 조회
+    @Override
+    public GetCustomerRequestDetailResponseDto getCustomerRequestDetail(Long requestId) {
+        QuoteRequest quoteRequest = quoteRequestRepository.findById(requestId)
+                .orElseThrow(() -> NotFoundException.entityNotFound("견적서 요청"));
+
+        List<QuoteRequestImage> quoteRequestImageList = quoteRequestImageRepository.findAllByRequestId(requestId);
+        List<String> quoteRequestImages = new ArrayList<>();
+        quoteRequestImageList.forEach(quoteRequestImage -> {
+            quoteRequestImages.add(quoteRequestImage.getImageUrl());
+        });
+
+        Dog dog = dogRepository.findById(quoteRequest.getDogId().getDogId())
+                .orElseThrow(() -> NotFoundException.entityNotFound("강아지"));
+
+        CommonCodeId commonCodeId = new CommonCodeId(dog.getDogBreed(), "400");
+        CommonCode commonCode = commonCodeRepository.findById(commonCodeId)
+                .orElseThrow(() -> NotFoundException.entityNotFound("견종"));
+        String dogBreed = commonCode.getCommonName();
+
+        GetCustomerRequestDetailResponseDto getCustomerRequestDetailResponseDto = new GetCustomerRequestDetailResponseDto();
+
+        if ("010".equals(quoteRequest.getRequestType())) {
+            TotalQuoteRequest totalQuoteRequest = totalQuoteRequestRepository.findByRequestId(quoteRequest);
+
+            Sigungu sigungu = sigunguRepository.findById(totalQuoteRequest.getSigunguId().getSigunguId())
+                    .orElseThrow(() -> NotFoundException.entityNotFound("시/군/구"));
+
+            Sido sido = sidoRepository.findById(sigungu.getSidoId().getSidoId())
+                    .orElseThrow(() -> NotFoundException.entityNotFound("시/도"));
+
+            getCustomerRequestDetailResponseDto = GetCustomerRequestDetailResponseDto.builder()
+                    .requestId(quoteRequest.getRequestId())
+                    .requestType(quoteRequest.getRequestType())
+                    .region(sido.getSidoName() + " " + sigungu.getSigunguName())
+                    .beautyDate(quoteRequest.getBeautyDate())
+                    .requestContent(quoteRequest.getContent())
+                    .dogId(dog.getDogId())
+                    .dogProfileImage(dog.getProfileImage())
+                    .dogName(dog.getDogName())
+                    .dogBreed(dogBreed)
+                    .dogWeight(dog.getDogWeight())
+                    .dogAge(dog.getDogAge())
+                    .dogGender(String.valueOf(dog.getDogGender()))
+                    .neutering(dog.getNeutering())
+                    .experience(dog.getExperience())
+                    .significant(dog.getSignificant())
+                    .requestImages(quoteRequestImages)
+                    .build();
+
+        } else {
+            Optional<DirectQuoteRequest> directQuoteRequest = directQuoteRequestRepository.findByQuoteRequest(quoteRequest);
+            if (directQuoteRequest.isPresent()) {
+                Optional<Shop> shop = shopRepository.findByGroomerId(directQuoteRequest.get().getDirectQuoteRequestId().getGroomerId().getGroomerId());
+
+                User user = userRepository.findById(directQuoteRequest.get().getDirectQuoteRequestId().getGroomerId().getUserId().getUserId())
+                        .orElseThrow(() -> NotFoundException.entityNotFound("미용사 정보"));
+
+                GetCustomerRequestDetailResponseDto.GroomerInfo groomerInfo = GetCustomerRequestDetailResponseDto.GroomerInfo.builder()
+                        .shopImage(shop.get().getImageUrl())
+                        .groomerName(user.getNickname())
+                        .shopName(shop.get().getShopName())
+                        .address(shop.get().getAddress())
+                        .phone(user.getPhone())
+                        .build();
+
+                getCustomerRequestDetailResponseDto = GetCustomerRequestDetailResponseDto.builder()
+                        .requestId(quoteRequest.getRequestId())
+                        .requestType(quoteRequest.getRequestType())
+                        .groomer(groomerInfo)
+                        .beautyDate(quoteRequest.getBeautyDate())
+                        .requestContent(quoteRequest.getContent())
+                        .dogId(dog.getDogId())
+                        .dogProfileImage(dog.getProfileImage())
+                        .dogName(dog.getDogName())
+                        .dogBreed(dogBreed)
+                        .dogWeight(dog.getDogWeight())
+                        .dogAge(dog.getDogAge())
+                        .dogGender(String.valueOf(dog.getDogGender()))
+                        .neutering(dog.getNeutering())
+                        .experience(dog.getExperience())
+                        .significant(dog.getSignificant())
+                        .requestImages(quoteRequestImages)
+                        .build();
+
+            }
+        }
+
+        return getCustomerRequestDetailResponseDto;
     }
 
 }

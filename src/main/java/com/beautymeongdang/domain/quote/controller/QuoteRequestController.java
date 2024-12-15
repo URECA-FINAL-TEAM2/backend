@@ -30,7 +30,7 @@ public class QuoteRequestController {
     public ResponseEntity<ApiResponse<CreateInsertRequestAllResponseDto>> createInsertRequestAll(
             @RequestParam Long customerId,
             @RequestPart CreateInsertRequestAllRequestDto requestDto,
-            @RequestPart List<MultipartFile> images) {
+            @RequestPart(required = false) List<MultipartFile> images) {
         CreateInsertRequestAllResponseDto responseDto = quoteRequestService.createInsertRequestAll(customerId, requestDto, images);
         return ApiResponse.ok(200, responseDto, "전체 견적서 요청 성공");
     }
@@ -43,7 +43,7 @@ public class QuoteRequestController {
     public ResponseEntity<ApiResponse<CreateInsertRequestGroomerResponseDto>> createInsertRequestGroomer(
             @RequestParam Long customerId,
             @RequestPart CreateInsertRequestGroomerRequestDto requestDto,
-            @RequestPart List<MultipartFile> images) {
+            @RequestPart(required = false) List<MultipartFile> images) {
         CreateInsertRequestGroomerResponseDto responseDto = quoteRequestService.createInsertRequestGroomer(customerId, requestDto, images);
         return ApiResponse.ok(200, responseDto, "1:1 견적서 요청 성공");
     }
@@ -113,6 +113,12 @@ public class QuoteRequestController {
     @PutMapping("/groomer")
     public ResponseEntity<?> updateGroomerRequestRejection(@RequestBody UpdateGroomerRequestRejectionRequestDto dto) {
         return ApiResponse.ok(200, quoteRequestService.updateGroomerRequestRejection(dto), "Update RequestRejection Success");
+    }
+
+    // 고객(자신)이 보낸 견적 요청 상세 조회
+    @GetMapping("/customer/detail/{requestId}")
+    public ResponseEntity<?> getCustomerDetailQuoteRequest(@PathVariable(name = "requestId") Long requestId) {
+        return ApiResponse.ok(200, quoteRequestService.getCustomerRequestDetail(requestId), "Get RequestDetail Success");
     }
 
 }
