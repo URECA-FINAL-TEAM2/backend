@@ -150,7 +150,7 @@ public class CustomOAuth2UserServiceImpl extends DefaultOAuth2UserService implem
                 .id(user.getUserId())
                 .username(user.getUserName())
                 .nickname(user.getNickname())
-                .roles(findActiveRoles(user))  // 여기를 수정
+                .roles(findActiveRoles(user))
                 .profileImage(user.getProfileImage())
                 .isRegister(user.isRegister())
                 .build();
