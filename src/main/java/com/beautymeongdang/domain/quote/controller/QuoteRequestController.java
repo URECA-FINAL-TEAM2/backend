@@ -115,4 +115,10 @@ public class QuoteRequestController {
         return ApiResponse.ok(200, quoteRequestService.updateGroomerRequestRejection(dto), "Update RequestRejection Success");
     }
 
+    // 고객(자신)이 보낸 견적 요청 상세 조회
+    @GetMapping("/customer/detail/{requestId}")
+    public ResponseEntity<?> getCustomerDetailQuoteRequest(@PathVariable(name = "requestId") Long requestId) {
+        return ApiResponse.ok(200, quoteRequestService.getCustomerRequestDetail(requestId), "Get RequestDetail Success");
+    }
+
 }
