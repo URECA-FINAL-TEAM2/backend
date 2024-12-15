@@ -63,6 +63,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/users/register/**").authenticated()  // JWT 헤더에 인증이 필요함
                         // 인증이 필요없는 public 접근 경로
                         .requestMatchers(
+                                "/gpt/**",
                                 "/api/users/register/**",
                                 "/login/oauth2/code/**",
                                 "/selectRole.html",
@@ -71,6 +72,7 @@ public class SecurityConfig {
                                 "/login.jsx",
                                 "/index.html",
                                 "/index1.html",
+                                "/templates/email.html",
                                 "/login/**",
                                 "/api/auth/**",
                                 "/oauth2/**",
@@ -78,10 +80,7 @@ public class SecurityConfig {
                                 "/",                    // 루트 경로
                                 "/selectRole",         // 역할 선택 페이지
                                 "/login",             // 로그인 페이지
-                                "/oauth2/**",          // OAuth2 관련 모든 경로
-                                "/chats/**",         //채팅
-                                "/ws/**",
-                                "/templates/email.html"
+                                "/oauth2/**"          // OAuth2 관련 모든 경로
                         ).permitAll()
                         // API 및 Swagger 관련 경로
                         .requestMatchers(
@@ -127,14 +126,7 @@ public class SecurityConfig {
 
         // 허용할 헤더 설정
         configuration.setAllowedHeaders(Arrays.asList("*"));
-        configuration.setExposedHeaders(Arrays.asList(
-                "Authorization",
-                "Refresh-Token",
-                "Access-Control-Allow-Origin",
-                "Access-Control-Allow-Credentials",
-                "Access-Token",
-                "Access-Control-Expose-Headers"
-        ));
+        configuration.setExposedHeaders(Arrays.asList("Authorization"));
 
         // 자격증명 허용
         configuration.setAllowCredentials(true);
