@@ -79,6 +79,30 @@ public class NotificationServiceImpl implements NotificationService {
         notificationEmailService.sendEmail(userEmail, subject, "email", variables);
     }
 
+    // 특정 알림 읽음처리
+    @Override
+    public void markAsRead(Long userId, String roleType, String notificationId, boolean isRead) {
+        String redisKey = String.format("notifications:%d:%s:%s", userId, roleType, notificationId);
+        @SuppressWarnings("unchecked")
+        Map<String, Object> notification = (Map<String, Object>) redisTemplate.opsForValue().get(redisKey);
+
+        if (notification != null) {
+            Long ttl = redisTemplate.getExpire(redisKey);
+            notification.put("readCheckYn", isRead);
+
+            // TTL 유지하면서 업데이트
+            if (ttl != null && ttl > 0) {
+                redisTemplate.opsForValue().set(redisKey, notification, ttl, TimeUnit.SECONDS);
+            } else {
+                redisTemplate.opsForValue().set(redisKey, notification, 14, TimeUnit.DAYS);
+            }
+        } else {
+            throw new IllegalArgumentException("알림을 찾을 수 없습니다.");
+        }
+    }
+
+
+
     @Override
     public List<Object> getNotifications(Long userId, String roleType) {
         String keyPattern = "notifications:" + userId + ":" + roleType + ":*";
