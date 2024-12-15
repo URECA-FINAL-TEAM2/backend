@@ -46,7 +46,7 @@ public class NotificationServiceImpl implements NotificationService {
 
         // Redis에 알림 저장 및 TTL(2주) 설정
         String redisKey = "notifications:" + userId + ":" + roleType + ":" + notificationId;
-        redisTemplate.opsForValue().set(redisKey, notification, 14, TimeUnit.MINUTES);
+        redisTemplate.opsForValue().set(redisKey, notification, 14, TimeUnit.DAYS);
 
         sendRealTimeNotification(userId, roleType, notifyContent);
         sendEmailNotification(userId, notifyType, notifyContent);
