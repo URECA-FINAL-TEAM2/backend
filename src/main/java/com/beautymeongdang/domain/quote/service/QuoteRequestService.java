@@ -38,4 +38,7 @@ public interface QuoteRequestService {
     // 미용사 1:1 맞춤 견적 요청 거절
     UpdateGroomerRequestRejectionResponseDto updateGroomerRequestRejection(UpdateGroomerRequestRejectionRequestDto requestDto);
 
+    // 고객(자신)이 보낸 견적 요청 상세 조회
+    GetCustomerRequestDetailResponseDto getCustomerRequestDetail(Long requestId);
+
 }
