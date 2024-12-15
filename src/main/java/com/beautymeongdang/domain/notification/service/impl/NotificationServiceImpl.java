@@ -87,12 +87,20 @@ public class NotificationServiceImpl implements NotificationService {
         Map<String, Object> notification = (Map<String, Object>) redisTemplate.opsForValue().get(redisKey);
 
         if (notification != null) {
-            notification.put("readCheckYn", isRead); // readCheckYn 값을 업데이트
-            redisTemplate.opsForValue().set(redisKey, notification); // Redis에 다시 저장
+            Long ttl = redisTemplate.getExpire(redisKey);
+            notification.put("readCheckYn", isRead);
+
+            // TTL 유지하면서 업데이트
+            if (ttl != null && ttl > 0) {
+                redisTemplate.opsForValue().set(redisKey, notification, ttl, TimeUnit.SECONDS);
+            } else {
+                redisTemplate.opsForValue().set(redisKey, notification, 14, TimeUnit.DAYS);
+            }
         } else {
-            throw new IllegalArgumentException("Notification not found.");
+            throw new IllegalArgumentException("알림을 찾을 수 없습니다.");
         }
     }
+
 
 
     @Override
