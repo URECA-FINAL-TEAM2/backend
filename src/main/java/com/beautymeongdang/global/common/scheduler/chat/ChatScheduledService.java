@@ -6,6 +6,7 @@ import com.beautymeongdang.domain.chat.entity.ChatMessageImage;
 import com.beautymeongdang.domain.chat.repository.ChatMessageImageRepository;
 import com.beautymeongdang.domain.chat.repository.ChatMessageRepository;
 import com.beautymeongdang.domain.chat.repository.ChatRepository;
+import com.beautymeongdang.infra.s3.FileStore;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -21,6 +22,7 @@ public class ChatScheduledService {
     private final ChatMessageRepository chatMessageRepository;
     private final ChatMessageImageRepository chatMessageImageRepository;
     private final ChatRepository chatRepository;
+    private final FileStore fileStore;
 
     // 채팅 메시지 물리적 삭제 스케줄러
     @Scheduled(cron = "0 0 1 * * *")
@@ -30,6 +32,9 @@ public class ChatScheduledService {
 
         chatMessages.forEach(chatMessage -> {
             List<ChatMessageImage> chatMessageImages = chatMessageImageRepository.findAllByMessageId(chatMessage);
+            chatMessageImages.forEach(chatMessageImage -> {
+                fileStore.deleteFile(chatMessageImage.getImageUrl());
+            });
             chatMessageImageRepository.deleteAll(chatMessageImages);
 
             chatMessageRepository.delete(chatMessage);
