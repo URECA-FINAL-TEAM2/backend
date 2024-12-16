@@ -1,6 +1,8 @@
 package com.beautymeongdang.global.login.service.impl;
 
 import com.beautymeongdang.domain.user.dto.UserDTO;
+import com.beautymeongdang.domain.user.entity.Customer;
+import com.beautymeongdang.domain.user.entity.Groomer;
 import com.beautymeongdang.domain.user.entity.Role;
 import com.beautymeongdang.domain.user.repository.CustomerRepository;
 import com.beautymeongdang.domain.user.repository.GroomerRepository;
@@ -27,6 +29,8 @@ import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 
 
@@ -42,6 +46,38 @@ public class CustomOAuth2UserServiceImpl extends DefaultOAuth2UserService implem
     private final JwtProvider jwtProvider;
     private final CustomerRepository customerRepository;
     private final GroomerRepository groomerRepository;
+
+    // 탈퇴 상태 및 남은 일수 확인
+    private Map<String, Object> checkDeletionStatus(User user) {
+        Map<String, Object> status = new HashMap<>();
+        LocalDateTime thirtyDaysAgo = LocalDateTime.now().minusDays(30);
+
+        // 고객 탈퇴 상태 확인
+        Optional<Customer> deletedCustomer = customerRepository
+                .findDeletedCustomerInLast30Days(user, thirtyDaysAgo);
+        boolean isCustomerDeleted = deletedCustomer.isPresent();
+        long customerDaysLeft = 0;
+        if (deletedCustomer.isPresent()) {
+            customerDaysLeft = 30 - ChronoUnit.DAYS.between(deletedCustomer.get().getUpdatedAt(), LocalDateTime.now());
+        }
+
+        // 미용사 탈퇴 상태 확인
+        Optional<Groomer> deletedGroomer = groomerRepository
+                .findDeletedGroomerInLast30Days(user, thirtyDaysAgo);
+        boolean isGroomerDeleted = deletedGroomer.isPresent();
+        long groomerDaysLeft = 0;
+        if (deletedGroomer.isPresent()) {
+            groomerDaysLeft = 30 - ChronoUnit.DAYS.between(deletedGroomer.get().getUpdatedAt(), LocalDateTime.now());
+        }
+
+        status.put("customerDeleted", isCustomerDeleted);
+        status.put("groomerDeleted", isGroomerDeleted);
+        status.put("customerDaysUntilReregister", customerDaysLeft);
+        status.put("groomerDaysUntilReregister", groomerDaysLeft);
+
+        return status;
+    }
+
 
     @Override
     public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
@@ -82,6 +118,8 @@ public class CustomOAuth2UserServiceImpl extends DefaultOAuth2UserService implem
         } else {
             user = existingUser.get();
         }
+        // 탈퇴 상태 확인
+        Map<String, Object> deletionStatus = checkDeletionStatus(user);
 
         UserDTO userDTO = UserDTO.builder()
                 .id(user.getUserId())
@@ -90,6 +128,10 @@ public class CustomOAuth2UserServiceImpl extends DefaultOAuth2UserService implem
                 .roles(findActiveRoles(user))
                 .profileImage(user.getProfileImage())
                 .isRegister(user.isRegister())
+                .customerDeletionStatus((Boolean) deletionStatus.get("customerDeleted"))
+                .groomerDeletionStatus((Boolean) deletionStatus.get("groomerDeleted"))
+                .customerDaysUntilReregister((Long) deletionStatus.get("customerDaysUntilReregister"))
+                .groomerDaysUntilReregister((Long) deletionStatus.get("groomerDaysUntilReregister"))
                 .build();
 
         return new CustomOAuth2User(userDTO);
