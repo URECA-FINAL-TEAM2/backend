@@ -75,12 +75,13 @@ public class SecurityConfig {
                                 "/templates/email.html",
                                 "/login/**",
                                 "/api/auth/**",
-                                "/oauth2/**",
                                 // 프론트엔드 라우트들
                                 "/",                    // 루트 경로
                                 "/selectRole",         // 역할 선택 페이지
                                 "/login",             // 로그인 페이지
-                                "/oauth2/**"          // OAuth2 관련 모든 경로
+                                "/oauth2/**",          // OAuth2 관련 모든 경로
+                                "/ws/**",
+                                "/chats/**"
                         ).permitAll()
                         // API 및 Swagger 관련 경로
                         .requestMatchers(

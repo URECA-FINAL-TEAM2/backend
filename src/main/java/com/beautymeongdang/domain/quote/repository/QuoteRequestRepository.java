@@ -76,7 +76,7 @@ public interface QuoteRequestRepository extends JpaRepository<QuoteRequest, Long
 
     // 미용사 매장 근처 견적서 요청 공고 조회
     @Query(value = """
-            SELECT new com.beautymeongdang.domain.quote.dto.GetGroomerQuoteRequestResponseDto(
+            SELECT DISTINCT new com.beautymeongdang.domain.quote.dto.GetGroomerQuoteRequestResponseDto(
                             qr.requestId,
                             u.userName,
                             u.profileImage,
