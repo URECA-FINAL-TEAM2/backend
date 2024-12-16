@@ -53,6 +53,7 @@ public class  QuoteRequestScheduledService {
 
     // 견적서 요청 했지만 3일동안 아무런 견적서 제안이 들어오지 않을 경우
     @Scheduled(cron = "0 0 1 * * *") // 매일 새벽 1시에 실행
+    @Transactional
     public void closeExpiredRequests() {
         LocalDateTime threeDaysAgo = LocalDateTime.now().minusDays(3);
 
