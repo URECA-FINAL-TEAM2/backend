@@ -69,8 +69,7 @@ public class PaymentServiceImpl implements PaymentService {
     // 결제 승인 요청 및 예약 완료
     @Override
     @Retryable(
-            value = { InternalServerException.class,
-                    WebClientRequestException.class,
+            value = { WebClientRequestException.class,
                     SocketTimeoutException.class },
             maxAttempts = 3,
             backoff = @Backoff(
