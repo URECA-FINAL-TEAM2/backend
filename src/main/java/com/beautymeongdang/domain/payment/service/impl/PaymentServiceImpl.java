@@ -22,14 +22,20 @@ import com.beautymeongdang.global.exception.handler.BadRequestException;
 import com.beautymeongdang.global.exception.handler.InternalServerException;
 import com.beautymeongdang.global.exception.handler.NotFoundException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Recover;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.WebClientRequestException;
 
+import java.net.SocketTimeoutException;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.util.List;
@@ -37,6 +43,7 @@ import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class PaymentServiceImpl implements PaymentService {
 
     @Value("${toss.payments.secret.key}")
@@ -61,36 +68,45 @@ public class PaymentServiceImpl implements PaymentService {
 
     // 결제 승인 요청 및 예약 완료
     @Override
+    @Retryable(
+            value = { InternalServerException.class,
+                    WebClientRequestException.class,
+                    SocketTimeoutException.class },
+            maxAttempts = 3,
+            backoff = @Backoff(
+                    delay = 1000,
+                    multiplier = 2.0,
+                    maxDelay = 10000
+            )
+    )
     @Transactional
     public PaymentResponseDto confirmPayment(PaymentRequestDto request) {
 
-        Quote quote = quoteRepository.findById(request.getQuoteId())
-                .orElseThrow(() -> NotFoundException.entityNotFound("견적 데이터"));
-
-
-        Customer customer = customerRepository.findById(request.getCustomerId())
-                .orElseThrow(() -> NotFoundException.entityNotFound("고객 데이터"));
-
-        if (selectedQuoteRepository.findByQuoteId(quote) != null) {
-            throw BadRequestException.invalidRequest("해당 견적서는 이미 예약되었습니다.");
-        }
-
-        SelectedQuote selectedQuotePay = selectedQuoteRepository.findByQuoteId(quote);
-        if (selectedQuotePay != null && paymentRepository.existsBySelectedQuoteId(selectedQuotePay)) {
-            throw BadRequestException.invalidRequest("이미 결제된 견적서입니다.");
-        }
-
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-        headers.setBasicAuth(secretKey, "");
-
-        Map<String, Object> body = Map.of(
-                "paymentKey", request.getPaymentKey(),
-                "orderId", request.getOrderId(),
-                "amount", request.getAmount()
-        );
-
         try {
+            Quote quote = quoteRepository.findById(request.getQuoteId())
+                    .orElseThrow(() -> NotFoundException.entityNotFound("견적 데이터"));
+
+            Customer customer = customerRepository.findById(request.getCustomerId())
+                    .orElseThrow(() -> NotFoundException.entityNotFound("고객 데이터"));
+
+            if (selectedQuoteRepository.findByQuoteId(quote) != null) {
+                throw BadRequestException.invalidRequest("해당 견적서는 이미 예약되었습니다.");
+            }
+
+            SelectedQuote selectedQuotePay = selectedQuoteRepository.findByQuoteId(quote);
+            if (selectedQuotePay != null && paymentRepository.existsBySelectedQuoteId(selectedQuotePay)) {
+                throw BadRequestException.invalidRequest("이미 결제된 견적서입니다.");
+            }
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            headers.setBasicAuth(secretKey, "");
+
+            Map<String, Object> body = Map.of(
+                    "paymentKey", request.getPaymentKey(),
+                    "orderId", request.getOrderId(),
+                    "amount", request.getAmount()
+            );
             // API 호출
             Map<String, Object> response = webClient.post()
                     .uri(TOSS_PAYMENTS_CONFIRM_URL)
@@ -185,13 +201,17 @@ public class PaymentServiceImpl implements PaymentService {
                     .paymentTitle(shopName)
                     .build();
 
-        } catch (NotFoundException | BadRequestException e) {
-            throw e;
         } catch (Exception e) {
-            throw InternalServerException.error(e.getMessage());
+            log.error("결제 승인 중 오류 발생: {}", e.getMessage(), e);
+            throw InternalServerException.error("결제 승인 중 오류가 발생했습니다: " + e.getMessage());
         }
     }
 
+    @Recover
+    public PaymentResponseDto recoverConfirmPayment(InternalServerException e, PaymentRequestDto request) {
+        log.error("결제 승인 최종 실패: PaymentKey={}, 오류={}", request.getPaymentKey(), e.getMessage());
+        throw InternalServerException.error("결제 승인에 최종 실패했습니다.");
+    }
 
     // 결제 취소 및 예약 취소
     @Override

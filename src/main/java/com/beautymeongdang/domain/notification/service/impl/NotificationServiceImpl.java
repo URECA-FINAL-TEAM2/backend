@@ -14,19 +14,14 @@ import java.util.stream.Collectors;
 public class NotificationServiceImpl implements NotificationService {
 
     private final NotificationEventPublisher notificationEventPublisher;
-//    private final NotificationEmailService notificationEmailService;
-    private final UserRepository userRepository;
     private final RedisTemplate<String, Object> redisTemplate;
 
     public NotificationServiceImpl(
             NotificationEventPublisher notificationEventPublisher,
-//            NotificationEmailService notificationEmailService,
             UserRepository userRepository,
             RedisTemplate<String, Object> redisTemplate
     ) {
         this.notificationEventPublisher = notificationEventPublisher;
-//        this.notificationEmailService = notificationEmailService;
-        this.userRepository = userRepository;
         this.redisTemplate = redisTemplate;
     }
 
@@ -47,35 +42,12 @@ public class NotificationServiceImpl implements NotificationService {
         redisTemplate.opsForValue().set(redisKey, notification, 14, TimeUnit.DAYS);
 
         sendRealTimeNotification(userId, roleType, notifyContent);
-//        sendEmailNotification(userId, notifyType, notifyContent);
     }
 
     private void sendRealTimeNotification(Long userId, String roleType, String message) {
         notificationEventPublisher.publishNotification(userId, roleType, message);
     }
 
-//    private void sendEmailNotification(Long userId, String notifyType, String content) {
-//        User user = userRepository.findById(userId)
-//                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다: " + userId));
-//
-//        String userName = user.getUserName();
-//        String userEmail = user.getEmail();
-//
-//        if (!"예약 알림".equals(notifyType) && !"예약 취소 알림".equals(notifyType)) {
-//            return;
-//        }
-//
-//        String subject = String.format("미용멍당 - 새로운 %s", notifyType);
-//
-//        // 템플릿 변수 설정
-//        Map<String, Object> variables = Map.of(
-//                "userName", userName,
-//                "notifyType", notifyType,
-//                "content", content
-//        );
-//
-//        notificationEmailService.sendEmail(userEmail, subject, "email", variables);
-//    }
 
     // 특정 알림 읽음처리
     @Override
