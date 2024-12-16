@@ -101,15 +101,21 @@ public interface QuoteRequestRepository extends JpaRepository<QuoteRequest, Long
                         JOIN
                             TotalQuoteRequest tqr ON tqr.requestId = qr
                         WHERE
-                            q.requestId IS NULL
-                          AND qr.isDeleted = false
+                              qr.isDeleted = false
                           AND qr.requestType = '010'
                           AND qr.status = '010'
                           AND tqr.sigunguId.sigunguId = :sigunguId
+                          AND NOT EXISTS (
+                                     SELECT 1
+                                     FROM Quote q2
+                                     WHERE q2.requestId.requestId = qr.requestId
+                                       AND q2.groomerId.groomerId = :groomerId
+                                       AND q2.isDeleted = false
+                                 )
                         ORDER BY
                             qr.createdAt DESC
            """)
-    List<GetGroomerQuoteRequestResponseDto> findQuoteRequestsBySigunguId(@Param("sigunguId") Long sigunguId);
+    List<GetGroomerQuoteRequestResponseDto> findQuoteRequestsBySigunguId(@Param("sigunguId") Long sigunguId, @Param("groomerId") Long groomerId);
            
     // 미용사가 견적서 보낸 견적 요청 조회
     @Query(value = """
