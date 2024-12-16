@@ -40,7 +40,7 @@ import java.util.*;
 @Service
 @AllArgsConstructor
 public class CustomOAuth2UserServiceImpl extends DefaultOAuth2UserService implements OAuth2Service {
-
+    private static final String DEFAULT_PROFILE_IMAGE = "https://s3-beauty-meongdang.s3.ap-northeast-2.amazonaws.com/%ED%9A%8C%EC%9B%90+%ED%94%84%EB%A1%9C%ED%95%84+%EC%9D%B4%EB%AF%B8%EC%A7%80/%ED%9A%8C%EC%9B%90%EA%B8%B0%EB%B3%B8%EC%9D%B4%EB%AF%B8%EC%A7%80.png";
     private final UserRepository userRepository;
     private final OAuth2AuthorizationClient oauth2Client;
     private final JwtProvider jwtProvider;
@@ -111,7 +111,7 @@ public class CustomOAuth2UserServiceImpl extends DefaultOAuth2UserService implem
                     .email(oAuth2Response.getEmail())
                     .providerId(providerId)
                     .socialProvider(provider)
-                    .profileImage(oAuth2Response.getProfileImage())
+                    .profileImage(DEFAULT_PROFILE_IMAGE)
                     .isRegister(false)
                     .build();
             userRepository.save(user);
@@ -175,7 +175,7 @@ public class CustomOAuth2UserServiceImpl extends DefaultOAuth2UserService implem
                     .email(userInfo.getEmail())
                     .providerId(String.valueOf(userInfo.getId()))
                     .socialProvider("KAKAO")
-                    .profileImage(userInfo.getProfileImage())
+                    .profileImage(DEFAULT_PROFILE_IMAGE)
                     .isRegister(false)
                     .build();
             userRepository.save(user); // 새로운 사용자 정보를 DB에 저장
@@ -234,7 +234,7 @@ public class CustomOAuth2UserServiceImpl extends DefaultOAuth2UserService implem
                     .email(userInfo.getEmail())
                     .providerId(String.valueOf(userInfo.getId()))
                     .socialProvider("GOOGLE")
-                    .profileImage(userInfo.getProfileImage())
+                    .profileImage(DEFAULT_PROFILE_IMAGE)
                     .isRegister(false)
                     .build();
             userRepository.save(user);
