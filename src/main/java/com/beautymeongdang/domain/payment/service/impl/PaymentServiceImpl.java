@@ -67,9 +67,6 @@ public class PaymentServiceImpl implements PaymentService {
         Quote quote = quoteRepository.findById(request.getQuoteId())
                 .orElseThrow(() -> NotFoundException.entityNotFound("견적 데이터"));
 
-        if (!quote.getCost().equals(request.getAmount())) {
-            throw BadRequestException.invalidRequest("결제 금액과 견적 금액이 다릅니다.");
-        }
 
         Customer customer = customerRepository.findById(request.getCustomerId())
                 .orElseThrow(() -> NotFoundException.entityNotFound("고객 데이터"));
