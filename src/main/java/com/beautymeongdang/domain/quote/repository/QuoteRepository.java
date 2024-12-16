@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -56,5 +57,12 @@ public interface QuoteRepository extends JpaRepository<Quote, Long> {
     // 반려견 프로필 논리적 삭제
     List<Quote> findAllByDogId(Dog dog);
 
-
+    // 견적서 물리적 삭제 스케줄러
+    @Query("""
+    SELECT q
+    FROM Quote q
+    WHERE q.isDeleted = true
+      AND q.updatedAt < :deleteDay
+    """)
+    List<Quote> findAllByIsDeletedAndUpdatedAt(@Param("deleteDay") LocalDateTime deleteDay);
 }
