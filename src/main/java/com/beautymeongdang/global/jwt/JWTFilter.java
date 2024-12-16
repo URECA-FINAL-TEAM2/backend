@@ -15,11 +15,11 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
+import org.springframework.web.util.WebUtils;
 
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 @Slf4j
 @AllArgsConstructor
@@ -32,35 +32,20 @@ public class JWTFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
         try {
-            String requestURI = request.getRequestURI();
-            log.debug("Processing request: {}", requestURI);
-
+            // Authorization 헤더에서 토큰 확인
             String accessToken = request.getHeader("Authorization");
-            log.debug("Received Authorization header: {}", accessToken);
+            Cookie accessTokenCookie = WebUtils.getCookie(request, "access_token");
 
             if (accessToken != null && accessToken.startsWith("Bearer ")) {
-                accessToken = accessToken.substring(7);
-                log.debug("Extracted token: {}", accessToken);
-                processAccessToken(accessToken);
+                String token = accessToken.substring(7);
+                String encryptedToken = accessTokenCookie != null ? accessTokenCookie.getValue() : null;
 
-            }
-            // 쿼리 파라미터에서 토큰 추출
-            else if (request.getParameter("token") != null) {
-                accessToken = request.getParameter("token");
-                log.debug("Extracted token from query parameter: {}", accessToken);
-                processAccessToken(accessToken);
-
-                // 3. Refresh Token 처리
-            }
-            else {
-                log.debug("No access token found, checking refresh token");
+                if (encryptedToken != null) {
+                    processAccessToken(token, encryptedToken);
+                }
+            } else {
                 processRefreshToken(request, response);
             }
-
-            // 현재 인증 상태 로깅
-            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-            log.debug("Current authentication: {}", authentication);
-
         } catch (Exception e) {
             log.error("Error processing JWT token", e);
         } finally {
@@ -68,34 +53,19 @@ public class JWTFilter extends OncePerRequestFilter {
         }
     }
 
-    private void processAccessToken(String token) {
+    private void processAccessToken(String token, String encryptedToken) {
         try {
-            log.debug("Processing access token");
-
-            if (jwtUtil.isExpired(token)) {
-                log.debug("Token is expired");
+            if (!jwtProvider.validateToken(encryptedToken, token)) {
+                log.debug("Token validation failed");
                 return;
             }
 
-            String userId = jwtUtil.getUserId(token);
-            log.debug("Extracted userId from token: {}", userId);
+            Long userId = jwtProvider.getUserIdFromToken(encryptedToken, token);
+            User user = userRepository.findByIdWithRoles(userId).orElse(null);
 
-            if (userId == null) {
-                log.debug("userId is null");
-                return;
+            if (user != null) {
+                processTokenWithUser(user);
             }
-
-            User user = userRepository.findByIdWithRoles(Long.parseLong(userId))
-                    .orElse(null);
-
-            if (user == null) {
-                log.debug("User not found for userId: {}", userId);
-                return;
-            }
-
-            log.debug("Found user: {}", user.getUserId());
-            processTokenWithUser(user);
-
         } catch (Exception e) {
             log.error("Failed to process access token", e);
         }
@@ -103,96 +73,66 @@ public class JWTFilter extends OncePerRequestFilter {
 
     private void processRefreshToken(HttpServletRequest request, HttpServletResponse response) {
         try {
-            Cookie[] cookies = request.getCookies();
-            if (cookies == null) {
-                log.debug("No cookies found");
-                return;
-
-            }
-
-            String refreshToken = findRefreshToken(cookies);
-            if (refreshToken == null) {
-                log.debug("No refresh token found");
+            Cookie refreshTokenCookie = WebUtils.getCookie(request, "refresh_token");
+            if (refreshTokenCookie == null) {
+                log.debug("No refresh token cookie found");
                 return;
             }
 
-            if (jwtUtil.isExpired(refreshToken)) {
-                log.debug("Refresh token is expired");
+            String encryptedRefreshToken = refreshTokenCookie.getValue();
+
+            // 원본 refresh 토큰 쿠키 가져오기
+            Cookie originalRefreshTokenCookie = WebUtils.getCookie(request, "original_refresh_token");
+            if (originalRefreshTokenCookie == null) {
+                log.debug("No original refresh token cookie found");
                 return;
             }
 
-            String userId = jwtUtil.getUserId(refreshToken);
+            String originalRefreshToken = originalRefreshTokenCookie.getValue();
+
+            // 토큰 검증
+            if (!jwtProvider.validateToken(encryptedRefreshToken, originalRefreshToken)) {
+                log.debug("Refresh token validation failed");
+                return;
+            }
+
+            Long userId = jwtProvider.getUserIdFromToken(encryptedRefreshToken, originalRefreshToken);
             if (userId == null) {
                 log.debug("No userId in refresh token");
                 return;
             }
 
-            User user = userRepository.findByIdWithRoles(Long.parseLong(userId))
-                    .orElse(null);
-
+            User user = userRepository.findByIdWithRoles(userId).orElse(null);
             if (user == null) {
                 log.debug("User not found for refresh token");
                 return;
             }
 
-
+            // 새로운 토큰 발급
             Map<String, Object> tokenInfo = jwtProvider.createTokens(user, response);
             log.debug("Created new tokens for user: {}", user.getUserId());
+
             processTokenWithUser(user);
 
         } catch (Exception e) {
-            log.error("Failed to process refresh token", e);
+            log.error("Failed to process refresh token: {}", e.getMessage());
         }
     }
 
     private void processTokenWithUser(User user) {
-        try {
-            UserDTO userDTO = UserDTO.builder()
-                    .id(user.getUserId())
-                    .nickname(user.getNickname())
-                    .build();
+        UserDTO userDTO = UserDTO.builder()
+                .id(user.getUserId())
+                .nickname(user.getNickname())
+                .roles(user.getRoles())
+                .build();
 
-            CustomOAuth2User customOAuth2User = new CustomOAuth2User(userDTO);
-            Authentication authToken = new UsernamePasswordAuthenticationToken(
-                    customOAuth2User,
-                    null,
-                    customOAuth2User.getAuthorities()
-            );
+        CustomOAuth2User customOAuth2User = new CustomOAuth2User(userDTO);
+        Authentication authToken = new UsernamePasswordAuthenticationToken(
+                customOAuth2User,
+                null,
+                customOAuth2User.getAuthorities()
+        );
 
-            SecurityContextHolder.getContext().setAuthentication(authToken);
-            log.debug("Successfully set authentication for user: {}", user.getUserId());
-
-        } catch (Exception e) {
-            log.error("Failed to process user authentication", e);
-        }
-
-    }
-
-    private String findRefreshToken(Cookie[] cookies) {
-        return Arrays.stream(cookies)
-                .filter(cookie -> "refresh_token".equals(cookie.getName()))
-                .findFirst()
-                .map(Cookie::getValue)
-                .orElse(null);
-    }
-
-
-    @Override
-    protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
-        String path = request.getRequestURI();
-        boolean shouldNotFilter = path.startsWith("/swagger-ui/") ||
-                path.startsWith("/v3/api-docs/") ||
-                path.startsWith("/oauth2/") ||
-                path.startsWith("/login/oauth2/") ||
-                path.startsWith("/wp-admin/") ||
-                path.startsWith("/wordpress/") ||
-                path.equals("/") ||
-                (path.contains(".") && !path.endsWith(".html"));
-
-        if (shouldNotFilter) {
-            log.debug("Skipping JWT filter for path: {}", path);
-        }
-
-        return shouldNotFilter;
+        SecurityContextHolder.getContext().setAuthentication(authToken);
     }
 }
