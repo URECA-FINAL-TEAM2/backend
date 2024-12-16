@@ -2,16 +2,12 @@ package com.beautymeongdang.domain.chat.handler;
 
 
 import com.beautymeongdang.domain.chat.service.ChatService;
-import com.beautymeongdang.domain.user.entity.User;
-import com.beautymeongdang.domain.user.repository.CustomerRepository;
-import com.beautymeongdang.domain.user.repository.GroomerRepository;
 import com.beautymeongdang.global.jwt.JWTUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageChannel;
-import org.springframework.messaging.simp.SimpMessageSendingOperations;
 import org.springframework.messaging.simp.stomp.StompCommand;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.messaging.support.ChannelInterceptor;
@@ -27,9 +23,6 @@ public class StompHandler implements ChannelInterceptor {
 
     private final JWTUtil jwtUtil;
     private final ObjectProvider<ChatService> chatServiceProvider;
-    private final CustomerRepository customerRepository;
-    private final GroomerRepository groomerRepository;
-
 
     private ChatService getChatService() {
         return chatServiceProvider.getObject();
@@ -78,6 +71,7 @@ public class StompHandler implements ChannelInterceptor {
             // 세션에 사용자 정보 저장
             accessor.getSessionAttributes().put("CustomerYn", customerYnStr);
             accessor.getSessionAttributes().put("UserId", userId);
+            accessor.setUser(() -> userId);
 
 
             log.info("[CONNECT] 현재 세션 정보: {}", accessor.getSessionAttributes());
