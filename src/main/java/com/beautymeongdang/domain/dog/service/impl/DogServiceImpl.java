@@ -182,6 +182,7 @@ public class DogServiceImpl implements DogService {
                 .dogBreed(requestDto.getDogBreedCodeId())
                 .dogWeight(requestDto.getDogWeight())
                 .dogBirth(requestDto.getDogBirth())
+                .dogAge(calculateDogAge(requestDto.getDogBirth()))
                 .dogGender(Dog.DogGender.valueOf(requestDto.getDogGender()))
                 .neutering(requestDto.isNeutering())
                 .experience(requestDto.isExperience())
