@@ -61,7 +61,7 @@ public class  QuoteRequestScheduledService {
 
         // 상태를 마감으로 변경
         expiredRequests.forEach(request ->
-                request.updateStatus("030") // 마감 상태 코드
+                request.updateStatus("030") // 마감 상태 코드로 변경
         );
 
         quoteRequestRepository.saveAll(expiredRequests);
@@ -88,13 +88,38 @@ public class  QuoteRequestScheduledService {
                     return selectedQuote == null || !selectedQuote.getStatus().equals("010");
                 })
                 .forEach(request ->
-                        request.updateStatus("030") // 마감 상태 코드
+                        request.updateStatus("030") // 마감 상태 코드로 변경
                 );
 
         quoteRequestRepository.saveAll(unpaidRequests);
     }
 
 
+
+    // 전체요청에서 견적서가 선택되어 예약된 경우 해당 견적요청을 마감으로 변경
+    @Scheduled(cron = "0 */10 * * * *")
+    public void closeTotalRequestWhenQuoteSelected() {
+        // 전체요청("010")이면서 요청상태("010")인 요청들 조회
+        List<QuoteRequest> totalRequests = quoteRequestRepository.findAllByRequestTypeAndStatus(
+                "010", "010");
+
+        totalRequests.stream()
+                .filter(request -> {
+                    // 해당 견적요청에 대한 모든 견적서들 조회
+                    List<Quote> quotes = quoteRepository.findAllByRequestId(request.getRequestId());
+
+                    // 견적서들 중 하나라도 선택되어 예약완료 상태인지 확인
+                    return quotes.stream().anyMatch(quote -> {
+                        SelectedQuote selectedQuote = selectedQuoteRepository.findByQuoteId(quote);
+                        return selectedQuote != null && selectedQuote.getStatus().equals("010"); // 예약완료
+                    });
+                })
+                .forEach(request ->
+                        request.updateStatus("030") // 마감 상태 코드로 변경
+                );
+
+        quoteRequestRepository.saveAll(totalRequests);
+    }
 
 
 }
