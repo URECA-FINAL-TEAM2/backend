@@ -1,11 +1,10 @@
 package com.beautymeongdang.global.common.scheduler.quote;
 
+import com.beautymeongdang.domain.quote.entity.Quote;
 import com.beautymeongdang.domain.quote.entity.QuoteRequest;
 import com.beautymeongdang.domain.quote.entity.QuoteRequestImage;
-import com.beautymeongdang.domain.quote.repository.DirectQuoteRequestRepository;
-import com.beautymeongdang.domain.quote.repository.QuoteRequestImageRepository;
-import com.beautymeongdang.domain.quote.repository.QuoteRequestRepository;
-import com.beautymeongdang.domain.quote.repository.TotalQuoteRequestRepository;
+import com.beautymeongdang.domain.quote.entity.SelectedQuote;
+import com.beautymeongdang.domain.quote.repository.*;
 import com.beautymeongdang.infra.s3.FileStore;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -24,6 +23,8 @@ public class  QuoteRequestScheduledService {
     private final TotalQuoteRequestRepository totalQuoteRequestRepository;
     private final DirectQuoteRequestRepository directQuoteRequestRepository;
     private final FileStore fileStore;
+    private final QuoteRepository quoteRepository;
+    private final SelectedQuoteRepository selectedQuoteRepository;
 
 
     @Scheduled(cron = "0 0 1 * * *")
@@ -47,4 +48,53 @@ public class  QuoteRequestScheduledService {
             quoteRequestRepository.delete(quoteRequest);
         });
     }
+
+
+
+    // 견적서 요청 했지만 3일동안 아무런 견적서 제안이 들어오지 않을 경우
+    @Scheduled(cron = "0 0 1 * * *") // 매일 새벽 1시에 실행
+    public void closeExpiredRequests() {
+        LocalDateTime threeDaysAgo = LocalDateTime.now().minusDays(3);
+
+        // 요청 상태이면서 4일이 지난 QuoteRequest 조회
+        List<QuoteRequest> expiredRequests = quoteRequestRepository.findAllByStatusAndCreatedAtBefore("010", threeDaysAgo);
+
+        // 상태를 마감으로 변경
+        expiredRequests.forEach(request ->
+                request.updateStatus("030") // 마감 상태 코드
+        );
+
+        quoteRequestRepository.saveAll(expiredRequests);
+    }
+
+    // 제안완료 상태에서 2일 동안 결제되지 않은 1:1 견적 요청을 마감으로 변경
+    @Scheduled(cron = "0 0 1 * * *") // 매일 새벽 1시에 실행
+    public void closeUnpaidDirectRequests() {
+        LocalDateTime twoDaysAgo = LocalDateTime.now().minusDays(2);
+
+        // 1:1 요청("020")이면서 제안완료 상태("040")이고 2일이 지난 요청들 조회
+        List<QuoteRequest> unpaidRequests = quoteRequestRepository.findAllByRequestTypeAndStatusAndUpdatedAtBefore("020", "040", twoDaysAgo);
+
+        // 견적서가 있으면서 예약완료 상태가 아닌 요청들만 마감으로 변경
+        unpaidRequests.stream()
+                .filter(request -> {
+                    Quote quote = quoteRepository.findByRequestId(request)
+                            .orElse(null);
+                    if (quote == null) return false;
+
+                    SelectedQuote selectedQuote = selectedQuoteRepository.findByQuoteId(quote);
+
+                    // 선택된 견적서가 없거나, 있더라도 예약완료(010) 상태가 아닌 경우
+                    return selectedQuote == null || !selectedQuote.getStatus().equals("010");
+                })
+                .forEach(request ->
+                        request.updateStatus("030") // 마감 상태 코드
+                );
+
+        quoteRequestRepository.saveAll(unpaidRequests);
+    }
+
+
+
+
 }

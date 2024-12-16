@@ -259,7 +259,7 @@ public interface QuoteRequestRepository extends JpaRepository<QuoteRequest, Long
     // 반려견 프로필 논리적 삭제
     List<QuoteRequest> findAllByDogId(Dog dog);
 
-    // qoute Request 물리적 삭제 스케줄러
+    // quote Request 물리적 삭제 스케줄러
     @Query("""
     SELECT qr
     FROM QuoteRequest qr
@@ -267,4 +267,11 @@ public interface QuoteRequestRepository extends JpaRepository<QuoteRequest, Long
       AND qr.updatedAt < :deleteDay
     """)
     List<QuoteRequest> findAllByIsDeletedAndUpdatedAt(@Param("deleteDay") LocalDateTime deleteDay);
+
+    // quote Request 상태 변경 스케줄러
+    List<QuoteRequest> findAllByStatusAndCreatedAtBefore(String status, LocalDateTime dateTime);
+
+    List<QuoteRequest> findAllByRequestTypeAndStatusAndUpdatedAtBefore(
+            String requestType, String status, LocalDateTime dateTime
+    );
 }

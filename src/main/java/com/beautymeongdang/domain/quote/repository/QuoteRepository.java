@@ -56,5 +56,6 @@ public interface QuoteRepository extends JpaRepository<Quote, Long> {
     // 반려견 프로필 논리적 삭제
     List<Quote> findAllByDogId(Dog dog);
 
-
+    // quote Request 상태 변경 스케줄러
+    Optional<Quote> findByRequestId(QuoteRequest requestId);
 }
