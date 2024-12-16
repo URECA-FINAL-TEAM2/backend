@@ -7,6 +7,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 public interface GroomerRepository extends JpaRepository<Groomer, Long> {
@@ -27,4 +29,13 @@ public interface GroomerRepository extends JpaRepository<Groomer, Long> {
 
     // 삭제되지 않은(isDeleted가 false인) 데이터가 존재하는지 확인
     boolean existsByUserIdAndIsDeletedFalse(User userId);
+
+    // 미용사 프로필 삭제 스케줄러
+    @Query("""
+    SELECT g
+    FROM Groomer g
+    WHERE g.isDeleted = true
+      AND g.updatedAt < :deleteDay
+    """)
+    List<Groomer> findAllByIsDeletedAndAndUpdatedAt(@Param("deleteDay") LocalDateTime deleteDay);
 }
