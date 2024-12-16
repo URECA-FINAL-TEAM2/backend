@@ -34,6 +34,7 @@ public class GetShopDetailResponseDto {
     @AllArgsConstructor
     public static class ReviewDetailDto {
         private Long reviewId;
+        private String customerProfile;
         private String customerNickname;
         private Double starScore;
         private String content;
