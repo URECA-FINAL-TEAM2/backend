@@ -29,7 +29,7 @@ public class CreateChatMessageResponseDto {
         return CreateChatResponseDto.builder()
                 .chatId(chat.getChatId())
                 .customerId(chat.getCustomerId().getCustomerId())
-                .customerNickname(chat.getCustomerId().getUserId().getUserName()) //고객은 username
+                .customerNickname(chat.getCustomerId().getUserId().getNickname())
                 .customerProfileImage(chat.getCustomerId().getUserId().getProfileImage())
                 .groomerId(chat.getGroomerId().getGroomerId())
                 .groomerNickname(chat.getGroomerId().getUserId().getNickname())
