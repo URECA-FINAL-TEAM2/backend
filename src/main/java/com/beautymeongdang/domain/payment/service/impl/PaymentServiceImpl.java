@@ -18,6 +18,9 @@ import com.beautymeongdang.domain.user.entity.Customer;
 import com.beautymeongdang.domain.user.repository.CustomerRepository;
 import com.beautymeongdang.global.common.entity.CommonCode;
 import com.beautymeongdang.global.common.repository.CommonCodeRepository;
+import com.beautymeongdang.global.exception.handler.BadRequestException;
+import com.beautymeongdang.global.exception.handler.InternalServerException;
+import com.beautymeongdang.global.exception.handler.NotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
@@ -50,22 +53,36 @@ public class PaymentServiceImpl implements PaymentService {
 
     private static final String TOSS_PAYMENTS_CONFIRM_URL = "https://api.tosspayments.com/v1/payments/confirm";
 
-    public static final String RESERVATION_GROUP = "250"; // 예약 상태 그룹
     public static final String PAYMENT_GROUP = "300"; // 결제 상태 그룹
-
     public static final String PAYMENT_COMPLETED = "020";    // 결제 완료
     public static final String PAYMENT_CANCELLED = "030";   // 결제 취소
-    public static final String PAYMENT_FAILED = "040";      // 결제 실패
-    public static final String PAYMENT_CANCEL_FAILED = "050"; // 결제 취소 실패
-
     public static final String RESERVATION_COMPLETED = "010"; // 예약 완료
     public static final String RESERVATION_CANCELLED = "020"; // 예약 취소
-    public static final String RESERVATION_COMPLETED_GROOMING = "030"; // 미용 완료
 
     // 결제 승인 요청 및 예약 완료
     @Override
     @Transactional
     public PaymentResponseDto confirmPayment(PaymentRequestDto request) {
+
+        Quote quote = quoteRepository.findById(request.getQuoteId())
+                .orElseThrow(() -> NotFoundException.entityNotFound("견적 데이터"));
+
+        if (!quote.getCost().equals(request.getAmount())) {
+            throw BadRequestException.invalidRequest("결제 금액과 견적 금액이 다릅니다.");
+        }
+
+        Customer customer = customerRepository.findById(request.getCustomerId())
+                .orElseThrow(() -> NotFoundException.entityNotFound("고객 데이터"));
+
+        if (selectedQuoteRepository.findByQuoteId(quote) != null) {
+            throw BadRequestException.invalidRequest("해당 견적서는 이미 예약되었습니다.");
+        }
+
+        SelectedQuote selectedQuotePay = selectedQuoteRepository.findByQuoteId(quote);
+        if (selectedQuotePay != null && paymentRepository.existsBySelectedQuoteId(selectedQuotePay)) {
+            throw BadRequestException.invalidRequest("이미 결제된 견적서입니다.");
+        }
+
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.setBasicAuth(secretKey, "");
@@ -77,6 +94,7 @@ public class PaymentServiceImpl implements PaymentService {
         );
 
         try {
+            // API 호출
             Map<String, Object> response = webClient.post()
                     .uri(TOSS_PAYMENTS_CONFIRM_URL)
                     .headers(httpHeaders -> httpHeaders.addAll(headers))
@@ -85,96 +103,95 @@ public class PaymentServiceImpl implements PaymentService {
                     .bodyToMono(new ParameterizedTypeReference<Map<String, Object>>() {})
                     .block();
 
-            if (response != null && response.get("approvedAt") != null) {
-                OffsetDateTime approvedAtOffset = OffsetDateTime.parse(response.get("approvedAt").toString());
-                LocalDateTime approvedAt = approvedAtOffset.toLocalDateTime();
-                String method = response.get("method").toString();
-
-
-                Quote quote = quoteRepository.findById(request.getQuoteId())
-                        .orElseThrow(() -> new IllegalArgumentException("견적 데이터를 찾을 수 없습니다."));
-                Customer customer = customerRepository.findById(request.getCustomerId())
-                        .orElseThrow(() -> new IllegalArgumentException("고객 데이터를 찾을 수 없습니다."));
-
-                Long groomerId = quote.getGroomerId().getGroomerId();
-                String shopName = shopRepository.findByGroomerId(groomerId)
-                        .orElseThrow(() -> new IllegalArgumentException("샵 정보를 찾을 수 없습니다."))
-                        .getShopName();
-
-                SelectedQuote selectedQuote = SelectedQuote.builder()
-                        .quoteId(quote)
-                        .customerId(customer)
-                        .status(RESERVATION_COMPLETED)
-                        .build();
-
-                selectedQuote = selectedQuoteRepository.save(selectedQuote);
-
-                Payment payment = Payment.builder()
-                        .paymentKey(request.getPaymentKey())
-                        .orderId(request.getOrderId())
-                        .amount(request.getAmount())
-                        .method(method)
-                        .status(PAYMENT_COMPLETED)
-                        .approvedAt(approvedAt)
-                        .paymentTitle(shopName)
-                        .selectedQuoteId(selectedQuote)
-                        .build();
-
-                paymentRepository.save(payment);
-
-                // 알림 메시지 생성
-                String notificationMessageForCustomer = String.format(
-                        "예약이 완료되었습니다. 미용사: %s, 강아지: %s, 비용: %d원, 미용 날짜: %s",
-                        quote.getGroomerId().getUserId().getNickname(),
-                        quote.getDogId().getDogName(),
-                        request.getAmount(),
-                        quote.getBeautyDate()
-                );
-
-                String notificationMessageForGroomer = String.format(
-                        "예약이 완료되었습니다. 고객: %s, 강아지: %s, 비용: %d원, 미용 날짜: %s",
-                        customer.getUserId().getUserName(),
-                        quote.getDogId().getDogName(),
-                        request.getAmount(),
-                        quote.getBeautyDate()
-                );
-
-                // 고객 알림 저장 (예약 알림)
-                notificationService.saveNotification(
-                        customer.getUserId().getUserId(),
-                        "customer",
-                        NotificationType.RESERVATION.getDescription(),
-                        notificationMessageForCustomer
-                );
-
-                // 미용사 알림 저장 (예약 알림)
-                notificationService.saveNotification(
-                        quote.getGroomerId().getUserId().getUserId(),
-                        "groomer",
-                        NotificationType.RESERVATION.getDescription(),
-                        notificationMessageForGroomer
-                );
-
-                String statusName = commonCodeRepository.findByCodeAndGroupCode(payment.getStatus(), PAYMENT_GROUP)
-                        .map(CommonCode::getCommonName)
-                        .orElse("알 수 없는 상태");
-
-                return PaymentResponseDto.builder()
-                        .paymentKey(request.getPaymentKey())
-                        .orderId(request.getOrderId())
-                        .status(statusName)
-                        .method(method)
-                        .approvedAt(approvedAtOffset)
-                        .amount(request.getAmount())
-                        .selectedQuoteId(selectedQuote.getSelectedQuoteId())
-                        .message("결제 승인 성공")
-                        .paymentTitle(shopName)
-                        .build();
-            } else {
-                throw new IllegalArgumentException("결제 승인 실패: 응답이 유효하지 않습니다.");
+            if (response == null || response.get("approvedAt") == null) {
+                throw InternalServerException.error("결제 승인 응답이 유효하지 않음");
             }
+
+            OffsetDateTime approvedAtOffset = OffsetDateTime.parse(response.get("approvedAt").toString());
+            LocalDateTime approvedAt = approvedAtOffset.toLocalDateTime();
+            String method = response.get("method").toString();
+
+            SelectedQuote selectedQuote = SelectedQuote.builder()
+                    .quoteId(quote)
+                    .customerId(customer)
+                    .status(RESERVATION_COMPLETED)
+                    .build();
+
+            selectedQuote = selectedQuoteRepository.save(selectedQuote);
+
+
+
+            Long groomerId = quote.getGroomerId().getGroomerId();
+            String shopName = shopRepository.findByGroomerId(groomerId)
+                    .orElseThrow(() -> NotFoundException.entityNotFound("샵 정보"))
+                    .getShopName();
+
+            Payment payment = Payment.builder()
+                    .paymentKey(request.getPaymentKey())
+                    .orderId(request.getOrderId())
+                    .amount(request.getAmount())
+                    .method(method)
+                    .status(PAYMENT_COMPLETED)
+                    .approvedAt(approvedAt)
+                    .paymentTitle(shopName)
+                    .selectedQuoteId(selectedQuote)
+                    .build();
+
+            paymentRepository.save(payment);
+
+            // 알림 메시지 생성
+            String notificationMessageForCustomer = String.format(
+                    "예약이 완료되었습니다. 미용사: %s, 강아지: %s, 비용: %d원, 미용 날짜: %s",
+                    quote.getGroomerId().getUserId().getNickname(),
+                    quote.getDogId().getDogName(),
+                    request.getAmount(),
+                    quote.getBeautyDate()
+            );
+
+            String notificationMessageForGroomer = String.format(
+                    "예약이 완료되었습니다. 고객: %s, 강아지: %s, 비용: %d원, 미용 날짜: %s",
+                    customer.getUserId().getUserName(),
+                    quote.getDogId().getDogName(),
+                    request.getAmount(),
+                    quote.getBeautyDate()
+            );
+
+            // 고객 알림 저장 (예약 알림)
+            notificationService.saveNotification(
+                    customer.getUserId().getUserId(),
+                    "customer",
+                    NotificationType.RESERVATION.getDescription(),
+                    notificationMessageForCustomer
+            );
+
+            // 미용사 알림 저장 (예약 알림)
+            notificationService.saveNotification(
+                    quote.getGroomerId().getUserId().getUserId(),
+                    "groomer",
+                    NotificationType.RESERVATION.getDescription(),
+                    notificationMessageForGroomer
+            );
+
+            String statusName = commonCodeRepository.findByCodeAndGroupCode(payment.getStatus(), PAYMENT_GROUP)
+                    .map(CommonCode::getCommonName)
+                    .orElse("알 수 없는 상태");
+
+            return PaymentResponseDto.builder()
+                    .paymentKey(request.getPaymentKey())
+                    .orderId(request.getOrderId())
+                    .status(statusName)
+                    .method(method)
+                    .approvedAt(approvedAtOffset)
+                    .amount(request.getAmount())
+                    .selectedQuoteId(selectedQuote.getSelectedQuoteId())
+                    .message("결제 승인 성공")
+                    .paymentTitle(shopName)
+                    .build();
+
+        } catch (NotFoundException | BadRequestException e) {
+            throw e;
         } catch (Exception e) {
-            throw new IllegalArgumentException("결제 승인 중 오류 발생: " + e.getMessage(), e);
+            throw InternalServerException.error(e.getMessage());
         }
     }
 
@@ -205,7 +222,7 @@ public class PaymentServiceImpl implements PaymentService {
             if (response != null) {
 
                 Payment payment = paymentRepository.findByPaymentKey(request.getPaymentKey())
-                        .orElseThrow(() -> new IllegalArgumentException("결제 정보를 찾을 수 없습니다."));
+                        .orElseThrow(() -> NotFoundException.entityNotFound("결제 정보"));
 
                 payment = payment.toBuilder()
                         .status(PAYMENT_CANCELLED)
@@ -265,10 +282,12 @@ public class PaymentServiceImpl implements PaymentService {
                         .message("결제 취소 성공")
                         .build();
             } else {
-                throw new IllegalArgumentException("결제 취소 실패: 응답이 유효하지 않습니다.");
+                throw InternalServerException.error("결제 취소 응답이 유효하지 않음");
             }
+        } catch (NotFoundException | BadRequestException e) {
+            throw e;
         } catch (Exception e) {
-            throw new IllegalArgumentException("결제 취소 중 오류 발생: " + e.getMessage(), e);
+            throw InternalServerException.error(e.getMessage());
         }
     }
 
@@ -278,7 +297,7 @@ public class PaymentServiceImpl implements PaymentService {
     @Transactional(readOnly = true)
     public PaymentResponseDto getPaymentDetail(String paymentKey) {
         Payment payment = paymentRepository.findByPaymentKey(paymentKey)
-                .orElseThrow(() -> new IllegalArgumentException("결제 정보를 찾을 수 없습니다."));
+                .orElseThrow(() -> NotFoundException.entityNotFound("결제 정보"));
 
         String statusName = commonCodeRepository.findByCodeAndGroupCode(payment.getStatus(), PAYMENT_GROUP)
                 .map(CommonCode::getCommonName)

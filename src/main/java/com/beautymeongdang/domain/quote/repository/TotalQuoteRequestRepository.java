@@ -15,4 +15,9 @@ public interface TotalQuoteRequestRepository extends JpaRepository<TotalQuoteReq
 
     // 고객(자신)이 보낸 견적 요청 상세 조회
     TotalQuoteRequest findByRequestId(QuoteRequest requestId);
+
+
+    // qoute Request 물리적 삭제 스케줄러
+    void deleteByRequestId(QuoteRequest requestId);
+
 }

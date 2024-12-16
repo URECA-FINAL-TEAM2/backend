@@ -143,7 +143,7 @@ public interface QuoteRequestRepository extends JpaRepository<QuoteRequest, Long
                         WHERE
                             q.requestId IS NOT NULL
                           AND qr.isDeleted = false
-                          AND qr.status = '010'
+                          AND ( qr.status = '040' or qr.status = '010' )
                           AND q.groomerId.groomerId = :groomerId
                         ORDER BY
                             q.createdAt DESC
@@ -252,4 +252,13 @@ public interface QuoteRequestRepository extends JpaRepository<QuoteRequest, Long
 
     // 반려견 프로필 논리적 삭제
     List<QuoteRequest> findAllByDogId(Dog dog);
+
+    // qoute Request 물리적 삭제 스케줄러
+    @Query("""
+    SELECT qr
+    FROM QuoteRequest qr
+    WHERE qr.isDeleted = true
+      AND qr.updatedAt < :deleteDay
+    """)
+    List<QuoteRequest> findAllByIsDeletedAndUpdatedAt(@Param("deleteDay") LocalDateTime deleteDay);
 }

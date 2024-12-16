@@ -27,6 +27,9 @@ public interface PaymentRepository extends JpaRepository<Payment, Long> {
     // 반려견 프로필 논리적 삭제
     List<Payment> findAllBySelectedQuoteIdQuoteIdDogId(Dog dog);
 
+    // 결제된 견적서 확인
+    boolean existsBySelectedQuoteId(SelectedQuote selectedQuoteId);
+
     // 결제 물리적 삭제
     @Query("""
     SELECT p
