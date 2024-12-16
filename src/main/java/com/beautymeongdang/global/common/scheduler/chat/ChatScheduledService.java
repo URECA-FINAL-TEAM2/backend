@@ -47,21 +47,18 @@ public class ChatScheduledService {
     @Scheduled(cron = "0 0 1 * * *")
     @Transactional
     public void deleteDeletedChats() {
-        // 30일 전에 논리적으로 삭제된 채팅방 찾기
         List<Chat> deletedChats = chatRepository.findAllByDeletedAndUpdatedAt(LocalDateTime.now().minusDays(30));
 
         deletedChats.forEach(chat -> {
             List<ChatMessage> chatMessages = chatMessageRepository.findAllByChatId(chat);
             chatMessages.forEach(chatMessage -> {
-                // 각 채팅 메시지에 관련된 이미지 삭제
                 List<ChatMessageImage> chatMessageImages = chatMessageImageRepository.findAllByMessageId(chatMessage);
+                chatMessageImages.forEach(image -> fileStore.deleteFile(image.getImageUrl()));
                 chatMessageImageRepository.deleteAll(chatMessageImages);
 
-                // 채팅 메시지 삭제
                 chatMessageRepository.delete(chatMessage);
             });
 
-            // 채팅방 삭제
             chatRepository.delete(chat);
         });
     }

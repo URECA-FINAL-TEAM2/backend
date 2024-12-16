@@ -16,4 +16,9 @@ public interface DirectQuoteRequestRepository extends JpaRepository<DirectQuoteR
     // 특정 견적 요청서에 해당하는 DirectQuoteRequest 조회
     @Query("SELECT d FROM DirectQuoteRequest d WHERE d.directQuoteRequestId.requestId = :quoteRequest")
     Optional<DirectQuoteRequest> findByQuoteRequest(@Param("quoteRequest") QuoteRequest quoteRequest);
+
+
+    // qoute Request 물리적 삭제 스케줄러
+    void deleteByDirectQuoteRequestIdAndRequestId(QuoteRequest requestId);
+
 }
