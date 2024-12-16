@@ -58,16 +58,20 @@ public class CustomOAuth2UserServiceImpl extends DefaultOAuth2UserService implem
         boolean isCustomerDeleted = deletedCustomer.isPresent();
         long customerDaysLeft = 0;
         if (deletedCustomer.isPresent()) {
-            customerDaysLeft = 30 - ChronoUnit.DAYS.between(deletedCustomer.get().getUpdatedAt(), LocalDateTime.now());
+            long daysLeft = 30 - ChronoUnit.DAYS.between(deletedCustomer.get().getUpdatedAt(), LocalDateTime.now());
+            customerDaysLeft = Math.max(0, daysLeft);  // 음수인 경우 0으로 설정
+            isCustomerDeleted = daysLeft > 0;  // 남은 일수가 0 이하면 탈퇴 상태 false
         }
 
-        // 미용사 탈퇴 상태 확인
+        // 미용사 탈퇴 상태 확인도 동일하게 수정
         Optional<Groomer> deletedGroomer = groomerRepository
                 .findDeletedGroomerInLast30Days(user, thirtyDaysAgo);
         boolean isGroomerDeleted = deletedGroomer.isPresent();
         long groomerDaysLeft = 0;
         if (deletedGroomer.isPresent()) {
-            groomerDaysLeft = 30 - ChronoUnit.DAYS.between(deletedGroomer.get().getUpdatedAt(), LocalDateTime.now());
+            long daysLeft = 30 - ChronoUnit.DAYS.between(deletedGroomer.get().getUpdatedAt(), LocalDateTime.now());
+            groomerDaysLeft = Math.max(0, daysLeft);  // 음수인 경우 0으로 설정
+            isGroomerDeleted = daysLeft > 0;  // 남은 일수가 0 이하면 탈퇴 상태 false
         }
 
         status.put("customerDeleted", isCustomerDeleted);
