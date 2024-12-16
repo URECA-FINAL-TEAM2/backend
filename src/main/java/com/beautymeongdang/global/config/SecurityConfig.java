@@ -75,7 +75,6 @@ public class SecurityConfig {
                                 "/templates/email.html",
                                 "/login/**",
                                 "/api/auth/**",
-                                "/oauth2/**",
                                 // 프론트엔드 라우트들
                                 "/",                    // 루트 경로
                                 "/selectRole",         // 역할 선택 페이지
