@@ -37,5 +37,5 @@ public interface GroomerRepository extends JpaRepository<Groomer, Long> {
     WHERE g.isDeleted = true
       AND g.updatedAt < :deleteDay
     """)
-    List<Groomer> findAllByIsDeletedAndAndUpdatedAt(@Param("deleteDay") LocalDateTime deleteDay);
+    List<Groomer> findAllByIsDeletedAndUpdatedAt(@Param("deleteDay") LocalDateTime deleteDay);
 }

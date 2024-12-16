@@ -30,7 +30,7 @@ public class UserScheduledService {
     // 미용사 프로필 삭제 스케줄러
     @Scheduled(cron = "0 0 1 * * *")
     public void deleteGroomerProfile() {
-        List<Groomer> groomers = groomerRepository.findAllByIsDeletedAndAndUpdatedAt(LocalDateTime.now().minusDays(30));
+        List<Groomer> groomers = groomerRepository.findAllByIsDeletedAndUpdatedAt(LocalDateTime.now().minusDays(30));
 
         groomers.forEach(groomer -> {
             // 매장, 찜 삭제
