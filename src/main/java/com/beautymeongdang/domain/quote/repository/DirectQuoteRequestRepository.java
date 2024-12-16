@@ -19,6 +19,6 @@ public interface DirectQuoteRequestRepository extends JpaRepository<DirectQuoteR
 
 
     // qoute Request 물리적 삭제 스케줄러
-    void deleteByDirectQuoteRequestId_RequestId(QuoteRequest requestId);
+    void deleteByDirectQuoteRequestIdAndRequestId(QuoteRequest requestId);
 
 }

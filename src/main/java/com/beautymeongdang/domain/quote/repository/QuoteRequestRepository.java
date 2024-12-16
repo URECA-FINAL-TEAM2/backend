@@ -260,5 +260,5 @@ public interface QuoteRequestRepository extends JpaRepository<QuoteRequest, Long
     WHERE qr.isDeleted = true
       AND qr.updatedAt < :deleteDay
     """)
-    List<QuoteRequest> findAllByIsDeletedAndAndUpdatedAt(@Param("deleteDay") LocalDateTime deleteDay);
+    List<QuoteRequest> findAllByIsDeletedAndUpdatedAt(@Param("deleteDay") LocalDateTime deleteDay);
 }

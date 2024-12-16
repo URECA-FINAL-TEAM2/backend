@@ -29,7 +29,7 @@ public class  QuoteRequestScheduledService {
     @Scheduled(cron = "0 0 1 * * *")
     @Transactional
     public void deleteQuoteRequest() {
-        List<QuoteRequest> quoteRequests = quoteRequestRepository.findAllByIsDeletedAndAndUpdatedAt(LocalDateTime.now().minusDays(30));
+        List<QuoteRequest> quoteRequests = quoteRequestRepository.findAllByIsDeletedAndUpdatedAt(LocalDateTime.now().minusDays(30));
 
         quoteRequests.forEach(quoteRequest -> {
             // 견적 요청 이미지 삭제
@@ -41,7 +41,7 @@ public class  QuoteRequestScheduledService {
             totalQuoteRequestRepository.deleteByRequestId(quoteRequest);
 
             // 1:1 견적 요청 삭제
-            directQuoteRequestRepository.deleteByDirectQuoteRequestId_RequestId(quoteRequest);
+            directQuoteRequestRepository.deleteByDirectQuoteRequestIdAndRequestId(quoteRequest);
 
             // 견적 요청 삭제
             quoteRequestRepository.delete(quoteRequest);
