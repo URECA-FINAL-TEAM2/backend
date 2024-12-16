@@ -330,7 +330,7 @@ public class QuoteRequestServiceImpl implements QuoteRequestService {
         Shop shop = shopRepository.findByGroomerId(groomerId)
                 .orElseThrow(() -> NotFoundException.entityNotFound("미용실"));
 
-        return quoteRequestRepository.findQuoteRequestsBySigunguId(shop.getSigunguId().getSigunguId());
+        return quoteRequestRepository.findQuoteRequestsBySigunguId(shop.getSigunguId().getSigunguId(), groomerId);
     }
 
     // 미용사가 견적서 보낸 견적 요청 조회
