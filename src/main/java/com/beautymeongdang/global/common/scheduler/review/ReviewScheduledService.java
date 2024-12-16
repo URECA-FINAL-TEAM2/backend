@@ -6,6 +6,7 @@ import com.beautymeongdang.domain.review.entity.ReviewsImage;
 import com.beautymeongdang.domain.review.repository.RecommendRepository;
 import com.beautymeongdang.domain.review.repository.ReviewRepository;
 import com.beautymeongdang.domain.review.repository.ReviewsImageRepository;
+import com.beautymeongdang.infra.s3.FileStore;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -21,6 +22,7 @@ public class ReviewScheduledService {
     private final ReviewRepository reviewRepository;
     private final ReviewsImageRepository reviewsImageRepository;
     private final RecommendRepository recommendRepository;
+    private final FileStore fileStore;
 
     // 리뷰 물리적 삭제 스케줄러
     @Scheduled(cron = "0 0 1 * * *")
@@ -29,6 +31,9 @@ public class ReviewScheduledService {
 
         reviews.forEach(review -> {
             List<ReviewsImage> reviewsImages = reviewsImageRepository.findAllByReviewId(review);
+            reviewsImages.forEach(reviewsImage -> {
+                fileStore.deleteFile(reviewsImage.getImageUrl());
+            });
             reviewsImageRepository.deleteAll(reviewsImages);
 
             List<Recommend> recommends = recommendRepository.findAllByRecommendIdReviewId(review);
