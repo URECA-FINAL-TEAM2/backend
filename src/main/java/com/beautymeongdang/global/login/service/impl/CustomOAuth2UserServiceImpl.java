@@ -1,6 +1,8 @@
 package com.beautymeongdang.global.login.service.impl;
 
 import com.beautymeongdang.domain.user.dto.UserDTO;
+import com.beautymeongdang.domain.user.entity.Customer;
+import com.beautymeongdang.domain.user.entity.Groomer;
 import com.beautymeongdang.domain.user.entity.Role;
 import com.beautymeongdang.domain.user.repository.CustomerRepository;
 import com.beautymeongdang.domain.user.repository.GroomerRepository;
@@ -27,6 +29,8 @@ import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 
 
@@ -36,12 +40,48 @@ import java.util.*;
 @Service
 @AllArgsConstructor
 public class CustomOAuth2UserServiceImpl extends DefaultOAuth2UserService implements OAuth2Service {
-
+    private static final String DEFAULT_PROFILE_IMAGE = "https://s3-beauty-meongdang.s3.ap-northeast-2.amazonaws.com/%ED%9A%8C%EC%9B%90+%ED%94%84%EB%A1%9C%ED%95%84+%EC%9D%B4%EB%AF%B8%EC%A7%80/%ED%9A%8C%EC%9B%90%EA%B8%B0%EB%B3%B8%EC%9D%B4%EB%AF%B8%EC%A7%80.png";
     private final UserRepository userRepository;
     private final OAuth2AuthorizationClient oauth2Client;
     private final JwtProvider jwtProvider;
     private final CustomerRepository customerRepository;
     private final GroomerRepository groomerRepository;
+
+    // 탈퇴 상태 및 남은 일수 확인
+    private Map<String, Object> checkDeletionStatus(User user) {
+        Map<String, Object> status = new HashMap<>();
+        LocalDateTime thirtyDaysAgo = LocalDateTime.now().minusDays(30);
+
+        // 고객 탈퇴 상태 확인
+        Optional<Customer> deletedCustomer = customerRepository
+                .findDeletedCustomerInLast30Days(user, thirtyDaysAgo);
+        boolean isCustomerDeleted = deletedCustomer.isPresent();
+        long customerDaysLeft = 0;
+        if (deletedCustomer.isPresent()) {
+            long daysLeft = 30 - ChronoUnit.DAYS.between(deletedCustomer.get().getUpdatedAt(), LocalDateTime.now());
+            customerDaysLeft = Math.max(0, daysLeft);  // 음수인 경우 0으로 설정
+            isCustomerDeleted = daysLeft > 0;  // 남은 일수가 0 이하면 탈퇴 상태 false
+        }
+
+        // 미용사 탈퇴 상태 확인도 동일하게 수정
+        Optional<Groomer> deletedGroomer = groomerRepository
+                .findDeletedGroomerInLast30Days(user, thirtyDaysAgo);
+        boolean isGroomerDeleted = deletedGroomer.isPresent();
+        long groomerDaysLeft = 0;
+        if (deletedGroomer.isPresent()) {
+            long daysLeft = 30 - ChronoUnit.DAYS.between(deletedGroomer.get().getUpdatedAt(), LocalDateTime.now());
+            groomerDaysLeft = Math.max(0, daysLeft);  // 음수인 경우 0으로 설정
+            isGroomerDeleted = daysLeft > 0;  // 남은 일수가 0 이하면 탈퇴 상태 false
+        }
+
+        status.put("customerDeleted", isCustomerDeleted);
+        status.put("groomerDeleted", isGroomerDeleted);
+        status.put("customerDaysUntilReregister", customerDaysLeft);
+        status.put("groomerDaysUntilReregister", groomerDaysLeft);
+
+        return status;
+    }
+
 
     @Override
     public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
@@ -75,13 +115,15 @@ public class CustomOAuth2UserServiceImpl extends DefaultOAuth2UserService implem
                     .email(oAuth2Response.getEmail())
                     .providerId(providerId)
                     .socialProvider(provider)
-                    .profileImage(oAuth2Response.getProfileImage())
+                    .profileImage(DEFAULT_PROFILE_IMAGE)
                     .isRegister(false)
                     .build();
             userRepository.save(user);
         } else {
             user = existingUser.get();
         }
+        // 탈퇴 상태 확인
+        Map<String, Object> deletionStatus = checkDeletionStatus(user);
 
         UserDTO userDTO = UserDTO.builder()
                 .id(user.getUserId())
@@ -90,6 +132,10 @@ public class CustomOAuth2UserServiceImpl extends DefaultOAuth2UserService implem
                 .roles(findActiveRoles(user))
                 .profileImage(user.getProfileImage())
                 .isRegister(user.isRegister())
+                .customerDeletionStatus((Boolean) deletionStatus.get("customerDeleted"))
+                .groomerDeletionStatus((Boolean) deletionStatus.get("groomerDeleted"))
+                .customerDaysUntilReregister((Long) deletionStatus.get("customerDaysUntilReregister"))
+                .groomerDaysUntilReregister((Long) deletionStatus.get("groomerDaysUntilReregister"))
                 .build();
 
         return new CustomOAuth2User(userDTO);
@@ -133,7 +179,7 @@ public class CustomOAuth2UserServiceImpl extends DefaultOAuth2UserService implem
                     .email(userInfo.getEmail())
                     .providerId(String.valueOf(userInfo.getId()))
                     .socialProvider("KAKAO")
-                    .profileImage(userInfo.getProfileImage())
+                    .profileImage(DEFAULT_PROFILE_IMAGE)
                     .isRegister(false)
                     .build();
             userRepository.save(user); // 새로운 사용자 정보를 DB에 저장
@@ -192,7 +238,7 @@ public class CustomOAuth2UserServiceImpl extends DefaultOAuth2UserService implem
                     .email(userInfo.getEmail())
                     .providerId(String.valueOf(userInfo.getId()))
                     .socialProvider("GOOGLE")
-                    .profileImage(userInfo.getProfileImage())
+                    .profileImage(DEFAULT_PROFILE_IMAGE)
                     .isRegister(false)
                     .build();
             userRepository.save(user);

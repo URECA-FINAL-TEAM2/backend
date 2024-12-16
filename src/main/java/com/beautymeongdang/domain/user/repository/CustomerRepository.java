@@ -66,4 +66,14 @@ public interface CustomerRepository extends JpaRepository<Customer, Long> {
 
     // 삭제되지 않은(isDeleted가 false인) 데이터가 존재하는지 확인
     boolean existsByUserIdAndIsDeletedFalse(User user);
+
+    // 탈퇴 후 30일 계산
+    @Query("SELECT c FROM Customer c " +
+            "WHERE c.userId = :userId " +
+            "AND c.isDeleted = true " +
+            "AND c.updatedAt > :thirtyDaysAgo")
+    Optional<Customer> findDeletedCustomerInLast30Days(
+            @Param("userId") User userId,
+            @Param("thirtyDaysAgo") LocalDateTime thirtyDaysAgo
+    );
 }

@@ -17,4 +17,10 @@ public class UserDTO {
     private Set<Role> roles;
     private String profileImage;
     private boolean isRegister;
+
+    // 탈퇴 상태
+    private boolean customerDeletionStatus;
+    private boolean groomerDeletionStatus;
+    private long customerDaysUntilReregister;  // 고객 재가입까지 남은 일수
+    private long groomerDaysUntilReregister;   // 미용사 재가입까지 남은 일수
 }
