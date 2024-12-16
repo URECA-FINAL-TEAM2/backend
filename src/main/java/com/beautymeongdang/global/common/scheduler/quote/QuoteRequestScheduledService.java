@@ -41,7 +41,7 @@ public class  QuoteRequestScheduledService {
             totalQuoteRequestRepository.deleteByRequestId(quoteRequest);
 
             // 1:1 견적 요청 삭제
-            directQuoteRequestRepository.deleteByDirectQuoteRequestIdAndRequestId(quoteRequest);
+            directQuoteRequestRepository.deleteByDirectQuoteRequestIdRequestId(quoteRequest);
 
             // 견적 요청 삭제
             quoteRequestRepository.delete(quoteRequest);
