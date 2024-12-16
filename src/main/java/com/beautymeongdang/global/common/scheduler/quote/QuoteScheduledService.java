@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -29,6 +30,27 @@ public class QuoteScheduledService {
     public void deleteQuote() {
         List<Quote> quotes = quoteRepository.findAllByIsDeletedAndUpdatedAt(LocalDateTime.now().minusDays(30));
         quoteRepository.deleteAll(quotes);
+    }
+
+    // 견적서 진행상태 변경 스케줄러
+    @Scheduled(cron = "0 0 1 * * *")
+    public void updateQuoteStatus() {
+        List<Quote> quotes = quoteRepository.findAllByIsDeletedAndCreated(LocalDateTime.now().minusDays(2));
+        List<Quote> updateQuotes = new ArrayList<>();
+        quotes.forEach(quote -> {
+            Quote updateQuote = Quote.builder()
+                    .quoteId(quote.getQuoteId())
+                    .requestId(quote.getRequestId())
+                    .groomerId(quote.getGroomerId())
+                    .dogId(quote.getDogId())
+                    .content(quote.getContent())
+                    .cost(quote.getCost())
+                    .beautyDate(quote.getBeautyDate())
+                    .status("030")
+                    .build();
+            updateQuotes.add(updateQuote);
+        });
+        quoteRepository.saveAll(updateQuotes);
     }
 
 }
