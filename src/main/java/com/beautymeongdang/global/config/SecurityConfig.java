@@ -81,7 +81,7 @@ public class SecurityConfig {
                                 "/login",             // 로그인 페이지
                                 "/oauth2/**",          // OAuth2 관련 모든 경로
                                 "/ws/**",
-                                "/chats/**
+                                "/chats/**"
                         ).permitAll()
                         // API 및 Swagger 관련 경로
                         .requestMatchers(
