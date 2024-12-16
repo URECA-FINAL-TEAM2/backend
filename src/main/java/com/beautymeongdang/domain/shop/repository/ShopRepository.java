@@ -69,5 +69,7 @@ public interface ShopRepository extends JpaRepository<Shop, Long> {
     @Query("SELECT COUNT(f) FROM Favorite f WHERE f.favoriteId.shopId = :shop")
     Integer countFavoritesByShop(@Param("shop") Shop shop);
 
-
+    // 미용사 프로필 삭제 스케줄러
+    @Query("SELECT s FROM Shop s WHERE s.groomerId.groomerId = :groomerId AND s.isDeleted = true ")
+    Shop findByGroomerIdAndIsDeleted(Long groomerId);
 }
