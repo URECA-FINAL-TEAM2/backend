@@ -40,6 +40,7 @@ import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeoutException;
 
 @Service
 @RequiredArgsConstructor
@@ -70,7 +71,8 @@ public class PaymentServiceImpl implements PaymentService {
     @Override
     @Retryable(
             value = { WebClientRequestException.class,
-                    SocketTimeoutException.class },
+                    SocketTimeoutException.class,
+                    TimeoutException.class},
             maxAttempts = 3,
             backoff = @Backoff(
                     delay = 1000,
@@ -207,7 +209,7 @@ public class PaymentServiceImpl implements PaymentService {
     }
 
     @Recover
-    public PaymentResponseDto recoverConfirmPayment(InternalServerException e, PaymentRequestDto request) {
+    public PaymentResponseDto recoverConfirmPayment(Exception e, PaymentRequestDto request) {
         log.error("결제 승인 최종 실패: PaymentKey={}, 오류={}", request.getPaymentKey(), e.getMessage());
         throw InternalServerException.error("결제 승인에 최종 실패했습니다.");
     }
