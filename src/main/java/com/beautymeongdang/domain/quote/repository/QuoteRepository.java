@@ -31,10 +31,9 @@ public interface QuoteRepository extends JpaRepository<Quote, Long> {
     """)
     List<Quote> findAllByRequestId(@Param("requestId") Long requestId);
 
-    // 요청이 거절 상태("020")일 때는 rejectReason이 포함되고 quoteId는 null
-    @Query("SELECT q FROM Quote q WHERE q.requestId = :requestId AND q.groomerId = :groomerId AND q.isDeleted = false")
+    //  rejectReason
+    @Query("SELECT q FROM Quote q WHERE q.requestId = :requestId AND q.groomerId = :groomerId AND q.isDeleted = false AND q.status = '010'")
     Quote findByRequestIdAndGroomerIdAndIsDeletedFalse(@Param("requestId") QuoteRequest requestId, @Param("groomerId") Groomer groomerId);
-
 
     // 견적서 상세 조회
     @Query("SELECT q FROM Quote q " +

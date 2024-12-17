@@ -122,6 +122,8 @@ public class ShopServiceImpl implements ShopService {
                 .sidoName(shop.getSigunguId().getSidoId().getSidoName())
                 .sigunguName(shop.getSigunguId().getSigunguName())
                 .address(shop.getAddress())
+                .latitude(shop.getLatitude())
+                .longitude(shop.getLongitude())
                 .shopLogo(shop.getImageUrl())
                 .favoriteCount(favoriteCount)
                 .reviewCount(reviewCount)

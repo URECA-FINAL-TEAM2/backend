@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @Getter
@@ -17,6 +18,8 @@ public class GetShopResponseDto {
     private final String sidoName;
     private final String sigunguName;
     private final String address;
+    private final BigDecimal latitude;
+    private final BigDecimal longitude;
     private final String shopLogo;
     private final Integer favoriteCount;
     private final Integer reviewCount;
