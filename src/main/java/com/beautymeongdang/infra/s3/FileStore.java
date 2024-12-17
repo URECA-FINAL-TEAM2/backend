@@ -31,6 +31,8 @@ public class FileStore {
     @Value("${cloud.aws.s3.bucket}")
     private String bucketName;
 
+    @Value("${user.default-profile-image}")
+    private String defaultProfileImage;
     private static final int FILE_COUNT = 10;
     public static final String USER_PROFILE = "회원 프로필 이미지/";
     public static final String DOG_PROFILE= "반려견 프로필 이미지/";
@@ -40,6 +42,9 @@ public class FileStore {
     public static final String SHOP_LOGO= "매장 로고 이미지/";
     public static final String CHAT_IMAGES = "채팅 이미지/";
 
+
+
+    // 단일 파일 삭제
 
     private final AmazonS3Client amazonS3Client;
 
@@ -100,6 +105,9 @@ public class FileStore {
 
     // 단일 파일 삭제
     public void deleteFile(String fileUrl) {
+        if (fileUrl == null || fileUrl.equals(defaultProfileImage)) {
+            return;
+        }
         try {
             String fileName = extractFileKeyFromUrl(fileUrl);
             amazonS3Client.deleteObject(new DeleteObjectRequest(bucketName, fileName));
@@ -113,6 +121,14 @@ public class FileStore {
     public void deleteFiles(List<String> fileUrls) {
         try {
             if (fileUrls == null || fileUrls.isEmpty()) {
+                return;
+            }
+            // 기본 이미지를 제외한 파일 URL만 필터링
+            List<String> filesToDelete = fileUrls.stream()
+                    .filter(url -> url != null && !url.equals(defaultProfileImage))
+                    .collect(Collectors.toList());
+
+            if (filesToDelete.isEmpty()) {
                 return;
             }
 
