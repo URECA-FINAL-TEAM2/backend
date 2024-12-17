@@ -219,7 +219,7 @@ public interface QuoteRequestRepository extends JpaRepository<QuoteRequest, Long
 
     // 미용사 메인 페이지 - 우리동네 견적 공고
     @Query(value = """
-        SELECT new com.beautymeongdang.domain.user.dto.GetMainGroomerTotalRequestResponseDto(
+        SELECT DISTINCT new com.beautymeongdang.domain.user.dto.GetMainGroomerTotalRequestResponseDto(
                     qr.requestId,
                     u.userName,
                     u.profileImage,
@@ -239,16 +239,22 @@ public interface QuoteRequestRepository extends JpaRepository<QuoteRequest, Long
         JOIN c.userId u
         JOIN TotalQuoteRequest tqr ON tqr.requestId = qr
         WHERE
-            q.requestId IS NULL
-          AND qr.isDeleted = false
+              qr.isDeleted = false
           AND qr.requestType = '010'
           AND qr.status = '010'
           AND tqr.sigunguId.sigunguId = :sigunguId
+          AND NOT EXISTS (
+              SELECT 1
+              FROM Quote q2
+              WHERE q2.requestId.requestId = qr.requestId
+                AND q2.groomerId.groomerId = :groomerId
+                AND q2.isDeleted = false
+              )
         ORDER BY
             qr.createdAt DESC
        LIMIT 3
     """)
-    List<GetMainGroomerTotalRequestResponseDto> findTop3LatestRequestsBySigunguId(@Param("sigunguId") Long sigunguId);
+    List<GetMainGroomerTotalRequestResponseDto> findTop3LatestRequestsBySigunguId(@Param("sigunguId") Long sigunguId, @Param("groomerId") Long groomerId);
 
     @Query("SELECT qr FROM QuoteRequest qr WHERE qr.dogId.customerId.customerId = :customerId AND qr.isDeleted = false")
     List<QuoteRequest> findAllByCustomerDogs(@Param("customerId") Long customerId);

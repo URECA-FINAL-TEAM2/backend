@@ -69,4 +69,13 @@ public interface QuoteRepository extends JpaRepository<Quote, Long> {
     """)
     List<Quote> findAllByIsDeletedAndUpdatedAt(@Param("deleteDay") LocalDateTime deleteDay);
 
+    // 견적서 진행상태 변경 스케줄러
+    @Query("""
+    SELECT q
+    FROM Quote q
+    WHERE q.isDeleted = false
+      AND q.createdAt < :expiryDate
+    """)
+    List<Quote> findAllByIsDeletedAndCreated(@Param("expiryDate") LocalDateTime expiryDate);
+
 }

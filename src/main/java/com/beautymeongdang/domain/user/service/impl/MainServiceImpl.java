@@ -112,7 +112,7 @@ public class MainServiceImpl implements MainService {
                 .orElseThrow(() -> NotFoundException.entityNotFound("미용실"));
 
         List<GetMainGroomerTotalRequestResponseDto> totalRequest =
-                quoteRequestRepository.findTop3LatestRequestsBySigunguId(shop.getSigunguId().getSigunguId());
+                quoteRequestRepository.findTop3LatestRequestsBySigunguId(shop.getSigunguId().getSigunguId(), groomerId);
 
         return GetMainGroomerResponseDto.builder()
                 .todayReservation(todayReservation)
