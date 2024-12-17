@@ -24,6 +24,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -73,10 +74,12 @@ public class QuoteServiceImpl implements QuoteService {
 
                     // Quote 조회 - 거절이 아닐 때만
                     Long quoteId = null;
+                    LocalDateTime expireDate = null;
                     if (!request.getStatus().equals("020")) {
                         Quote quote = quoteRepository.findByRequestIdAndGroomerIdAndIsDeletedFalse(request, groomer);
                         if (quote != null) {
                             quoteId = quote.getQuoteId();
+                            expireDate = quote.getCreatedAt().plusDays(2);
                         }
                     }
 
@@ -85,12 +88,14 @@ public class QuoteServiceImpl implements QuoteService {
                             .petName(request.getDogId().getDogName())
                             .petImage(request.getDogId().getProfileImage())
                             .status(requestStatusCode.getCommonName())
+                            .shopId(shop.getShopId())
                             .shopName(shop.getShopName())
                             .groomerName(groomer.getUserId().getNickname())
                             .beautyDate(request.getBeautyDate())
                             .requestContent(request.getContent())
                             .quoteId(quoteId)
                             .rejectReason(directRequest.getReasonForRejection())
+                            .expireDate(expireDate)
                             .build();
                 })
                 .collect(Collectors.toList());
@@ -126,6 +131,9 @@ public class QuoteServiceImpl implements QuoteService {
                                 Shop shop = shopRepository.findByGroomerId(quote.getGroomerId().getGroomerId())
                                         .orElseThrow(() -> NotFoundException.entityNotFound("미용실"));
 
+                                LocalDateTime expireDate = quote.getCreatedAt().plusDays(2);
+
+
                                 return GetQuotesAllResponseDto.QuoteInfo.builder()
                                         .quoteId(quote.getQuoteId())
                                         .shopName(shop.getShopName())
@@ -135,6 +143,7 @@ public class QuoteServiceImpl implements QuoteService {
                                         .cost(quote.getCost())
                                         .quoteContent(quote.getContent())
                                         .createdAt(quote.getCreatedAt())
+                                        .expireDate(expireDate)
                                         .build();
                             })
                             .collect(Collectors.toList());
