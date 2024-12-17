@@ -137,6 +137,7 @@ public class QuoteServiceImpl implements QuoteService {
 
                                 return GetQuotesAllResponseDto.QuoteInfo.builder()
                                         .quoteId(quote.getQuoteId())
+                                        .shopId(shop.getShopId())
                                         .shopName(shop.getShopName())
                                         .shopLogo(shop.getImageUrl())
                                         .groomerName(quote.getGroomerId().getUserId().getNickname())
