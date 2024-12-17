@@ -10,8 +10,10 @@ import com.beautymeongdang.domain.payment.entity.Payment;
 import com.beautymeongdang.domain.payment.repository.PaymentRepository;
 import com.beautymeongdang.domain.payment.service.PaymentService;
 import com.beautymeongdang.domain.quote.entity.Quote;
+import com.beautymeongdang.domain.quote.entity.QuoteRequest;
 import com.beautymeongdang.domain.quote.entity.SelectedQuote;
 import com.beautymeongdang.domain.quote.repository.QuoteRepository;
+import com.beautymeongdang.domain.quote.repository.QuoteRequestRepository;
 import com.beautymeongdang.domain.quote.repository.SelectedQuoteRepository;
 import com.beautymeongdang.domain.shop.repository.ShopRepository;
 import com.beautymeongdang.domain.user.entity.Customer;
@@ -47,6 +49,7 @@ import java.util.concurrent.TimeoutException;
 @Slf4j
 public class PaymentServiceImpl implements PaymentService {
 
+    private final QuoteRequestRepository quoteRequestRepository;
     @Value("${toss.payments.secret.key}")
     private String secretKey;
 
@@ -66,6 +69,9 @@ public class PaymentServiceImpl implements PaymentService {
     public static final String PAYMENT_CANCELLED = "030";   // 결제 취소
     public static final String RESERVATION_COMPLETED = "010"; // 예약 완료
     public static final String RESERVATION_CANCELLED = "020"; // 예약 취소
+    public static final String QUOTE_ACCEPT = "020";
+    public static final String QUOTE_REQUEST_DEADLINE = "030";
+    public static final String QUOTE_ALL_REQUEST = "010";
 
     // 결제 승인 요청 및 예약 완료
     @Override
@@ -98,6 +104,11 @@ public class PaymentServiceImpl implements PaymentService {
             if (selectedQuotePay != null && paymentRepository.existsBySelectedQuoteId(selectedQuotePay)) {
                 throw BadRequestException.invalidRequest("이미 결제된 견적서입니다.");
             }
+
+            Long groomerId = quote.getGroomerId().getGroomerId();
+            String shopName = shopRepository.findByGroomerId(groomerId)
+                    .orElseThrow(() -> NotFoundException.entityNotFound("샵 정보"))
+                    .getShopName();
 
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
@@ -133,12 +144,36 @@ public class PaymentServiceImpl implements PaymentService {
 
             selectedQuote = selectedQuoteRepository.save(selectedQuote);
 
+            // 견적서 상태 변경
+            quote = Quote.builder()
+                    .quoteId(quote.getQuoteId())
+                    .requestId(quote.getRequestId())
+                    .groomerId(quote.getGroomerId())
+                    .dogId(quote.getDogId())
+                    .content(quote.getContent())
+                    .cost(quote.getCost())
+                    .beautyDate(quote.getBeautyDate())
+                    .status(QUOTE_ACCEPT)
+                    .build();
 
+            quoteRepository.save(quote);
 
-            Long groomerId = quote.getGroomerId().getGroomerId();
-            String shopName = shopRepository.findByGroomerId(groomerId)
-                    .orElseThrow(() -> NotFoundException.entityNotFound("샵 정보"))
-                    .getShopName();
+            // 견적서 요청 상태 변경 ( 전체 공고만 )
+            QuoteRequest requestEntity = quote.getRequestId();
+
+            if (QUOTE_ALL_REQUEST.equals(requestEntity.getRequestType())) {
+                requestEntity = QuoteRequest.builder()
+                        .requestId(requestEntity.getRequestId())
+                        .dogId(requestEntity.getDogId())
+                        .content(requestEntity.getContent())
+                        .beautyDate(requestEntity.getBeautyDate())
+                        .requestType(requestEntity.getRequestType())
+                        .status(QUOTE_REQUEST_DEADLINE)
+                        .build();
+
+                quoteRequestRepository.save(requestEntity);
+            }
+
 
             Payment payment = Payment.builder()
                     .paymentKey(request.getPaymentKey())
