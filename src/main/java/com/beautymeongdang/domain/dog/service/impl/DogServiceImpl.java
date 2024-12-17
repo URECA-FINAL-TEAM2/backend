@@ -28,6 +28,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.time.LocalDate;
+import java.time.Period;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -47,6 +50,15 @@ public class DogServiceImpl implements DogService {
     private static final String DEFAULT_DOG_PROFILE_IMAGE = "https://s3-beauty-meongdang.s3.ap-northeast-2.amazonaws.com/%EB%B0%98%EB%A0%A4%EA%B2%AC+%ED%94%84%EB%A1%9C%ED%95%84+%EC%9D%B4%EB%AF%B8%EC%A7%80/%EB%B0%98%EB%A0%A4%EA%B2%AC%ED%94%84%EB%A1%9C%ED%95%84%EA%B8%B0%EB%B3%B8%EC%9D%B4%EB%AF%B8%EC%A7%80.jpg";
     private static final String DOG_BREED_GROUP_CODE = "400";
     private final GroupCodeRepository groupCodeRepository;
+
+
+    // 반려견 나이 계산
+    private int calculateDogAge(String birthDate) {
+        LocalDate birth = LocalDate.parse(birthDate, DateTimeFormatter.ISO_DATE);
+        LocalDate currentDate = LocalDate.now();
+        return Period.between(birth, currentDate).getYears();
+    }
+
 
     /**
      * 반려견 프로필 생성
@@ -71,12 +83,15 @@ public class DogServiceImpl implements DogService {
             profileImageUrl = uploadedFiles.get(0).getFileUrl();
         }
 
+        int dogAge = calculateDogAge(requestDto.getDogBirth());
+
         Dog savedDog = dogRepository.save(Dog.builder()
                 .customerId(customer)
                 .dogName(requestDto.getDogName())
                 .dogBreed(requestDto.getDogBreedCodeId())
                 .dogWeight(requestDto.getDogWeight())
                 .dogBirth(requestDto.getDogBirth())
+                .dogAge(dogAge)
                 .dogGender(Dog.DogGender.valueOf(requestDto.getDogGender()))
                 .neutering(requestDto.isNeutering())
                 .experience(requestDto.isExperience())
@@ -167,6 +182,7 @@ public class DogServiceImpl implements DogService {
                 .dogBreed(requestDto.getDogBreedCodeId())
                 .dogWeight(requestDto.getDogWeight())
                 .dogBirth(requestDto.getDogBirth())
+                .dogAge(calculateDogAge(requestDto.getDogBirth()))
                 .dogGender(Dog.DogGender.valueOf(requestDto.getDogGender()))
                 .neutering(requestDto.isNeutering())
                 .experience(requestDto.isExperience())
