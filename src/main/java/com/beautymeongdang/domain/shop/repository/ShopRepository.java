@@ -72,4 +72,12 @@ public interface ShopRepository extends JpaRepository<Shop, Long> {
     // 미용사 프로필 삭제 스케줄러
     @Query("SELECT s FROM Shop s WHERE s.groomerId.groomerId = :groomerId AND s.isDeleted = true ")
     Shop findByGroomerIdAndIsDeleted(Long groomerId);
+
+    // 채팅 조회
+    @Query("SELECT s " +
+            "FROM Shop s " +
+            "JOIN s.groomerId g " +
+            "JOIN Chat c ON c.groomerId.groomerId = g.groomerId " +
+            "WHERE c.chatId = :chatId")
+    Shop findShopsByChatId(@Param("chatId") Long chatId);
 }

@@ -12,9 +12,20 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 public class GetChatMessageListResponseDto {
+    private ShopInfo shopInfo;
     private GroomerInfo groomerInfo;
     private CustomerInfo customerInfo;
     private List<GetChatMessageResponseDto> messages;
+
+    @Getter
+    @Builder
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public static class  ShopInfo{
+        private Long shopId;
+        private String shopName;
+        private String address;
+    }
 
     @Getter
     @Builder
