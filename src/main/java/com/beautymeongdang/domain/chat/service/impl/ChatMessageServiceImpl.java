@@ -9,6 +9,8 @@ import com.beautymeongdang.domain.chat.repository.ChatMessageImageRepository;
 import com.beautymeongdang.domain.chat.repository.ChatMessageRepository;
 import com.beautymeongdang.domain.chat.repository.ChatRepository;
 import com.beautymeongdang.domain.chat.service.ChatMessageService;
+import com.beautymeongdang.domain.shop.entity.Shop;
+import com.beautymeongdang.domain.shop.repository.ShopRepository;
 import com.beautymeongdang.domain.user.entity.Customer;
 import com.beautymeongdang.domain.user.entity.Groomer;
 import com.beautymeongdang.domain.user.entity.User;
@@ -38,6 +40,7 @@ public class ChatMessageServiceImpl implements ChatMessageService {
     private final GroomerRepository groomerRepository;
     private final FileStore fileStore;
     private final ChatMessageImageRepository chatMessageImageRepository;
+    private final ShopRepository shopRepository;
 
 
     /**
@@ -112,11 +115,20 @@ public class ChatMessageServiceImpl implements ChatMessageService {
         // 미용사
         User groomer = chatRepository.findGroomerByChatId(chatId);
 
+        // 매장
+        Shop shop = shopRepository.findShopsByChatId(chatId);
+
         // 고객
         User customer = chatRepository.findCustomerByChatId(chatId);
 
         // 채팅
         List<GetChatMessageResponseDto> chatMessageResponseDtoList = chatMessageRepository.findChatMessagesWithImages(chatId);
+
+        GetChatMessageListResponseDto.ShopInfo shopInfo = GetChatMessageListResponseDto.ShopInfo.builder()
+                .shopId(shop.getShopId())
+                .shopName(shop.getShopName())
+                .address(shop.getAddress())
+                .build();
 
         GetChatMessageListResponseDto.GroomerInfo groomerInfo = GetChatMessageListResponseDto.GroomerInfo.builder()
                 .groomerProfileImage(groomer.getProfileImage())
@@ -129,6 +141,7 @@ public class ChatMessageServiceImpl implements ChatMessageService {
                 .build();
 
         return GetChatMessageListResponseDto.builder()
+                .shopInfo(shopInfo)
                 .groomerInfo(groomerInfo)
                 .customerInfo(customerInfo)
                 .messages(chatMessageResponseDtoList)
