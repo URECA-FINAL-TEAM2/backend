@@ -219,7 +219,7 @@ public interface QuoteRequestRepository extends JpaRepository<QuoteRequest, Long
 
     // 미용사 메인 페이지 - 우리동네 견적 공고
     @Query(value = """
-        SELECT new com.beautymeongdang.domain.user.dto.GetMainGroomerTotalRequestResponseDto(
+        SELECT DISTINCT new com.beautymeongdang.domain.user.dto.GetMainGroomerTotalRequestResponseDto(
                     qr.requestId,
                     u.userName,
                     u.profileImage,
@@ -239,16 +239,22 @@ public interface QuoteRequestRepository extends JpaRepository<QuoteRequest, Long
         JOIN c.userId u
         JOIN TotalQuoteRequest tqr ON tqr.requestId = qr
         WHERE
-            q.requestId IS NULL
-          AND qr.isDeleted = false
+              qr.isDeleted = false
           AND qr.requestType = '010'
           AND qr.status = '010'
           AND tqr.sigunguId.sigunguId = :sigunguId
+          AND NOT EXISTS (
+              SELECT 1
+              FROM Quote q2
+              WHERE q2.requestId.requestId = qr.requestId
+                AND q2.groomerId.groomerId = :groomerId
+                AND q2.isDeleted = false
+              )
         ORDER BY
             qr.createdAt DESC
        LIMIT 3
     """)
-    List<GetMainGroomerTotalRequestResponseDto> findTop3LatestRequestsBySigunguId(@Param("sigunguId") Long sigunguId);
+    List<GetMainGroomerTotalRequestResponseDto> findTop3LatestRequestsBySigunguId(@Param("sigunguId") Long sigunguId, @Param("groomerId") Long groomerId);
 
     @Query("SELECT qr FROM QuoteRequest qr WHERE qr.dogId.customerId.customerId = :customerId AND qr.isDeleted = false")
     List<QuoteRequest> findAllByCustomerDogs(@Param("customerId") Long customerId);
@@ -259,7 +265,7 @@ public interface QuoteRequestRepository extends JpaRepository<QuoteRequest, Long
     // 반려견 프로필 논리적 삭제
     List<QuoteRequest> findAllByDogId(Dog dog);
 
-    // qoute Request 물리적 삭제 스케줄러
+    // quote Request 물리적 삭제 스케줄러
     @Query("""
     SELECT qr
     FROM QuoteRequest qr
@@ -267,4 +273,16 @@ public interface QuoteRequestRepository extends JpaRepository<QuoteRequest, Long
       AND qr.updatedAt < :deleteDay
     """)
     List<QuoteRequest> findAllByIsDeletedAndUpdatedAt(@Param("deleteDay") LocalDateTime deleteDay);
+
+    // quote Request 상태 변경 스케줄러
+    // 요청 상태이면서 4일이 지난 QuoteRequest 조회
+    List<QuoteRequest> findAllByStatusAndCreatedAtBefore(String status, LocalDateTime dateTime);
+
+    //1:1 요청("020")이면서 제안완료 상태("040")이고 2일이 지난 요청들 조회
+    List<QuoteRequest> findAllByRequestTypeAndStatusAndUpdatedAtBefore(
+            String requestType, String status, LocalDateTime dateTime
+    );
+
+    // 전체요청("010")이면서 요청상태("010")인 요청들 조회
+    List<QuoteRequest> findAllByRequestTypeAndStatus(String requestType, String status);
 }

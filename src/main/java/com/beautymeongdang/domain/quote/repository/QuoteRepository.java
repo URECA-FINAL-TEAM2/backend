@@ -57,6 +57,9 @@ public interface QuoteRepository extends JpaRepository<Quote, Long> {
     // 반려견 프로필 논리적 삭제
     List<Quote> findAllByDogId(Dog dog);
 
+    // quote Request 상태 변경 스케줄러
+    Optional<Quote> findByRequestId(QuoteRequest requestId);
+
     // 견적서 물리적 삭제 스케줄러
     @Query("""
     SELECT q
@@ -65,4 +68,14 @@ public interface QuoteRepository extends JpaRepository<Quote, Long> {
       AND q.updatedAt < :deleteDay
     """)
     List<Quote> findAllByIsDeletedAndUpdatedAt(@Param("deleteDay") LocalDateTime deleteDay);
+
+    // 견적서 진행상태 변경 스케줄러
+    @Query("""
+    SELECT q
+    FROM Quote q
+    WHERE q.isDeleted = false
+      AND q.createdAt < :expiryDate
+    """)
+    List<Quote> findAllByIsDeletedAndCreated(@Param("expiryDate") LocalDateTime expiryDate);
+
 }

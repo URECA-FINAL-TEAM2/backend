@@ -1,14 +1,12 @@
 package com.beautymeongdang.domain.quote.entity;
 
 import com.beautymeongdang.domain.dog.entity.Dog;
-import com.beautymeongdang.domain.user.entity.Customer;
 import com.beautymeongdang.global.common.entity.DeletableBaseTimeEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
+
 
 @Entity
 @Getter
@@ -33,5 +31,10 @@ public class QuoteRequest extends DeletableBaseTimeEntity {
     private String requestType;
 
     private String status;
+
+
+    public void updateStatus(String status) {
+        this.status = status;
+    }
 
 }

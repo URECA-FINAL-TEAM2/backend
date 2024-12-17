@@ -23,6 +23,7 @@ public class GetMainCustomerResponseDto {
     @AllArgsConstructor
     public static class BestReviewDto {
         private Long groomerId;
+        private Long shopId;
         private Long reviewId;
         private String shopName;
         private String reviewImage;

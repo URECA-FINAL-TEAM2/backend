@@ -19,4 +19,11 @@ public class QuoteScheduledController {
 //        return "Delete Quote Success";
 //    }
 
+    // 견적서 진행상태 변경 스케줄러 테스트 컨트롤러
+//    @GetMapping("/update-quote")
+//    public String updateQuoteStatus() {
+//        quoteScheduledService.updateQuoteStatus();
+//        return "Update QuoteStatus Success";
+//    }
+
 }
