@@ -16,6 +16,7 @@ public class GetCustomerSelectedQuoteResponseDto {
     private final LocalDateTime beautyDate;
     private final String dogName;
     private final String status;
+    private final Boolean reviewCheck;
 
     @Builder
     public GetCustomerSelectedQuoteResponseDto(
@@ -27,7 +28,8 @@ public class GetCustomerSelectedQuoteResponseDto {
             String groomerName,
             LocalDateTime beautyDate,
             String dogName,
-            String status) {
+            String status,
+            Boolean reviewCheck) {
         this.selectedQuoteId = selectedQuoteId;
         this.quoteId = quoteId;
         this.groomerId = groomerId;
@@ -37,5 +39,6 @@ public class GetCustomerSelectedQuoteResponseDto {
         this.beautyDate = beautyDate;
         this.dogName = dogName;
         this.status = status;
+        this.reviewCheck = reviewCheck;
     }
 }
