@@ -19,6 +19,7 @@ import com.beautymeongdang.domain.user.repository.UserRepository;
 import com.beautymeongdang.global.common.entity.CommonCode;
 import com.beautymeongdang.global.common.entity.CommonCodeId;
 import com.beautymeongdang.global.common.repository.CommonCodeRepository;
+import com.beautymeongdang.global.exception.handler.BadRequestException;
 import com.beautymeongdang.global.exception.handler.NotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -227,6 +228,12 @@ public class QuoteServiceImpl implements QuoteService {
 
         Groomer groomer = groomerRepository.findById(requestDto.getGroomerId())
                 .orElseThrow(() -> NotFoundException.entityNotFound("미용사"));
+
+        Quote isDuplicationQuote = quoteRepository.findByRequestIdAndGroomerIdAndIsDeletedFalse(quoteRequest, groomer);
+
+        if (isDuplicationQuote != null) {
+            throw new BadRequestException("해당 요청에 작성한 견적서가 존재합니다.");
+        }
 
         Dog dog = dogRepository.findById(requestDto.getDogId())
                 .orElseThrow(() -> NotFoundException.entityNotFound("강아지"));

@@ -38,4 +38,14 @@ public interface GroomerRepository extends JpaRepository<Groomer, Long> {
       AND g.updatedAt < :deleteDay
     """)
     List<Groomer> findAllByIsDeletedAndUpdatedAt(@Param("deleteDay") LocalDateTime deleteDay);
+
+    // 탈퇴후 30일 계산
+    @Query("SELECT g FROM Groomer g " +
+            "WHERE g.userId = :userId " +
+            "AND g.isDeleted = true " +
+            "AND g.updatedAt > :thirtyDaysAgo")
+    Optional<Groomer> findDeletedGroomerInLast30Days(
+            @Param("userId") User userId,
+            @Param("thirtyDaysAgo") LocalDateTime thirtyDaysAgo
+    );
 }
