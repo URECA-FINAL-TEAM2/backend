@@ -34,6 +34,7 @@ import com.beautymeongdang.global.exception.handler.BadRequestException;
 import com.beautymeongdang.global.exception.handler.NotFoundException;
 import com.beautymeongdang.infra.s3.FileStore;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -47,6 +48,10 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class GroomerServiceImpl implements GroomerService {
+
+    @Value("${user.default-profile-image}")
+    private String defaultProfileImage;
+
     private final GroomerRepository groomerRepository;
     private final GroomerPortfolioImageRepository groomerPortfolioImageRepository;
     private final FileStore fileStore;
@@ -221,8 +226,11 @@ public class GroomerServiceImpl implements GroomerService {
         // S3 회원 이미지 수정
         String groomerProfileUrl = user.getProfileImage();
         if (images != null && !images.isEmpty()) {
-            // S3 이미지 삭제
-            fileStore.deleteFile(user.getProfileImage());
+            
+            // 기존 이미지가 기본 이미지가 아닌 경우에만 S3 이미지 삭제
+            if (!user.getProfileImage().equals(defaultProfileImage)) {
+                fileStore.deleteFile(user.getProfileImage());
+            }
 
             // S3 이미지 등록
             List<UploadedFile> uploadedFiles = fileStore.storeFiles(images, FileStore.USER_PROFILE);
