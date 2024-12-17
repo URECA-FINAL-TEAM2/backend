@@ -42,6 +42,7 @@ public class GetQuotesAllResponseDto {
     @NoArgsConstructor
     public static class QuoteInfo {
         private Long quoteId;
+        private Long shopId;
         private String shopName;
         private String shopLogo;
         private String groomerName;
@@ -49,5 +50,6 @@ public class GetQuotesAllResponseDto {
         private Integer cost;
         private String quoteContent;
         private LocalDateTime createdAt;
+        private LocalDateTime expireDate;
     }
 }

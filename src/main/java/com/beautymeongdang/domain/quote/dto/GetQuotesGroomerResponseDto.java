@@ -26,12 +26,14 @@ public class GetQuotesGroomerResponseDto {
         private final String petName;
         private final String petImage;
         private final String status;
+        private final Long shopId;
         private final String shopName;
         private final String groomerName;
         private final LocalDateTime beautyDate;
         private final String requestContent;
         private final Long quoteId;
         private final String rejectReason;
+        private final LocalDateTime expireDate;
     }
 
 }
