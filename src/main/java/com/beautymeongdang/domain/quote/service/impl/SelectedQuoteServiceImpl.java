@@ -37,7 +37,8 @@ public class SelectedQuoteServiceImpl implements SelectedQuoteService {
     public GetSelectedQuoteDetailResponseDto getQuoteDetail(Long selectedQuoteId) {
         GetSelectedQuoteDetailResponseDto mainData = selectedQuoteRepository.findQuoteDetailById(selectedQuoteId);
 
-        List<String> requestImages = quoteRequestImageRepository.findAllByRequestId(mainData.getQuoteId())
+        Long requestId = selectedQuoteRepository.findRequestIdByQuoteId(mainData.getQuoteId());
+        List<String> requestImages = quoteRequestImageRepository.findAllByRequestId(requestId)
                 .stream()
                 .map(QuoteRequestImage::getImageUrl)
                 .toList();
