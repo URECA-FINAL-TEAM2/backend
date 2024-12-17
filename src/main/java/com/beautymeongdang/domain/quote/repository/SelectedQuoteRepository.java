@@ -21,13 +21,15 @@ public interface SelectedQuoteRepository extends JpaRepository<SelectedQuote, Lo
     @Query("SELECT new com.beautymeongdang.domain.quote.dto.GetCustomerSelectedQuoteResponseDto(" +
             "sq.selectedQuoteId, q.quoteId, g.groomerId,d.profileImage, s.shopName, " +
             "g.userId.nickname, q.beautyDate, d.dogName, " +
-            "cc.commonName) " +
+            "cc.commonName, " +
+            "CASE WHEN r.selectedQuoteId.selectedQuoteId IS NOT NULL THEN true ELSE false END) " +
             "FROM SelectedQuote sq " +
             "JOIN sq.quoteId q " +
             "JOIN q.dogId d " +
             "JOIN q.groomerId g " +
             "JOIN Shop s ON s.groomerId = g " +
             "JOIN CommonCode cc ON cc.id.codeId = sq.status AND cc.id.groupId = '250' " +
+            "LEFT JOIN Reviews r ON r.selectedQuoteId.selectedQuoteId = sq.selectedQuoteId " +
             "WHERE sq.customerId.customerId = :customerId AND sq.isDeleted = false")
     List<GetCustomerSelectedQuoteResponseDto> findCustomerSelectedQuotes(@Param("customerId") Long customerId);
 
