@@ -3,6 +3,8 @@ package com.beautymeongdang.domain.shop.dto;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
+
+import java.math.BigDecimal;
 import java.util.List;
 
 public class GetGroomerShopListResponseDto {
@@ -26,8 +28,8 @@ public class GetGroomerShopListResponseDto {
         private String address;
         private String businessTime;
         private String skills;
-        private Double latitude;
-        private Double longitude;
+        private BigDecimal latitude;
+        private BigDecimal longitude;
         private Integer favoriteCount;
     }
 }

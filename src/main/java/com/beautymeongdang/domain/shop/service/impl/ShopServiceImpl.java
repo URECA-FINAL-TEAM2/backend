@@ -31,6 +31,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -58,6 +59,8 @@ public class ShopServiceImpl implements ShopService {
     @Override
     @Transactional
     public CreateShopResponseDto createShop(Long groomerId, CreateShopRequestDto requestDto, MultipartFile shopLogo) {
+        validateKoreanLocation(requestDto.getLatitude(), requestDto.getLongitude());
+
         List<UploadedFile> uploadedFiles = fileStore.storeFiles(List.of(shopLogo), FileStore.SHOP_LOGO);
         String LogoUrl = uploadedFiles.get(0).getFileUrl();
 
@@ -133,6 +136,8 @@ public class ShopServiceImpl implements ShopService {
     @Override
     @Transactional
     public UpdateShopResponseDto updateShop(Long shopId, Long groomerId, UpdateShopRequestDto requestDto, MultipartFile shopLogo) {
+        validateKoreanLocation(requestDto.getLatitude(), requestDto.getLongitude());
+
         Shop shop = shopRepository.findById(shopId)
                 .orElseThrow(() -> NotFoundException.entityNotFound("매장"));
 
@@ -238,8 +243,8 @@ public class ShopServiceImpl implements ShopService {
                 .address(shop.getAddress())
                 .businessTime(shop.getBusinessTime())
                 .skills(groomer.getSkill())
-                .latitude(shop.getLatitude().doubleValue())
-                .longitude(shop.getLongitude().doubleValue())
+                .latitude(shop.getLatitude())
+                .longitude(shop.getLongitude())
                 .favoriteCount(shopRepository.countFavoritesByShop(shop))
                 .isFavorite(isFavorite)
                 .description(shop.getDescription())
@@ -297,8 +302,8 @@ public class ShopServiceImpl implements ShopService {
                 .address(shop.getAddress())
                 .businessTime(shop.getBusinessTime())
                 .skills(groomer.getSkill())
-                .latitude(shop.getLatitude().doubleValue())
-                .longitude(shop.getLongitude().doubleValue())
+                .latitude(shop.getLatitude())
+                .longitude(shop.getLongitude())
                 .favoriteCount(shopRepository.countFavoritesByShop(shop))
                 .description(shop.getDescription())
                 .groomerPortfolioImages(portfolioImages)
@@ -359,8 +364,8 @@ public class ShopServiceImpl implements ShopService {
                             .address(shop.getAddress())
                             .businessTime(shop.getBusinessTime())
                             .skills(groomer.getSkill())
-                            .latitude(shop.getLatitude().doubleValue())
-                            .longitude(shop.getLongitude().doubleValue())
+                            .latitude(shop.getLatitude())
+                            .longitude(shop.getLongitude())
                             .favoriteCount(shopRepository.countFavoritesByShop(shop))
                             .build();
                 })
@@ -459,6 +464,20 @@ public class ShopServiceImpl implements ShopService {
                             .build();
                 })
                 .collect(Collectors.toList());
+    }
+
+
+
+    private void validateKoreanLocation(BigDecimal latitude, BigDecimal longitude) {
+        if (latitude.compareTo(new BigDecimal("33.0")) < 0 ||
+                latitude.compareTo(new BigDecimal("43.0")) > 0) {
+            throw BadRequestException.invalidRequest("위도");
+        }
+
+        if (longitude.compareTo(new BigDecimal("124.0")) < 0 ||
+                longitude.compareTo(new BigDecimal("132.0")) > 0) {
+            throw BadRequestException.invalidRequest("경도");
+        }
     }
 
 

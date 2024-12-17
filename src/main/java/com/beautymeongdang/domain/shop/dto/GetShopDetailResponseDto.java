@@ -3,6 +3,8 @@ package com.beautymeongdang.domain.shop.dto;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
+
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -19,8 +21,8 @@ public class GetShopDetailResponseDto {
     private String address;
     private String businessTime;
     private String skills;
-    private Double latitude;
-    private Double longitude;
+    private BigDecimal latitude;
+    private BigDecimal longitude;
     private Integer favoriteCount;
     private Boolean isFavorite;
     private String description;
