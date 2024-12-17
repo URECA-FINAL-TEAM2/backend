@@ -32,6 +32,7 @@ import com.beautymeongdang.global.region.repository.SigunguRepository;
 import com.beautymeongdang.infra.s3.FileStore;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -44,6 +45,8 @@ import java.util.List;
 @Transactional
 public class CustomerServiceImpl implements CustomerService {
 
+    @Value("${user.default-profile-image}")
+    private String defaultProfileImage;
     private final CustomerRepository customerRepository;
     private final SigunguRepository sigunguRepository;
     private final DogRepository dogRepository;
@@ -125,8 +128,12 @@ public class CustomerServiceImpl implements CustomerService {
         // S3 이미지 처리
         String profileImageUrl = user.getProfileImage();
         if (images != null && !images.isEmpty()) {
-            // 기존 이미지 삭제
-                fileStore.deleteFile(user.getProfileImage());
+
+            // 기존 이미지가 기본 이미지가 아니고, null이 아닌 경우에만 S3 이미지 삭제
+            String currentProfileImage = user.getProfileImage();
+            if (currentProfileImage != null && !currentProfileImage.equals(defaultProfileImage)) {
+                fileStore.deleteFile(currentProfileImage);
+            }
 
             // 새로운 이미지 업로드
             List<UploadedFile> uploadedFiles = fileStore.storeFiles(images, FileStore.USER_PROFILE);

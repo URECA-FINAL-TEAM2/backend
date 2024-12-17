@@ -19,7 +19,7 @@ import java.util.List;
 public interface SelectedQuoteRepository extends JpaRepository<SelectedQuote, Long> {
 
     @Query("SELECT new com.beautymeongdang.domain.quote.dto.GetCustomerSelectedQuoteResponseDto(" +
-            "sq.selectedQuoteId, q.quoteId, d.profileImage, s.shopName, " +
+            "sq.selectedQuoteId, q.quoteId, g.groomerId,d.profileImage, s.shopName, " +
             "g.userId.nickname, q.beautyDate, d.dogName, " +
             "cc.commonName) " +
             "FROM SelectedQuote sq " +
