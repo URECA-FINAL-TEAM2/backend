@@ -50,6 +50,7 @@ public class MainServiceImpl implements MainService {
 
                     return BestReviewDto.builder()
                             .groomerId(groomerId)
+                            .shopId(shop.getShopId())
                             .reviewId(review.getReviewId())
                             .shopName(shop.getShopName())
                             .reviewImage(reviewImage)
