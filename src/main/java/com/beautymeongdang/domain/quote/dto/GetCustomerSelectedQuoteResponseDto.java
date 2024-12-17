@@ -9,6 +9,7 @@ import java.time.LocalDateTime;
 public class GetCustomerSelectedQuoteResponseDto {
     private final Long selectedQuoteId;
     private final Long quoteId;
+    private final Long groomerId;
     private final String profileImage;
     private final String shopName;
     private final String groomerName;
@@ -20,6 +21,7 @@ public class GetCustomerSelectedQuoteResponseDto {
     public GetCustomerSelectedQuoteResponseDto(
             Long selectedQuoteId,
             Long quoteId,
+            Long groomerId,
             String profileImage,
             String shopName,
             String groomerName,
@@ -28,6 +30,7 @@ public class GetCustomerSelectedQuoteResponseDto {
             String status) {
         this.selectedQuoteId = selectedQuoteId;
         this.quoteId = quoteId;
+        this.groomerId = groomerId;
         this.profileImage = profileImage;
         this.shopName = shopName;
         this.groomerName = groomerName;
