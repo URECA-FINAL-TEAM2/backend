@@ -209,8 +209,20 @@ public class PaymentServiceImpl implements PaymentService {
     }
 
     @Recover
-    public PaymentResponseDto recoverConfirmPayment(Exception e, PaymentRequestDto request) {
-        log.error("결제 승인 최종 실패: PaymentKey={}, 오류={}", request.getPaymentKey(), e.getMessage());
+    public PaymentResponseDto recoverConfirmPayment(WebClientRequestException e, PaymentRequestDto request) {
+        log.error("결제 승인 최종 실패 (WebClientRequestException): PaymentKey={}, 오류={}", request.getPaymentKey(), e.getMessage());
+        throw InternalServerException.error("결제 승인에 최종 실패했습니다.");
+    }
+
+    @Recover
+    public PaymentResponseDto recoverConfirmPayment(SocketTimeoutException e, PaymentRequestDto request) {
+        log.error("결제 승인 최종 실패 (SocketTimeoutException): PaymentKey={}, 오류={}", request.getPaymentKey(), e.getMessage());
+        throw InternalServerException.error("결제 승인에 최종 실패했습니다.");
+    }
+
+    @Recover
+    public PaymentResponseDto recoverConfirmPayment(TimeoutException e, PaymentRequestDto request) {
+        log.error("결제 승인 최종 실패 (TimeoutException): PaymentKey={}, 오류={}", request.getPaymentKey(), e.getMessage());
         throw InternalServerException.error("결제 승인에 최종 실패했습니다.");
     }
 
