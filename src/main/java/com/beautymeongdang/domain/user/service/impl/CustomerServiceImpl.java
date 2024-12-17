@@ -129,9 +129,10 @@ public class CustomerServiceImpl implements CustomerService {
         String profileImageUrl = user.getProfileImage();
         if (images != null && !images.isEmpty()) {
 
-            // 기존 이미지가 기본 이미지가 아닌 경우에만 S3 이미지 삭제
-            if (!user.getProfileImage().equals(defaultProfileImage)) {
-                fileStore.deleteFile(user.getProfileImage());
+            // 기존 이미지가 기본 이미지가 아니고, null이 아닌 경우에만 S3 이미지 삭제
+            String currentProfileImage = user.getProfileImage();
+            if (currentProfileImage != null && !currentProfileImage.equals(defaultProfileImage)) {
+                fileStore.deleteFile(currentProfileImage);
             }
 
             // 새로운 이미지 업로드

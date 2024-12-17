@@ -226,10 +226,11 @@ public class GroomerServiceImpl implements GroomerService {
         // S3 회원 이미지 수정
         String groomerProfileUrl = user.getProfileImage();
         if (images != null && !images.isEmpty()) {
-            
-            // 기존 이미지가 기본 이미지가 아닌 경우에만 S3 이미지 삭제
-            if (!user.getProfileImage().equals(defaultProfileImage)) {
-                fileStore.deleteFile(user.getProfileImage());
+
+            // 기존 이미지가 기본 이미지가 아니고, null이 아닌 경우에만 S3 이미지 삭제
+            String currentProfileImage = user.getProfileImage();
+            if (currentProfileImage != null && !currentProfileImage.equals(defaultProfileImage)) {
+                fileStore.deleteFile(currentProfileImage);
             }
 
             // S3 이미지 등록
