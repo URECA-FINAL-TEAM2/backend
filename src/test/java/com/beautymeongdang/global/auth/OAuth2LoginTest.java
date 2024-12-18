@@ -64,8 +64,8 @@ class OAuth2LoginTest {
     @DisplayName("신규 사용자 역할 선택 페이지 리다이렉트 테스트")
     void newUserRedirectTest() throws Exception {
         // given
-        User testUser = UserTestDataFactory.createTestUser();
-        OAuth2User oauth2User = UserTestDataFactory.createOAuth2User();
+        User newUser = UserTestDataFactory.createNewUserWithoutRole();
+        OAuth2User oauth2User = UserTestDataFactory.createNewOAuth2User();
         when(oAuth2UserService.loadUser(any())).thenReturn(oauth2User);
 
         // when
@@ -76,6 +76,7 @@ class OAuth2LoginTest {
         // then
         result.andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrl("/select-role"))
+                .andExpect(header().exists("Location"))
                 .andDo(print());
     }
 
