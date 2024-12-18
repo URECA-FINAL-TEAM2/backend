@@ -8,9 +8,7 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class CreateChatRequestMsgDto {
-
     private String role;
-
     private String content;
 
     @Builder
