@@ -190,6 +190,7 @@ public class ReviewServiceImpl implements ReviewService {
                 .build();
     }
 
+    // 특정 고객 리뷰 리스트 조회
     @Override
     public List<GetCustomerReviewListResponseDto> getCustomerReviews(Long customerId) {
         List<Reviews> reviews = reviewRepository.findCustomerReviews(customerId);
@@ -201,16 +202,22 @@ public class ReviewServiceImpl implements ReviewService {
                             .orElseThrow(() -> new NotFoundException("매장을 찾을 수 없습니다: " + groomer.getGroomerId()));
                     Double averageStarRating = shopRepository.getAverageStarRatingByGroomerId(groomer.getGroomerId());
 
+                    List<String> reviewImages = reviewsImageRepository.findReviewImagesByReviewId(review.getReviewId())
+                            .stream()
+                            .map(ReviewsImage::getImageUrl)
+                            .collect(Collectors.toList());
+
                     return GetCustomerReviewListResponseDto.builder()
                             .reviewId(review.getReviewId())
                             .content(review.getContent())
-                            .shopName(shop.getShopName()) // Shop 이름
+                            .shopName(shop.getShopName())
                             .groomerName(groomer.getUserId().getNickname())
-                            .reviewCount(reviewRepository.countGroomerReviews(groomer.getGroomerId())) // 리뷰 수
-                            .starRating(BigDecimal.valueOf(averageStarRating)) // 평균 별점
+                            .reviewCount(reviewRepository.countGroomerReviews(groomer.getGroomerId()))
+                            .starRating(BigDecimal.valueOf(averageStarRating))
                             .reviewDate(review.getCreatedAt().toLocalDate())
                             .groomerId(groomer.getGroomerId())
                             .customerId(review.getCustomerId().getCustomerId())
+                            .reviewImages(reviewImages)
                             .build();
                 })
                 .collect(Collectors.toList());
