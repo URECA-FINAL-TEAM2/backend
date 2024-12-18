@@ -25,7 +25,7 @@ public class ReviewScheduledService {
     private final FileStore fileStore;
 
     // 리뷰 물리적 삭제 스케줄러
-    @Scheduled(cron = "0 0 1 * * *")
+    @Scheduled(cron = "0 0 0 * * *")
     public void deleteReview() {
         List<Reviews> reviews = reviewRepository.findAllByIsDeletedAndAndUpdatedAt(LocalDateTime.now().minusDays(30));
 

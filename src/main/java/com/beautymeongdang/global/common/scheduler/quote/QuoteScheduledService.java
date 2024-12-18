@@ -26,7 +26,7 @@ public class QuoteScheduledService {
     }
 
     // 견적서 물리적 삭제 스케줄러
-    @Scheduled(cron = "0 0 1 * * *")
+    @Scheduled(cron = "0 30 1 * * *")
     public void deleteQuote() {
         List<Quote> quotes = quoteRepository.findAllByIsDeletedAndUpdatedAt(LocalDateTime.now().minusDays(30));
         quoteRepository.deleteAll(quotes);

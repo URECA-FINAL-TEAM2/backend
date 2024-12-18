@@ -28,7 +28,7 @@ public class UserScheduledService {
     private final GroomerPortfolioImageRepository groomerPortfolioImageRepository;
 
     // 미용사 프로필 삭제 스케줄러
-    @Scheduled(cron = "0 0 1 * * *")
+    @Scheduled(cron = "0 0 3 * * *")
     public void deleteGroomerProfile() {
         List<Groomer> groomers = groomerRepository.findAllByIsDeletedAndUpdatedAt(LocalDateTime.now().minusDays(30));
 

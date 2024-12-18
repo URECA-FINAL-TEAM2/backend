@@ -22,7 +22,7 @@ public class DogScheduledService {
 
 
     // 반려견 물리적 삭제 스케줄러
-    @Scheduled(cron = "0 0 1 * * *")
+    @Scheduled(cron = "0 30 2 * * *")
     @Transactional
     public void deleteDog() {
         List<Dog> dogs = dogRepository.findAllByIsDeletedAndUpdatedAt(LocalDateTime.now().minusDays(30));

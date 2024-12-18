@@ -14,7 +14,7 @@ public class PaymentScheduledService {
     private final PaymentService paymentService;
 
     // 결제 물리적 삭제
-    @Scheduled(cron = "0 0 0 * * ?")
+    @Scheduled(cron = "0 30 0 * * *")
     public void deleteExpiredPayments() {
         paymentService.deleteExpiredLogicalDeletedPayments();
     }

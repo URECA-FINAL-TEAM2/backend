@@ -13,7 +13,7 @@ public class CustomerScheduledService {
     private final CustomerService customerService;
 
     // 고객 프로필 물리적 삭제
-    @Scheduled(cron = "0 0 0 * * ?")
+    @Scheduled(cron = "0 0 3 * * *")
     public void deleteExpiredCustomers() {
         customerService.deleteExpiredLogicalDeletedCustomers();
     }

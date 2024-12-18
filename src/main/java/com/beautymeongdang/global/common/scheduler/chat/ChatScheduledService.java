@@ -24,27 +24,9 @@ public class ChatScheduledService {
     private final ChatRepository chatRepository;
     private final FileStore fileStore;
 
-    // 채팅 메시지 물리적 삭제 스케줄러
-    @Scheduled(cron = "0 0 1 * * *")
-    @Transactional
-    public void deleteChatMessages() {
-        List<ChatMessage> chatMessages = chatMessageRepository.findDeletedMessagesBeforeDate(LocalDateTime.now().minusDays(30));
-
-        chatMessages.forEach(chatMessage -> {
-            List<ChatMessageImage> chatMessageImages = chatMessageImageRepository.findAllByMessageId(chatMessage);
-            chatMessageImages.forEach(chatMessageImage -> {
-                fileStore.deleteFile(chatMessageImage.getImageUrl());
-            });
-            chatMessageImageRepository.deleteAll(chatMessageImages);
-
-            chatMessageRepository.delete(chatMessage);
-        });
-
-    }
-
 
     // 채팅 물리적 삭제 스케줄러
-    @Scheduled(cron = "0 0 1 * * *")
+    @Scheduled(cron = "0 10 2 * * *")
     @Transactional
     public void deleteDeletedChats() {
         List<Chat> deletedChats = chatRepository.findAllByDeletedAndUpdatedAt(LocalDateTime.now().minusDays(30));
