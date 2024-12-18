@@ -36,7 +36,6 @@ public class ChatGptTestController {
         CreateChatCompletionDto chatCompletionDto = CreateChatCompletionDto.builder()
                 .messages(messages)
                 .build();
-
         Map<String, Object> response = chatGptService.selectPrompt(chatCompletionDto);
         return ApiResponse.ok(200, response, "Chat Completion");
     }

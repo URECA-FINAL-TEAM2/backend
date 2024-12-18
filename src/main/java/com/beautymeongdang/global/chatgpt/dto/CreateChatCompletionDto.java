@@ -10,16 +10,14 @@ import java.util.List;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class CreateChatCompletionDto {
-    private String model;
+    private String model = "gpt-4";
     private List<CreateChatRequestMsgDto> messages;
-    private float temperature = 0.3f;    // 추가
-    private int max_tokens = 50;         // 추가
+    private float temperature = 0.2f;
+    private int max_tokens = 300;
+    private float top_p = 0.1f;
 
     @Builder
-    public CreateChatCompletionDto(List<CreateChatRequestMsgDto> messages, Float temperature, Integer max_tokens) {
-        this.model = "gpt-3.5-turbo";
+    public CreateChatCompletionDto(List<CreateChatRequestMsgDto> messages) {
         this.messages = messages;
-        this.temperature = temperature != null ? temperature : 0.3f;
-        this.max_tokens = max_tokens != null ? max_tokens : 50;
     }
 }
