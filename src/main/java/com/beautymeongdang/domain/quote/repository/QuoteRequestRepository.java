@@ -149,7 +149,7 @@ public interface QuoteRequestRepository extends JpaRepository<QuoteRequest, Long
                         WHERE
                             q.requestId IS NOT NULL
                           AND qr.isDeleted = false
-                          AND ( qr.status = '040' or qr.status = '010' )
+                          AND ( qr.status = '010' or qr.status = '030' or qr.status = '040' )
                           AND q.groomerId.groomerId = :groomerId
                         ORDER BY
                             q.createdAt DESC
