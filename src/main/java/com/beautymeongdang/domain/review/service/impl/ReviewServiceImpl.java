@@ -140,28 +140,41 @@ public class ReviewServiceImpl implements ReviewService {
 
         // 이미지 삭제 및 추가
         List<ReviewsImage> reviewsImageList = reviewsImageRepository.findReviewImagesByReviewId(reviewId);
+        List<String> existingImageUrls = reviewsImageList.stream()
+                .map(ReviewsImage::getImageUrl)
+                .toList();
 
-        // 이미지 S3 삭제
-        for (ReviewsImage reviewsImage : reviewsImageList) {
-            fileStore.deleteFile(reviewsImage.getImageUrl());
+        if (requestDto.getImageUrl() == null || requestDto.getImageUrl().isEmpty()) {
+            fileStore.deleteFiles(existingImageUrls);
+            reviewsImageRepository.deleteAllByReviewId(savedReview);
+        } else {
+            List<String> imageToDelete = existingImageUrls.stream()
+                    .filter(existingImageUrl -> !requestDto.getImageUrl().contains(existingImageUrl))
+                    .collect(Collectors.toList());
+            fileStore.deleteFiles(imageToDelete);
+            reviewsImageRepository.deleteAllByReviewIdAndImageUrlIn(savedReview, imageToDelete);
         }
-
-        // 이미지 DB 삭제
-        reviewsImageRepository.deleteAllByReviewId(savedReview);
 
         List<ReviewsImage> savedImages = new ArrayList<>();
         if (images != null && !images.isEmpty()) {
             List<UploadedFile> uploadedFiles = fileStore.storeFiles(images, FileStore.REVIEWS);
-
-            List<ReviewsImage> reviewsImages = uploadedFiles.stream()
+            List<ReviewsImage> newReviewsImages = uploadedFiles.stream()
                     .map(uploadedFile -> ReviewsImage.builder()
                             .reviewId(savedReview)
                             .imageUrl(uploadedFile.getFileUrl())
                             .build())
                     .collect(Collectors.toList());
 
-            savedImages = reviewsImageRepository.saveAll(reviewsImages);
+            savedImages = reviewsImageRepository.saveAll(newReviewsImages);
         }
+
+        List<String> finalImageUrls = new ArrayList<>();
+        if (requestDto.getImageUrl() != null) {
+            finalImageUrls.addAll(requestDto.getImageUrl());
+        }
+        finalImageUrls.addAll(savedImages.stream()
+                .map(ReviewsImage::getImageUrl)
+                .toList());
 
         return CreateUpdateReviewResponseDto.builder()
                 .reviewId(savedReview.getReviewId())
@@ -170,9 +183,7 @@ public class ReviewServiceImpl implements ReviewService {
                 .selectedQuoteId(savedReview.getSelectedQuoteId().getSelectedQuoteId())
                 .starScore(savedReview.getStarRating())
                 .content(savedReview.getContent())
-                .reviewsImage(savedImages.stream()
-                        .map(ReviewsImage::getImageUrl)
-                        .collect(Collectors.toList()))
+                .reviewsImage(finalImageUrls)
                 .build();
     }
 

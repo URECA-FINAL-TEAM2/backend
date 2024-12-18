@@ -26,4 +26,7 @@ public interface ReviewsImageRepository extends JpaRepository<ReviewsImage, Long
 
     // 리뷰 물리적 삭제 스케줄러
     List<ReviewsImage> findAllByReviewId(Reviews review);
+
+    // 리뷰 수정
+    void deleteAllByReviewIdAndImageUrlIn(Reviews savedReview, List<String> imageToDelete);
 }
