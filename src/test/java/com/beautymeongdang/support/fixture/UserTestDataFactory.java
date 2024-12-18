@@ -10,32 +10,42 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class UserTestDataFactory {
+    private static final String TEST_PROVIDER_ID = "12345";
+    private static final String TEST_EMAIL = "test@example.com";
+    private static final String TEST_USERNAME = "testUser";
+
+    private static final String NEW_PROVIDER_ID = "67890";
+    private static final String NEW_EMAIL = "new@example.com";
+    private static final String NEW_USERNAME = "newUser";
 
     public static User createTestUser() {
         return User.builder()
-                .userName("testUser")
-                .email("test@example.com")
-                .providerId("12345")
+                .userName(TEST_USERNAME)
+                .email(TEST_EMAIL)
+                .providerId(TEST_PROVIDER_ID)
                 .socialProvider("GOOGLE")
-                .isRegister(true)  // 이미 가입된 사용자
+                .isRegister(true)
                 .build();
     }
 
     public static User createNewUserWithoutRole() {
         return User.builder()
-                .userName("newUser")
-                .email("new@example.com")
-                .providerId("67890")
+                .userName(NEW_USERNAME)
+                .email(NEW_EMAIL)
+                .providerId(NEW_PROVIDER_ID)
                 .socialProvider("GOOGLE")
-                .isRegister(false)  // 신규 사용자
+                .isRegister(false)
                 .build();
     }
 
-    public static OAuth2User createOAuth2User() {
+    /**
+     * OAuth2User 객체를 생성하는 공통 메서드
+     */
+    private static OAuth2User createOAuth2UserInternal(String sub, String email, String name) {
         Map<String, Object> attributes = new HashMap<>();
-        attributes.put("sub", "12345");
-        attributes.put("email", "test@example.com");
-        attributes.put("name", "testUser");
+        attributes.put("sub", sub);
+        attributes.put("email", email);
+        attributes.put("name", name);
 
         return new DefaultOAuth2User(
                 Collections.singleton(new SimpleGrantedAuthority("ROLE_USER")),
@@ -44,16 +54,11 @@ public class UserTestDataFactory {
         );
     }
 
-    public static OAuth2User createNewOAuth2User() {
-        Map<String, Object> attributes = new HashMap<>();
-        attributes.put("sub", "67890");
-        attributes.put("email", "new@example.com");
-        attributes.put("name", "newUser");
+    public static OAuth2User createOAuth2User() {
+        return createOAuth2UserInternal(TEST_PROVIDER_ID, TEST_EMAIL, TEST_USERNAME);
+    }
 
-        return new DefaultOAuth2User(
-                Collections.singleton(new SimpleGrantedAuthority("ROLE_USER")),
-                attributes,
-                "email"
-        );
+    public static OAuth2User createNewOAuth2User() {
+        return createOAuth2UserInternal(NEW_PROVIDER_ID, NEW_EMAIL, NEW_USERNAME);
     }
 }

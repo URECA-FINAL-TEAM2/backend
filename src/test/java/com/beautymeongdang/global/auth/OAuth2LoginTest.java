@@ -77,6 +77,10 @@ class OAuth2LoginTest {
         result.andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrl("/select-role"))
                 .andExpect(header().exists("Location"))
+                .andExpect(cookie().exists("access_token"))
+                .andExpect(cookie().httpOnly("access_token", true))
+                .andExpect(cookie().secure("access_token", true))
+                .andExpect(cookie().sameSite("access_token", "Strict"))
                 .andDo(print());
     }
 
