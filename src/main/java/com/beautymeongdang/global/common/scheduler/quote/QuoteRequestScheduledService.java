@@ -27,7 +27,7 @@ public class  QuoteRequestScheduledService {
     private final SelectedQuoteRepository selectedQuoteRepository;
 
 
-    @Scheduled(cron = "0 0 1 * * *")
+    @Scheduled(cron = "0 0 2 * * *")
     @Transactional
     public void deleteQuoteRequest() {
         List<QuoteRequest> quoteRequests = quoteRequestRepository.findAllByIsDeletedAndUpdatedAt(LocalDateTime.now().minusDays(30));

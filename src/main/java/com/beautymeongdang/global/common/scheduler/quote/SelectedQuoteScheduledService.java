@@ -13,7 +13,7 @@ public class SelectedQuoteScheduledService {
     private final SelectedQuoteService selectedQuoteService;
 
     // 선택된 견적서 물리적 삭제
-    @Scheduled(cron = "0 0 0 * * ?")
+    @Scheduled(cron = "0 0 1 * * ?")
     public void deleteExpiredSelectedQuotes() {
         selectedQuoteService.deleteExpiredLogicalDeletedSelectedQuotes();
     }
