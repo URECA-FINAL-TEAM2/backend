@@ -40,6 +40,7 @@ import org.springframework.web.reactive.function.client.WebClientRequestExceptio
 import java.net.SocketTimeoutException;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeoutException;
@@ -188,13 +189,16 @@ public class PaymentServiceImpl implements PaymentService {
 
             paymentRepository.save(payment);
 
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+            String formattedBeautyDate = quote.getBeautyDate().format(formatter);
+
             // 알림 메시지 생성
             String notificationMessageForCustomer = String.format(
                     "예약이 완료되었습니다. 미용사: %s, 강아지: %s, 비용: %d원, 미용 날짜: %s",
                     quote.getGroomerId().getUserId().getNickname(),
                     quote.getDogId().getDogName(),
                     request.getAmount(),
-                    quote.getBeautyDate()
+                    formattedBeautyDate
             );
 
             String notificationMessageForGroomer = String.format(
@@ -202,7 +206,7 @@ public class PaymentServiceImpl implements PaymentService {
                     customer.getUserId().getUserName(),
                     quote.getDogId().getDogName(),
                     request.getAmount(),
-                    quote.getBeautyDate()
+                    formattedBeautyDate
             );
 
             // 고객 알림 저장 (예약 알림)

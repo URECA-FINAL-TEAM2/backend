@@ -433,6 +433,21 @@ public class QuoteRequestServiceImpl implements QuoteRequestService {
 
         DirectQuoteRequest savedDirectQuoteRequest = directQuoteRequestRepository.save(updateDirectQuoteRequest);
 
+        // 알림 메시지 생성
+        String notificationMessageForCustomer = String.format(
+                "미용사 %s 님이 귀하의 요청을 거절하였습니다. 거절 사유: %s",
+                groomer.getUserId().getNickname(),
+                requestDto.getRejectionReason()
+        );
+
+        // 고객 알림 저장
+        notificationService.saveNotification(
+                quoteRequest.getDogId().getCustomerId().getUserId().getUserId(),
+                "customer",
+                NotificationType.QUOTE_REQUEST_REJECT.getDescription(),
+                notificationMessageForCustomer
+        );
+
         return UpdateGroomerRequestRejectionResponseDto.builder()
                 .requestId(savedQuoteRequest.getRequestId())
                 .dogId(savedQuoteRequest.getDogId().getDogId())
