@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
 
 @Getter
 @Builder
@@ -23,4 +24,5 @@ public class GetCustomerReviewListResponseDto {
     private LocalDate reviewDate;
     private Long groomerId;
     private Long customerId;
+    private List<String> reviewImages;
 }
