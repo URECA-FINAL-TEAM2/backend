@@ -16,26 +16,62 @@ import java.util.List;
 public interface QuoteRequestRepository extends JpaRepository<QuoteRequest, Long> {
     // '1:1 견적' 요청 조회
     @Query("""
-    SELECT qr
+    SELECT
+        qr,
+        dqr,
+        shop,
+        requestStatusCode,
+        quote,
+        dog,
+        groomer,
+        user
     FROM QuoteRequest qr
-    JOIN FETCH qr.dogId d
+    JOIN FETCH qr.dogId dog
     JOIN DirectQuoteRequest dqr ON dqr.directQuoteRequestId.requestId = qr
-    LEFT JOIN Quote q ON q.requestId = qr
-    WHERE d.customerId.customerId = :customerId
+    JOIN Shop shop ON shop.groomerId = dqr.directQuoteRequestId.groomerId
+    JOIN shop.groomerId groomer
+    JOIN groomer.userId user
+    JOIN CommonCode requestStatusCode ON requestStatusCode.id.codeId = qr.status
+                                     AND requestStatusCode.id.groupId = '100'
+    LEFT JOIN Quote quote ON quote.requestId = qr
+                          AND quote.groomerId = dqr.directQuoteRequestId.groomerId
+                          AND quote.isDeleted = false
+    WHERE qr.dogId.customerId.customerId = :customerId
     AND qr.requestType = '020'
     AND qr.isDeleted = false
     ORDER BY qr.createdAt DESC
     """)
-    List<QuoteRequest> findAllByCustomerId(@Param("customerId") Long customerId);
+    List<Object[]> findGroomerQuoteRequestsWithDetailsByCustomerId(@Param("customerId") Long customerId);
+
+
 
     // '전체 견적' 요청 조회
-    @Query("SELECT DISTINCT qr FROM QuoteRequest qr " +
-            "JOIN FETCH qr.dogId d " +
-            "WHERE d.customerId.customerId = :customerId " +
-            "AND qr.requestType = '010' " +
-            "AND qr.isDeleted = false " +
-            "ORDER BY qr.createdAt DESC")
-    List<QuoteRequest> findAllRequestsByCustomerId(@Param("customerId") Long customerId);
+    @Query("""
+    SELECT
+        qr,
+        tqr,
+        requestStatusCode,
+        quote,
+        quoteStatusCode,
+        shop,
+        user
+    FROM QuoteRequest qr
+    JOIN FETCH qr.dogId dog
+    JOIN TotalQuoteRequest tqr ON tqr.requestId = qr
+    JOIN CommonCode requestStatusCode ON requestStatusCode.id.codeId = qr.status
+                                    AND requestStatusCode.id.groupId = '100'
+    LEFT JOIN Quote quote ON quote.requestId = qr
+                        AND quote.isDeleted = false
+    LEFT JOIN CommonCode quoteStatusCode ON quoteStatusCode.id.codeId = quote.status
+                                       AND quoteStatusCode.id.groupId = '200'
+    LEFT JOIN Shop shop ON shop.groomerId = quote.groomerId
+    LEFT JOIN shop.groomerId.userId user
+    WHERE qr.dogId.customerId.customerId = :customerId
+    AND qr.requestType = '010'
+    AND qr.isDeleted = false
+    ORDER BY qr.createdAt DESC
+    """)
+    List<Object[]> findAllRequestsByCustomerId(@Param("customerId") Long customerId);
 
     // 미용사가 받은 1:1 요청 조회
     @Query(value = """

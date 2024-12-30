@@ -38,17 +38,14 @@ public class QuoteServiceImpl implements QuoteService {
     private final QuoteRepository quoteRepository;
     private final QuoteRequestImageRepository quoteRequestImageRepository;
     private final ShopRepository shopRepository;
-    private final DirectQuoteRequestRepository directQuoteRequestRepository;
     private final GroomerRepository groomerRepository;
     private final DogRepository dogRepository;
     private final CustomerRepository customerRepository;
     private final UserRepository userRepository;
     private final CommonCodeRepository commonCodeRepository;
     private final NotificationService notificationService;
-    private final TotalQuoteRequestRepository totalQuoteRequestRepository;
 
-    private static final String QUOTE_REQUEST_STATUS_GROUP_CODE = "100";
-    private static final String QUOTE_STATUS_GROUP_CODE = "200";
+
     private static final String DOG_BREED_GROUP_CODE = "400";
 
 
@@ -57,45 +54,36 @@ public class QuoteServiceImpl implements QuoteService {
      */
     @Override
     public GetQuotesGroomerResponseDto getQuotesGroomer(Long customerId) {
-        List<QuoteRequest> quoteRequests = quoteRequestRepository.findAllByCustomerId(customerId);
+        List<Object[]> results = quoteRequestRepository.findGroomerQuoteRequestsWithDetailsByCustomerId(customerId);
 
-        List<GetQuotesGroomerResponseDto.QuoteRequestInfo> quoteRequestInfos = quoteRequests.stream()
-                .map(request -> {
-                    // DirectQuoteRequest에서 미용사 정보 조회
-                    DirectQuoteRequest directRequest = directQuoteRequestRepository.findByQuoteRequest(request)
-                            .orElseThrow(() -> NotFoundException.entityNotFound("직접 견적 요청"));
+        List<GetQuotesGroomerResponseDto.QuoteRequestInfo> quoteRequestInfos = results.stream()
+                .map(result -> {
+                    QuoteRequest qr = (QuoteRequest) result[0];
+                    DirectQuoteRequest dqr = (DirectQuoteRequest) result[1];
+                    Shop shop = (Shop) result[2];
+                    CommonCode requestStatusCode = (CommonCode) result[3];
+                    Quote quote = (Quote) result[4];
 
-                    Groomer groomer = directRequest.getDirectQuoteRequestId().getGroomerId();
-                    Shop shop = shopRepository.findByGroomerId(groomer.getGroomerId())
-                            .orElseThrow(() -> NotFoundException.entityNotFound("미용실"));
-
-                    CommonCodeId requestStatusCodeId = new CommonCodeId(request.getStatus(), QUOTE_REQUEST_STATUS_GROUP_CODE);
-                    CommonCode requestStatusCode = commonCodeRepository.findById(requestStatusCodeId)
-                            .orElseThrow(() -> NotFoundException.entityNotFound("견적 요청 상태 코드"));
-
-                    // Quote 조회 - 거절이 아닐 때만
-                    Long quoteId = null;
                     LocalDateTime expireDate = null;
-                    if (!request.getStatus().equals("020")) {
-                        Quote quote = quoteRepository.findByRequestIdAndGroomerIdAndIsDeletedFalse(request, groomer);
-                        if (quote != null) {
-                            quoteId = quote.getQuoteId();
-                            expireDate = quote.getCreatedAt().plusDays(2);
-                        }
+                    Long quoteId = null;
+
+                    if (quote != null && !qr.getStatus().equals("020")) {
+                        quoteId = quote.getQuoteId();
+                        expireDate = quote.getCreatedAt().plusDays(2);
                     }
 
                     return GetQuotesGroomerResponseDto.QuoteRequestInfo.builder()
-                            .quoteRequestId(request.getRequestId())
-                            .petName(request.getDogId().getDogName())
-                            .petImage(request.getDogId().getProfileImage())
+                            .quoteRequestId(qr.getRequestId())
+                            .petName(qr.getDogId().getDogName())
+                            .petImage(qr.getDogId().getProfileImage())
                             .status(requestStatusCode.getCommonName())
                             .shopId(shop.getShopId())
                             .shopName(shop.getShopName())
-                            .groomerName(groomer.getUserId().getNickname())
-                            .beautyDate(request.getBeautyDate())
-                            .requestContent(request.getContent())
+                            .groomerName(shop.getGroomerId().getUserId().getNickname())
+                            .beautyDate(qr.getBeautyDate())
+                            .requestContent(qr.getContent())
                             .quoteId(quoteId)
-                            .rejectReason(directRequest.getReasonForRejection())
+                            .rejectReason(dqr.getReasonForRejection())
                             .expireDate(expireDate)
                             .build();
                 })
@@ -112,56 +100,47 @@ public class QuoteServiceImpl implements QuoteService {
      */
     @Override
     public GetQuotesAllResponseDto getQuotesAll(Long customerId) {
-        List<QuoteRequest> requests = quoteRequestRepository.findAllRequestsByCustomerId(customerId);
+        List<Object[]> results = quoteRequestRepository.findAllRequestsByCustomerId(customerId);
 
-        List<GetQuotesAllResponseDto.QuoteRequestInfo> requestInfos = requests.stream()
-                .map(request -> {
-                    CommonCodeId requestStatusCodeId = new CommonCodeId(request.getStatus(), QUOTE_REQUEST_STATUS_GROUP_CODE);
-                    CommonCode requestStatusCode = commonCodeRepository.findById(requestStatusCodeId)
-                            .orElseThrow(() -> NotFoundException.entityNotFound("견적 요청 상태 코드"));
-                    String requestStatusName = requestStatusCode.getCommonName();
+        List<GetQuotesAllResponseDto.QuoteRequestInfo> requestInfos = results.stream()
+                .map(result -> {
+                    QuoteRequest qr = (QuoteRequest) result[0];
+                    TotalQuoteRequest tqr = (TotalQuoteRequest) result[1];
+                    CommonCode requestStatusCode = (CommonCode) result[2];
+                    Quote quote = (Quote) result[3];
+                    CommonCode quoteStatusCode = (CommonCode) result[4];
+                    Shop shop = (Shop) result[5];
+                    User user = (User) result[6];
 
-                    List<Quote> quotes = quoteRepository.findAllByRequestId(request.getRequestId());
-                    List<GetQuotesAllResponseDto.QuoteInfo> quoteInfos = quotes.stream()
-                            .map(quote -> {
-                                CommonCodeId quoteStatusCodeId = new CommonCodeId(quote.getStatus(), QUOTE_STATUS_GROUP_CODE);
-                                CommonCode quoteStatusCode = commonCodeRepository.findById(quoteStatusCodeId)
-                                        .orElseThrow(() -> NotFoundException.entityNotFound("견적서 상태 코드"));
-                                String quoteStatusName = quoteStatusCode.getCommonName();
+                    List<GetQuotesAllResponseDto.QuoteInfo> quoteInfos = new ArrayList<>();
+                    if (quote != null) {
+                        LocalDateTime expireDate = quote.getCreatedAt().plusDays(2);
 
-                                Shop shop = shopRepository.findByGroomerId(quote.getGroomerId().getGroomerId())
-                                        .orElseThrow(() -> NotFoundException.entityNotFound("미용실"));
+                        GetQuotesAllResponseDto.QuoteInfo quoteInfo = GetQuotesAllResponseDto.QuoteInfo.builder()
+                                .quoteId(quote.getQuoteId())
+                                .shopId(shop.getShopId())
+                                .shopName(shop.getShopName())
+                                .shopLogo(shop.getImageUrl())
+                                .groomerName(user.getNickname())
+                                .quoteStatus(quoteStatusCode.getCommonName())
+                                .cost(quote.getCost())
+                                .quoteContent(quote.getContent())
+                                .createdAt(quote.getCreatedAt())
+                                .expireDate(expireDate)
+                                .build();
+                        quoteInfos.add(quoteInfo);
+                    }
 
-                                LocalDateTime expireDate = quote.getCreatedAt().plusDays(2);
-
-
-                                return GetQuotesAllResponseDto.QuoteInfo.builder()
-                                        .quoteId(quote.getQuoteId())
-                                        .shopId(shop.getShopId())
-                                        .shopName(shop.getShopName())
-                                        .shopLogo(shop.getImageUrl())
-                                        .groomerName(quote.getGroomerId().getUserId().getNickname())
-                                        .quoteStatus(quoteStatusName)
-                                        .cost(quote.getCost())
-                                        .quoteContent(quote.getContent())
-                                        .createdAt(quote.getCreatedAt())
-                                        .expireDate(expireDate)
-                                        .build();
-                            })
-                            .collect(Collectors.toList());
-
-                    TotalQuoteRequest totalQuoteRequest = totalQuoteRequestRepository.findByRequestId_RequestId(request.getRequestId())
-                            .orElseThrow(() -> new NotFoundException("견적서 전체 요청"));
-
-                    String region = totalQuoteRequest.getSigunguId().getSidoId().getSidoName() + " " + totalQuoteRequest.getSigunguId().getSigunguName();
+                    String region = tqr.getSigunguId().getSidoId().getSidoName() + " " +
+                            tqr.getSigunguId().getSigunguName();
 
                     return GetQuotesAllResponseDto.QuoteRequestInfo.builder()
-                            .quoteRequestId(request.getRequestId())
-                            .requestStatus(requestStatusName)
-                            .beautyDate(request.getBeautyDate())
-                            .dogName(request.getDogId().getDogName())
-                            .dogImage(request.getDogId().getProfileImage())
-                            .requestContent(request.getContent())
+                            .quoteRequestId(qr.getRequestId())
+                            .requestStatus(requestStatusCode.getCommonName())
+                            .beautyDate(qr.getBeautyDate())
+                            .dogName(qr.getDogId().getDogName())
+                            .dogImage(qr.getDogId().getProfileImage())
+                            .requestContent(qr.getContent())
                             .region(region)
                             .quotes(quoteInfos)
                             .build();
@@ -172,6 +151,7 @@ public class QuoteServiceImpl implements QuoteService {
                 .quoteRequests(requestInfos)
                 .build();
     }
+
 
 
     /**
