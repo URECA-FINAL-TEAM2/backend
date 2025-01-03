@@ -41,19 +41,20 @@ public class StompHandler implements ChannelInterceptor {
             log.info("Headers: {}", accessor.toNativeHeaderMap());
 
 
-            String authToken = extractToken(accessor);
-            log.debug("Extracted token: {}", authToken != null ? "exists" : "null");
+//            String authToken = extractToken(accessor);
+//            log.debug("Extracted token: {}", authToken != null ? "exists" : "null");
+//
+//
+//            if (!StringUtils.hasText(authToken)) {
+//                log.error("[웹소켓 연결 실패] 토큰이 없습니다. sessionId: {}", accessor.getSessionId());
+//                throw new RuntimeException("UNAUTHORIZED");
+//            }
+//
+//            if (jwtUtil.isExpired(authToken)) {
+//                log.error("[웹소켓 연결 실패] 만료된 토큰입니다. sessionId: {}", accessor.getSessionId());
+//                throw new RuntimeException("TOKEN_EXPIRED");
+//            }
 
-
-            if (!StringUtils.hasText(authToken)) {
-                log.error("[웹소켓 연결 실패] 토큰이 없습니다. sessionId: {}", accessor.getSessionId());
-                throw new RuntimeException("UNAUTHORIZED");
-            }
-
-            if (jwtUtil.isExpired(authToken)) {
-                log.error("[웹소켓 연결 실패] 만료된 토큰입니다. sessionId: {}", accessor.getSessionId());
-                throw new RuntimeException("TOKEN_EXPIRED");
-            }
 
             String customerYnStr = accessor.getFirstNativeHeader("CustomerYn");
             if (customerYnStr == null) {
