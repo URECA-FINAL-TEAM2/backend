@@ -5,7 +5,10 @@ import com.beautymeongdang.domain.chat.dto.*;
 import com.beautymeongdang.domain.chat.entity.Chat;
 import com.beautymeongdang.domain.chat.entity.ChatMessage;
 import com.beautymeongdang.domain.chat.entity.ChatMessageImage;
+import com.beautymeongdang.domain.chat.entity.ChatMessageMongo;
+import com.beautymeongdang.domain.chat.pubsub.RedisPublisher;
 import com.beautymeongdang.domain.chat.repository.ChatMessageImageRepository;
+import com.beautymeongdang.domain.chat.repository.ChatMessageMongoRepository;
 import com.beautymeongdang.domain.chat.repository.ChatMessageRepository;
 import com.beautymeongdang.domain.chat.repository.ChatRepository;
 import com.beautymeongdang.domain.chat.service.ChatMessageService;
@@ -25,7 +28,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 
 @Slf4j
@@ -41,6 +46,7 @@ public class ChatMessageServiceImpl implements ChatMessageService {
     private final FileStore fileStore;
     private final ChatMessageImageRepository chatMessageImageRepository;
     private final ShopRepository shopRepository;
+    private final ChatMessageMongoRepository chatMessageMongoRepository;
 
 
     /**
@@ -69,60 +75,84 @@ public class ChatMessageServiceImpl implements ChatMessageService {
             senderProfileImage = groomer.getUserId().getProfileImage();
         }
 
+//        s3 이미지
+//        String imageUrl = null;
+//        if (StringUtils.hasText(messageRequestDto.getBase64Image())) {
+//            UploadedFile uploadedFile = fileStore.storeBase64File(
+//                    messageRequestDto.getBase64Image(),
+//                    FileStore.CHAT_IMAGES
+//            );
+//            imageUrl = uploadedFile.getFileUrl();
+//        }
+//
+//        ChatMessage chatMessage = ChatMessage.builder()
+//                .chatId(chat)
+//                .content(messageRequestDto.getContent())
+//                .customerYn(messageRequestDto.getCustomerYn())
+//                .messageType(messageRequestDto.getMessageType())
+//                .build();
+//
+//        ChatMessage savedMessage = chatMessageRepository.save(chatMessage);
+//
+//        if (imageUrl != null) {
+//            ChatMessageImage chatMessageImage = ChatMessageImage.builder()
+//                    .messageId(savedMessage)
+//                    .imageUrl(imageUrl)
+//                    .build();
+//            chatMessageImageRepository.save(chatMessageImage);
+//        }
 
-        String imageUrl = null;
-        if (StringUtils.hasText(messageRequestDto.getBase64Image())) {
-            UploadedFile uploadedFile = fileStore.storeBase64File(
-                    messageRequestDto.getBase64Image(),
-                    FileStore.CHAT_IMAGES
-            );
-            imageUrl = uploadedFile.getFileUrl();
-        }
 
-        ChatMessage chatMessage = ChatMessage.builder()
-                .chatId(chat)
+        // MongoDB에 저장
+        ChatMessageMongo mongoMessage = ChatMessageMongo.builder()
+                .chatId(messageRequestDto.getChatId())
+                .senderId(messageRequestDto.getSenderId())
                 .content(messageRequestDto.getContent())
                 .customerYn(messageRequestDto.getCustomerYn())
                 .messageType(messageRequestDto.getMessageType())
+                .createdAt(LocalDateTime.now())
                 .build();
 
-        ChatMessage savedMessage = chatMessageRepository.save(chatMessage);
-
-        if (imageUrl != null) {
-            ChatMessageImage chatMessageImage = ChatMessageImage.builder()
-                    .messageId(savedMessage)
-                    .imageUrl(imageUrl)
-                    .build();
-            chatMessageImageRepository.save(chatMessageImage);
-        }
+        ChatMessageMongo savedMessage = chatMessageMongoRepository.save(mongoMessage);
+        log.info("MongoDB에 메시지 저장됨: {}", savedMessage);
 
         return CreateChatMessageResponseDto.builder()
-                .chatId(savedMessage.getChatId().getChatId())
-                .senderId(messageRequestDto.getSenderId())
+                .chatId(savedMessage.getChatId())
+                .senderId(savedMessage.getSenderId())
                 .senderNickname(senderNickname)
                 .senderProfileImage(senderProfileImage)
                 .content(savedMessage.getContent())
                 .messageType(savedMessage.getMessageType())
                 .customerYn(savedMessage.getCustomerYn())
-                .imageUrl(imageUrl)
                 .createdAt(savedMessage.getCreatedAt())
                 .build();
     }
 
-    // 채팅 조회
+
     @Override
     public GetChatMessageListResponseDto getChatMessageList(Long chatId) {
-        // 미용사
         User groomer = chatRepository.findGroomerByChatId(chatId);
 
-        // 매장
         Shop shop = shopRepository.findShopsByChatId(chatId);
 
-        // 고객
         User customer = chatRepository.findCustomerByChatId(chatId);
 
-        // 채팅
-        List<GetChatMessageResponseDto> chatMessageResponseDtoList = chatMessageRepository.findChatMessagesWithImages(chatId);
+        List<ChatMessageMongo> mongoMessages = chatMessageMongoRepository.findByChatIdOrderByCreatedAtAsc(chatId);
+        log.info("MongoDB에서 조회한 메시지 수: {}", mongoMessages.size());
+        log.info("조회된 메시지들: {}", mongoMessages);
+
+
+        // 채팅 메시지 조회 - MongoDB에서 조회하도록 변경
+        List<GetChatMessageResponseDto> chatMessageResponseDtoList =
+                chatMessageMongoRepository.findByChatIdOrderByCreatedAtAsc(chatId)
+                        .stream()
+                        .map(message -> GetChatMessageResponseDto.builder()
+                                .messageId(message.getMessageId())
+                                .content(message.getContent())
+                                .customerYn(message.getCustomerYn())
+                                .createdAt(message.getCreatedAt())
+                                .build())
+                        .collect(Collectors.toList());
 
         GetChatMessageListResponseDto.ShopInfo shopInfo = GetChatMessageListResponseDto.ShopInfo.builder()
                 .shopId(shop.getShopId())
@@ -147,6 +177,47 @@ public class ChatMessageServiceImpl implements ChatMessageService {
                 .messages(chatMessageResponseDtoList)
                 .build();
     }
+
+
+
+//    // 채팅 조회
+//    @Override
+//    public GetChatMessageListResponseDto getChatMessageList(Long chatId) {
+//        // 미용사
+//        User groomer = chatRepository.findGroomerByChatId(chatId);
+//
+//        // 매장
+//        Shop shop = shopRepository.findShopsByChatId(chatId);
+//
+//        // 고객
+//        User customer = chatRepository.findCustomerByChatId(chatId);
+//
+//        // 채팅
+//        List<GetChatMessageResponseDto> chatMessageResponseDtoList = chatMessageRepository.findChatMessagesWithImages(chatId);
+//
+//        GetChatMessageListResponseDto.ShopInfo shopInfo = GetChatMessageListResponseDto.ShopInfo.builder()
+//                .shopId(shop.getShopId())
+//                .shopName(shop.getShopName())
+//                .address(shop.getAddress())
+//                .build();
+//
+//        GetChatMessageListResponseDto.GroomerInfo groomerInfo = GetChatMessageListResponseDto.GroomerInfo.builder()
+//                .groomerProfileImage(groomer.getProfileImage())
+//                .groomerName(groomer.getNickname())
+//                .build();
+//
+//        GetChatMessageListResponseDto.CustomerInfo customerInfo = GetChatMessageListResponseDto.CustomerInfo.builder()
+//                .customerProfileImage(customer.getProfileImage())
+//                .customerName(customer.getUserName())
+//                .build();
+//
+//        return GetChatMessageListResponseDto.builder()
+//                .shopInfo(shopInfo)
+//                .groomerInfo(groomerInfo)
+//                .customerInfo(customerInfo)
+//                .messages(chatMessageResponseDtoList)
+//                .build();
+//    }
 
     // 채팅 논리적 삭제
     @Override
