@@ -261,7 +261,7 @@ public class PaymentServiceImpl implements PaymentService {
             }
         } catch (Exception e) {
             log.error("결제 취소 중 오류 발생: {}", e.getMessage(), e);
-            throw InternalServerException.error("결제 취소 중 오류가 발생했습니다: " + e.getMessage());
+            throw InternalServerException.error("결제 취소 중 오류가 발생했습니다.");
         }
     }
 
