@@ -1,9 +1,6 @@
 package com.beautymeongdang.domain.chat.controller;
 
-import com.beautymeongdang.domain.chat.dto.CreateChatMessageRequestDto;
-import com.beautymeongdang.domain.chat.dto.CreateChatMessageResponseDto;
-import com.beautymeongdang.domain.chat.dto.DeleteChatMessageResponseDto;
-import com.beautymeongdang.domain.chat.dto.GetChatMessageListResponseDto;
+import com.beautymeongdang.domain.chat.dto.*;
 import com.beautymeongdang.domain.chat.pubsub.RedisPublisher;
 import com.beautymeongdang.domain.chat.service.ChatMessageService;
 import com.beautymeongdang.global.common.dto.ApiResponse;
@@ -23,9 +20,7 @@ public class ChatMessageController {
 
     private final ChatMessageService chatMessageService;
     private final RedisPublisher redisPublisher;
-    private final SimpMessageSendingOperations messagingTemplate;
-
-
+    //private final SimpMessageSendingOperations messagingTemplate;
 
 
     /**
@@ -33,14 +28,9 @@ public class ChatMessageController {
      */
     @MessageMapping("/send")
     public void sendMessage(@Payload CreateChatMessageRequestDto messageRequestDto) {
-        log.info("메시지 전송 요청. chatId: {}, senderId: {}",
-                messageRequestDto.getChatId(), messageRequestDto.getSenderId());
-
         CreateChatMessageResponseDto response = chatMessageService.sendMessage(messageRequestDto);
         //messagingTemplate.convertAndSend("/sub/chat/room/" + messageRequestDto.getChatId(), response);
          redisPublisher.publish(response);
-
-        log.info("메시지 전송 완료. chatId: {}", messageRequestDto.getChatId());
     }
 
 
@@ -54,6 +44,25 @@ public class ChatMessageController {
     @PutMapping("/{messageId}")
     public ResponseEntity<ApiResponse<DeleteChatMessageResponseDto>> deleteChatMessage(@PathVariable("messageId") Long messageId) {
         return ApiResponse.ok(200, chatMessageService.deleteChatMessage(messageId), "Delete Message Success");
+    }
+
+
+    /**
+     * 안 읽은 메시지 수
+     */
+    @GetMapping("/unread/{chatId}")
+    public ResponseEntity<ApiResponse<GetUnreadMessageCountResponseDto>> getUnreadMessageCount(@PathVariable Long chatId, @RequestParam Long userId) {
+        GetUnreadMessageCountResponseDto response = chatMessageService.getUnreadMessageCount(chatId, userId);
+        return ApiResponse.ok(200, response, "안 읽은 메시지 수 조회 성공");
+    }
+
+
+    /**
+     * 메시지 읽음 처리
+     */
+    @MessageMapping("/read")
+    public void markAsRead(@Payload UpdateMessageReadRequestDto request) {
+        chatMessageService.markMessagesAsRead(request.getChatId(), request.getSenderId());
     }
 
 }

@@ -1,6 +1,10 @@
 package com.beautymeongdang.domain.chat.handler;
 
 
+import com.beautymeongdang.domain.chat.dto.CreateChatMessageResponseDto;
+import com.beautymeongdang.domain.chat.entity.ChatMessage;
+import com.beautymeongdang.domain.chat.pubsub.RedisPublisher;
+import com.beautymeongdang.domain.chat.service.ChatMessageService;
 import com.beautymeongdang.domain.chat.service.ChatService;
 import com.beautymeongdang.global.jwt.JWTUtil;
 import lombok.RequiredArgsConstructor;
@@ -15,19 +19,23 @@ import org.springframework.messaging.support.MessageHeaderAccessor;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
+import java.time.LocalDateTime;
+
 
 @Slf4j
 @Component
 @RequiredArgsConstructor
 public class StompHandler implements ChannelInterceptor {
 
-    private final JWTUtil jwtUtil;
+    //private final JWTUtil jwtUtil;
     private final ObjectProvider<ChatService> chatServiceProvider;
+    private final ObjectProvider<ChatMessageService> chatMessageServiceProvider;
+    private final ChatMessageService chatMessageService;
+    private final RedisPublisher redisPublisher;
 
-    private ChatService getChatService() {
-        return chatServiceProvider.getObject();
-    }
 
+    private ChatService getChatService() {return chatServiceProvider.getObject();}
+    private ChatMessageService getChatMessageService() {return chatMessageServiceProvider.getObject();}
 
     @Override
     public Message<?> preSend(Message<?> message, MessageChannel channel) {
@@ -40,7 +48,7 @@ public class StompHandler implements ChannelInterceptor {
             log.info("SessionId: {}", accessor.getSessionId());
             log.info("Headers: {}", accessor.toNativeHeaderMap());
 
-
+//            인증 처리 잠시 해제
 //            String authToken = extractToken(accessor);
 //            log.debug("Extracted token: {}", authToken != null ? "exists" : "null");
 //
@@ -97,10 +105,7 @@ public class StompHandler implements ChannelInterceptor {
             }
 
             String[] splits = destination.split("/");
-            if (splits.length != 5) {
-                log.error("[구독 실패] 잘못된 구독 경로입니다. destination: {}", destination);
-                throw new RuntimeException("잘못된 구독 경로입니다");
-            }
+
 
             // 세션에서 사용자 정보 가져오기
             String customerYnStr = (String) accessor.getSessionAttributes().get("CustomerYn");
@@ -119,16 +124,16 @@ public class StompHandler implements ChannelInterceptor {
                 throw new RuntimeException("잘못된 채팅방 ID입니다");
             }
 
-            try {
-                getChatService().validateChatRoomAccess(chatId, Long.parseLong(userId), Boolean.valueOf(customerYnStr));
-            } catch (Exception e) {
-                log.error("[구독 실패] 채팅방 접근 권한이 없습니다. sessionId: {}, userId: {}, chatId: {}",
-                        accessor.getSessionId(), userId, chatId);
-                throw new RuntimeException("채팅방 접근 권한이 없습니다");
+
+            // 읽음 처리 구독인 경우(/sub/chat/room/{chatId}/read)
+            if (splits.length == 6 && splits[5].equals("read")) {
+                handleReadSubscription(chatId, userId, customerYnStr);
+            } else {
+                // 일반 채팅방 구독인 경우(/sub/chat/room/{chatId})
+                handleChatRoomSubscription(chatId, userId, customerYnStr);
             }
 
-
-            log.info("[구독 성공] sessionId: {}, destination: {}, userId: {}",
+            log.info("⭕ [구독 성공] sessionId: {}, destination: {}, userId: {}",
                     accessor.getSessionId(), destination, userId);
         }
 
@@ -145,21 +150,48 @@ public class StompHandler implements ChannelInterceptor {
     }
 
 
-    private String extractToken(StompHeaderAccessor accessor) {
-        String bearerToken = accessor.getFirstNativeHeader("Authorization");
-        log.debug("Raw Authorization header: {}", bearerToken);
+//    private String extractToken(StompHeaderAccessor accessor) {
+//        String bearerToken = accessor.getFirstNativeHeader("Authorization");
+//        log.debug("Raw Authorization header: {}", bearerToken);
+//
+//        if (StringUtils.hasText(bearerToken) && bearerToken.startsWith("Bearer ")) {
+//
+//            String token = bearerToken.substring(7);
+//            log.debug("Extracted token: {}", token.substring(0, Math.min(token.length(), 10)) + "...");
+//
+//            return bearerToken.substring(7);
+//        }
+//        log.warn("No valid bearer token found in headers");
+//        return null;
+//    }
 
 
-        if (StringUtils.hasText(bearerToken) && bearerToken.startsWith("Bearer ")) {
 
-            String token = bearerToken.substring(7);
-            log.debug("Extracted token: {}", token.substring(0, Math.min(token.length(), 10)) + "...");
-
-
-            return bearerToken.substring(7);
-        }
-        log.warn("No valid bearer token found in headers");
-        return null;
+    private void handleReadSubscription(Long chatId, String userId, String customerYnStr) {
+        getChatService().validateChatRoomAccess(chatId, Long.parseLong(userId),
+                Boolean.valueOf(customerYnStr));
+        chatMessageService.markMessagesAsRead(chatId, Long.parseLong(userId));
     }
+
+
+    private void handleChatRoomSubscription(Long chatId, String userId, String customerYnStr) {
+        getChatService().validateChatRoomAccess(chatId, Long.parseLong(userId),
+                Boolean.valueOf(customerYnStr));
+
+        getChatMessageService().processUserEntrance(chatId, Long.parseLong(userId),
+                Boolean.valueOf(customerYnStr));
+
+        CreateChatMessageResponseDto readEvent = CreateChatMessageResponseDto.builder()
+                .chatId(chatId)
+                .senderId(Long.parseLong(userId))
+                .messageType(ChatMessage.MessageType.TALK)
+                .content("MESSAGE_READ")
+                .customerYn(Boolean.valueOf(customerYnStr))
+                .createdAt(LocalDateTime.now())
+                .build();
+
+        redisPublisher.publish(readEvent);
+    }
+
 
 }

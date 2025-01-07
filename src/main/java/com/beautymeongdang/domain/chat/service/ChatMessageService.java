@@ -1,9 +1,6 @@
 package com.beautymeongdang.domain.chat.service;
 
-import com.beautymeongdang.domain.chat.dto.CreateChatMessageRequestDto;
-import com.beautymeongdang.domain.chat.dto.CreateChatMessageResponseDto;
-import com.beautymeongdang.domain.chat.dto.DeleteChatMessageResponseDto;
-import com.beautymeongdang.domain.chat.dto.GetChatMessageListResponseDto;
+import com.beautymeongdang.domain.chat.dto.*;
 
 
 public interface ChatMessageService {
@@ -16,5 +13,15 @@ public interface ChatMessageService {
 
     // 채팅 논리적 삭제
     DeleteChatMessageResponseDto deleteChatMessage(Long messageId);
+
+    // 일반적인 메시지 읽음 처리
+    void markMessagesAsRead(Long chatId, Long userId);
+
+    // 채팅방 입장 시 기존 메시지 읽음 처리
+    void processUserEntrance(Long chatId, Long userId, Boolean isCustomer);
+
+    // 안 읽은 메시지 수
+    GetUnreadMessageCountResponseDto getUnreadMessageCount(Long chatId, Long userId);
+
 
 }

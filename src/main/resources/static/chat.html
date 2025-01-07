@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Beauty Meongdang Chat Test Client</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.6.1/sockjs.min.js"></script>
+    <style>
+        .container { max-width: 800px; margin: 20px auto; padding: 20px; }
+        .section { margin-bottom: 20px; padding: 15px; border: 1px solid #ccc; border-radius: 5px; }
+        .message-container { height: 400px; overflow-y: auto; border: 1px solid #ccc; padding: 10px; margin-bottom: 10px; }
+        .message-input-container {
+            display: flex;
+            gap: 10px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            align-items: center;
+        }
+        .image-preview {
+            max-width: 100px;
+            max-height: 100px;
+            display: none;
+            margin: 5px;
+        }
+        input[type="text"],
+        input[type="number"] {
+            width: 200px;
+            margin: 5px;
+            padding: 5px;
+        }
+        button {
+            margin: 5px;
+            padding: 5px 10px;
+            cursor: pointer;
+        }
+        .message {
+            margin: 5px 0;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .customer {
+            background-color: #e3f2fd;
+            margin-left: 20%;
+        }
+        .groomer {
+            background-color: #f5f5f5;
+            margin-right: 20%;
+        }
+        .system {
+            background-color: #fff3e0;
+            text-align: center;
+        }
+        .message img {
+            max-width: 200px;
+            max-height: 200px;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="section">
+        <h3>연결 설정</h3>
+        <!-- <input type="text" id="token" placeholder="JWT Token" /> -->
+        <input type="number" id="userId" placeholder="User ID" />
+        <select id="userType">
+            <option value="true">Customer</option>
+            <option value="false">Groomer</option>
+        </select>
+        <button onclick="connect()">Connect</button>
+        <button onclick="disconnect()">Disconnect</button>
+        <div id="connection-status">Status: Disconnected</div>
+    </div>
+
+    <div class="section">
+        <h3>채팅방 생성</h3>
+        <input type="number" id="customerId" placeholder="Customer ID" />
+        <input type="number" id="groomerId" placeholder="Groomer ID" />
+        <button onclick="createChatRoom()">Create Chat Room</button>
+    </div>
+
+    <div class="section">
+        <h3>채팅</h3>
+        <input type="number" id="chatId" placeholder="Chat Room ID" />
+        <button onclick="subscribeToChat()">Subscribe</button>
+        <button onclick="unsubscribeFromChat()">Unsubscribe</button>
+        <button onclick="exitChatRoom()">Exit Room</button>
+
+        <div id="messages" class="message-container"></div>
+
+        <div class="message-input-container">
+            <input type="text" id="messageContent" placeholder="메시지를 입력하세요" style="flex-grow: 1;" />
+            <img id="imagePreview" class="image-preview" />
+            <input type="file" id="imageInput" accept="image/*" style="display: none;" onchange="handleImageSelect()" />
+            <button onclick="document.getElementById('imageInput').click()">이미지 선택</button>
+            <button onclick="sendMessage()">전송</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    let stompClient = null;
+    let currentSubscription = null;
+    let selectedImage = null;
+    let isOtherUserInRoom = false;
+
+
+    function handleImageSelect() {
+        const file = document.getElementById('imageInput').files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                selectedImage = e.target.result;
+                const preview = document.getElementById('imagePreview');
+                preview.src = selectedImage;
+                preview.style.display = 'block';
+            };
+            reader.readAsDataURL(file);
+        }
+    }
+
+    async function createChatRoom() {
+        const customerId = document.getElementById('customerId').value;
+        const groomerId = document.getElementById('groomerId').value;
+
+        try {
+            const response = await fetch('http://localhost:8081/chats', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    // 'Authorization': 'Bearer ' + document.getElementById('token').value
+                },
+                body: JSON.stringify({
+                    customerId: parseInt(customerId),
+                    groomerId: parseInt(groomerId)
+                })
+            });
+
+            const result = await response.json();
+            console.log('채팅방 생성됨:', result);
+
+            // ApiResponse 형식에 맞게 data 필드에서 chatId를 가져옴
+            alert('채팅방이 생성되었습니다. ID: ' + result.data.chatId);
+        } catch (error) {
+            console.error('채팅방 생성 오류:', error);
+            alert('채팅방 생성에 실패했습니다');
+        }
+    }
+
+
+    function connect() {
+        const ws = new WebSocket('ws://localhost:8081/ws');
+        stompClient = Stomp.over(ws);
+
+        const headers = {
+            //'Authorization': 'Bearer ' + document.getElementById('token').value,
+            'UserId': document.getElementById('userId').value,
+            'CustomerYn': document.getElementById('userType').value,
+            'login': document.getElementById('userId').value
+        };
+
+        stompClient.connect(headers,
+            function (frame) {
+                document.getElementById('connection-status').textContent = 'Status: Connected';
+                console.log('연결됨: ' + frame);
+            },
+            function (error) {
+                document.getElementById('connection-status').textContent = 'Status: Error - ' + error;
+                console.error('연결 오류: ' + error);
+            }
+        );
+    }
+
+    function unsubscribeFromChat() {
+        if (currentSubscription) {
+            currentSubscription.unsubscribe();
+            currentSubscription = null;
+            console.log('채팅방 구독 해제');
+        }
+    }
+
+    function disconnect() {
+        if (stompClient !== null) {
+            unsubscribeFromChat();
+            stompClient.disconnect();
+            stompClient = null;
+            document.getElementById('connection-status').textContent = 'Status: Disconnected';
+        }
+    }
+
+    async function subscribeToChat() {
+        console.log("전체 chatId element:", document.getElementById('chatId'));
+
+        if (!stompClient || !stompClient.connected) {
+            alert('웹소켓 연결이 필요합니다. Connect 버튼을 먼저 클릭해주세요.');
+            return;
+        }
+
+        const chatIdElement = document.getElementById('chatId');
+        //console.log("chatId element:", chatIdElement);
+        if (!chatIdElement) {
+            console.error("chatId 요소를 찾을 수 없습니다");
+            return;
+        }
+
+        const chatId = chatIdElement.value;
+        console.log("chatId value:", chatId);
+
+        if (!chatId) {
+            alert('채팅방 ID를 입력해주세요.');
+            return;
+        }
+
+
+        //const chatId = document.getElementById('chatId').value;
+        if (currentSubscription) {
+            currentSubscription.unsubscribe();
+        }
+
+        try {
+            // 이전 메시지 조회
+            const response = await fetch(`http://localhost:8081/messages/${chatId}`, {
+                headers: {
+                    //'Authorization': 'Bearer ' + document.getElementById('token').value
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            console.log("response status:", response.status);
+            const chatMessages = await response.json();
+            console.log("받은 메시지 데이터:", chatMessages);
+
+            // 채팅창 초기화
+            document.getElementById('messages').innerHTML = '';
+
+            // 이전 메시지들 표시
+            if (chatMessages.data && Array.isArray(chatMessages.data.messages)) {
+                console.log("표시할 메시지 수:", chatMessages.data.messages.length);
+                chatMessages.data.messages.forEach(message => {
+                    console.log("각 메시지 데이터:", message);
+                    displayHistoryMessage(message);
+                });
+            }
+
+            currentSubscription = stompClient.subscribe('/sub/chat/room/' + chatId,
+                function(message) {
+                    const messageData = JSON.parse(message.body);
+                    displayMessage(messageData);
+
+                    // 메시지를 받을 때마다 자동으로 읽음 처리
+                    if (messageData.senderId !== parseInt(document.getElementById('userId').value)) {
+                        // 이 부분 추가
+                        stompClient.send("/pub/read", {}, JSON.stringify({
+                            chatId: chatId,
+                            senderId: document.getElementById('userId').value,
+                            customerYn: document.getElementById('userType').value === 'true'
+                        }));
+
+                        markMessagesAsRead(chatId, document.getElementById('userId').value);
+                    }
+                }
+            );
+
+            // 메시지 읽음 상태
+            stompClient.subscribe('/sub/chat/room/' + chatId + '/read',
+                function(message) {
+                    const readData = JSON.parse(message.body);
+                    updateMessageReadStatus(readData);
+                }
+            );
+
+            console.log('채팅방 구독 성공');
+        } catch (error) {
+            console.error('Error details:', error);
+            alert('채팅방 입장 중 오류가 발생했습니다');
+        }
+    }
+
+    async function exitChatRoom() {
+        const chatId = document.getElementById('chatId').value;
+        const userId = document.getElementById('userId').value;
+        const customerYn = document.getElementById('userType').value === 'true';
+
+        try {
+            const response = await fetch(`http://localhost:8081/chats/${chatId}/exit`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    //'Authorization': 'Bearer ' + document.getElementById('token').value
+                },
+                body: JSON.stringify({
+                    userId: parseInt(userId),
+                    customerYn: customerYn
+                })
+                // chatId는 URL에 포함되므로 body에서 제거
+            });
+
+            if (response.ok) {
+                console.log('채팅방 퇴장 성공');
+                if (currentSubscription) {
+                    currentSubscription.unsubscribe();
+                }
+                alert('채팅방에서 퇴장했습니다');
+            } else {
+                console.error('채팅방 퇴장 실패');
+                alert('퇴장에 실패했습니다');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('퇴장 처리 중 오류가 발생했습니다');
+        }
+    }
+
+
+    function sendMessage() {
+        const chatId = document.getElementById('chatId').value;
+        const content = document.getElementById('messageContent').value;
+        const userId = document.getElementById('userId').value;
+        const customerYn = document.getElementById('userType').value === 'true';
+
+        // const messageData = {
+        //     chatId: parseInt(chatId),
+        //     senderId: parseInt(userId),
+        //     content: content,
+        //     messageType: 'TALK',
+        //     customerYn: customerYn,
+        //     base64Image: selectedImage
+        // };
+
+        // stompClient.send("/pub/send", {}, JSON.stringify(messageData));
+
+        if (content !== 'MESSAGE_READ') {
+            const messageData = {
+                chatId: parseInt(chatId),
+                senderId: parseInt(userId),
+                content: content,
+                messageType: 'TALK',
+                customerYn: customerYn,
+                base64Image: selectedImage
+            };
+
+            stompClient.send("/pub/send", {}, JSON.stringify(messageData));
+        }
+
+        stompClient.send("/pub/read", {}, JSON.stringify({
+            chatId: chatId,
+            senderId: userId,
+            customerYn: customerYn
+        }));
+
+        // // 상대방이 채팅방에 있다면 바로 읽음 처리
+        // if (currentSubscription) {  // 채팅방 구독 중인지 확인
+        //     stompClient.send("/pub/send", {}, JSON.stringify({
+        //         chatId: parseInt(chatId),
+        //         senderId: parseInt(userId),
+        //         messageType: 'TALK',
+        //         content: 'MESSAGE_READ',
+        //         customerYn: customerYn
+        //     }));
+        //
+        //     // 읽음 처리 요청도 함께 보냄
+        //     markMessagesAsRead(chatId, userId);
+        // }
+
+
+        if (currentSubscription) {
+            // 읽음 처리만 요청하고, MESSAGE_READ 메시지는 보내지 않음
+            markMessagesAsRead(chatId, userId);
+        }
+
+
+        // 입력 필드 초기화
+        document.getElementById('messageContent').value = '';
+        document.getElementById('imagePreview').style.display = 'none';
+        document.getElementById('imageInput').value = '';
+        selectedImage = null;
+    }
+
+
+    function markMessagesAsRead(chatId, userId) {
+        stompClient.send("/pub/read", {}, JSON.stringify({
+            chatId: chatId,
+            senderId: userId,
+            customerYn: document.getElementById('userType').value === 'true'
+        }));
+    }
+
+
+    function displayHistoryMessage(message) {
+        const messagesDiv = document.getElementById('messages');
+        const messageElement = document.createElement('div');
+
+        messageElement.className = `message ${message.customerYn ? 'customer' : 'groomer'}`;
+
+        let content = '';
+        if (message.messageContent) {
+            content += `${message.messageContent}<br>`;
+        }
+        if (message.messageImage) {
+            content += `<img src="${message.messageImage}" alt="첨부 이미지" />`;
+        }
+        content += `<div style="font-size: 0.8em; color: #666; text-align: right;">
+                ${new Date(message.messageTime).toLocaleTimeString()}
+            </div>`;
+
+        messageElement.innerHTML = content;
+        messagesDiv.appendChild(messageElement);
+        messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    }
+
+    function displayMessage(message) {
+        console.log('Received message:', message);  // 디버깅용
+
+        // 메시지 타입이나 내용에 따라 더 정확하게 필터링
+        if (message.content === 'MESSAGE_READ' || message.messageType === 'READ') {
+            return;
+        }
+
+        const messagesDiv = document.getElementById('messages');
+        const messageElement = document.createElement('div');
+
+        if (message.messageType === 'TALK') {
+            messageElement.className = `message ${message.customerYn ? 'customer' : 'groomer'}`;
+
+            let content = `
+            ${message.content}<br>
+            <div style="font-size: 0.8em; color: #666; text-align: right;">
+                ${new Date(message.createdAt).toLocaleTimeString()}
+                <span class="message-status">${message.isRead ? '' : '1️⃣'}</span>
+            </div>
+        `;
+
+            messageElement.innerHTML = content;
+            messagesDiv.appendChild(messageElement);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+    }
+
+    function updateMessageReadStatus(readData) {
+        console.log("Received read status update:", readData); // 디버깅용
+        if (readData.content === 'MESSAGE_READ') {
+            const messages = document.getElementById('messages').children;
+            for (let messageElement of messages) {
+                if (!messageElement.classList.contains('system')) {
+                    const statusDiv = messageElement.querySelector('.message-status');
+                    if (statusDiv) {
+                        console.log("Updating message status"); // 디버깅용
+                        statusDiv.innerHTML = '';  // 읽음 표시 제거
+                    }
+                }
+            }
+        }
+    }
+</script>
+</body>
+</html>

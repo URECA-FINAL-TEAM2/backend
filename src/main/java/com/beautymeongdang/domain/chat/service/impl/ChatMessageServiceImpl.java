@@ -2,9 +2,7 @@ package com.beautymeongdang.domain.chat.service.impl;
 
 
 import com.beautymeongdang.domain.chat.dto.*;
-import com.beautymeongdang.domain.chat.entity.Chat;
 import com.beautymeongdang.domain.chat.entity.ChatMessage;
-import com.beautymeongdang.domain.chat.entity.ChatMessageImage;
 import com.beautymeongdang.domain.chat.entity.ChatMessageMongo;
 import com.beautymeongdang.domain.chat.pubsub.RedisPublisher;
 import com.beautymeongdang.domain.chat.repository.ChatMessageImageRepository;
@@ -19,7 +17,6 @@ import com.beautymeongdang.domain.user.entity.Groomer;
 import com.beautymeongdang.domain.user.entity.User;
 import com.beautymeongdang.domain.user.repository.CustomerRepository;
 import com.beautymeongdang.domain.user.repository.GroomerRepository;
-import com.beautymeongdang.global.common.entity.UploadedFile;
 import com.beautymeongdang.global.exception.handler.NotFoundException;
 import com.beautymeongdang.infra.s3.FileStore;
 import lombok.RequiredArgsConstructor;
@@ -27,6 +24,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
+import com.beautymeongdang.global.common.entity.UploadedFile;
+import com.beautymeongdang.domain.chat.entity.ChatMessageImage;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -47,6 +46,7 @@ public class ChatMessageServiceImpl implements ChatMessageService {
     private final ChatMessageImageRepository chatMessageImageRepository;
     private final ShopRepository shopRepository;
     private final ChatMessageMongoRepository chatMessageMongoRepository;
+    private final RedisPublisher redisPublisher;
 
 
     /**
@@ -55,8 +55,21 @@ public class ChatMessageServiceImpl implements ChatMessageService {
     @Override
     @Transactional
     public CreateChatMessageResponseDto sendMessage(CreateChatMessageRequestDto messageRequestDto) {
-        Chat chat = chatRepository.findById(messageRequestDto.getChatId())
-                .orElseThrow(() -> NotFoundException.entityNotFound("채팅방"));
+
+        if ("MESSAGE_READ".equals(messageRequestDto.getContent())) {
+            chatMessageMongoRepository.updateMessagesAsRead(
+                    messageRequestDto.getChatId(),
+                    messageRequestDto.getSenderId()
+            );
+            return CreateChatMessageResponseDto.builder()
+                    .chatId(messageRequestDto.getChatId())
+                    .senderId(messageRequestDto.getSenderId())
+                    .messageType(messageRequestDto.getMessageType())
+                    .content(messageRequestDto.getContent())
+                    .customerYn(messageRequestDto.getCustomerYn())
+                    .createdAt(LocalDateTime.now())
+                    .build();
+        }
 
         // 발신자 정보 조회
         String senderNickname;
@@ -110,6 +123,7 @@ public class ChatMessageServiceImpl implements ChatMessageService {
                 .content(messageRequestDto.getContent())
                 .customerYn(messageRequestDto.getCustomerYn())
                 .messageType(messageRequestDto.getMessageType())
+                .isRead(false)
                 .createdAt(LocalDateTime.now())
                 .build();
 
@@ -129,6 +143,9 @@ public class ChatMessageServiceImpl implements ChatMessageService {
     }
 
 
+
+
+    // 채팅 조회 mongoDB
     @Override
     public GetChatMessageListResponseDto getChatMessageList(Long chatId) {
         User groomer = chatRepository.findGroomerByChatId(chatId);
@@ -139,8 +156,6 @@ public class ChatMessageServiceImpl implements ChatMessageService {
 
         List<ChatMessageMongo> mongoMessages = chatMessageMongoRepository.findByChatIdOrderByCreatedAtAsc(chatId);
         log.info("MongoDB에서 조회한 메시지 수: {}", mongoMessages.size());
-        log.info("조회된 메시지들: {}", mongoMessages);
-
 
         // 채팅 메시지 조회 - MongoDB에서 조회하도록 변경
         List<GetChatMessageResponseDto> chatMessageResponseDtoList =
@@ -180,7 +195,7 @@ public class ChatMessageServiceImpl implements ChatMessageService {
 
 
 
-//    // 채팅 조회
+//    // 채팅 조회 (기존)
 //    @Override
 //    public GetChatMessageListResponseDto getChatMessageList(Long chatId) {
 //        // 미용사
@@ -229,6 +244,61 @@ public class ChatMessageServiceImpl implements ChatMessageService {
         chatMessage.delete();
 
         return new DeleteChatMessageResponseDto(chatMessage.getMessageId());
+    }
+
+
+    /**
+     * 일반적인 메시지 읽음 처리
+     * MessageType: TALK
+     */
+    @Transactional
+    public void markMessagesAsRead(Long chatId, Long userId) {
+        chatMessageMongoRepository.updateMessagesAsRead(chatId, userId);
+
+        CreateChatMessageResponseDto readEvent = CreateChatMessageResponseDto.builder()
+                .chatId(chatId)
+                .senderId(userId)
+                .messageType(ChatMessage.MessageType.TALK)
+                .content("MESSAGE_READ")
+                .build();
+
+        redisPublisher.publish(readEvent);
+    }
+
+
+    /**
+     *  채팅방 입장 시 기존 메시지 읽음 처리
+     *  MessageType: ENTER
+     */
+    @Override
+    @Transactional
+    public void processUserEntrance(Long chatId, Long userId, Boolean isCustomer) {
+        chatMessageMongoRepository.updateMessagesAsRead(chatId, userId);
+
+        // 입장 이벤트 발행
+        CreateChatMessageResponseDto enterMessage = CreateChatMessageResponseDto.builder()
+                .chatId(chatId)
+                .senderId(userId)
+                .messageType(ChatMessage.MessageType.ENTER)
+                .content("ENTERED")
+                .customerYn(isCustomer)
+                .createdAt(LocalDateTime.now())
+                .build();
+
+        redisPublisher.publish(enterMessage);
+    }
+
+    /**
+     * 안 읽은 메시지 수
+     */
+    @Override
+    public GetUnreadMessageCountResponseDto getUnreadMessageCount(Long chatId, Long userId) {
+        Long unreadCount = chatMessageMongoRepository.countByChatIdAndIsReadFalseAndSenderIdNot(chatId, userId);
+
+        return GetUnreadMessageCountResponseDto.builder()
+                .chatId(chatId)
+                .unreadCount(unreadCount)
+                .build();
     }
 
 

@@ -9,13 +9,13 @@ import com.beautymeongdang.domain.notification.enums.NotificationType;
 import com.beautymeongdang.domain.notification.service.NotificationService;
 import com.beautymeongdang.domain.user.entity.Customer;
 import com.beautymeongdang.domain.user.entity.Groomer;
-import com.beautymeongdang.domain.user.entity.User;
 import com.beautymeongdang.domain.user.repository.CustomerRepository;
 import com.beautymeongdang.domain.user.repository.GroomerRepository;
 import com.beautymeongdang.global.exception.handler.BadRequestException;
 import com.beautymeongdang.global.exception.handler.NotFoundException;
 import com.beautymeongdang.global.exception.handler.UnauthorizedException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.simp.SimpMessageSendingOperations;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,7 +24,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
-
+@Slf4j
 @Service
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
@@ -109,13 +109,19 @@ public class ChatServiceImpl implements ChatService {
      */
     @Override
     public void validateChatRoomAccess(Long chatId, Long userId, Boolean customerYn) {
+        log.info("권한 검증 시작 - chatId: {}, userId: {}, customerYn: {}", chatId, userId, customerYn);
+
         Chat chat = chatRepository.findById(chatId)
                 .orElseThrow(() -> NotFoundException.entityNotFound("채팅방"));
 
         if (customerYn) {
-            User user = User.builder().userId(userId).build();
+            log.info("고객 접근 권한 확인:");
+            log.info("- 요청 User ID: {}", userId);
+            log.info("- Chat Customer ID: {}", chat.getCustomerId().getUserId().getUserId());
+            log.info("- 퇴장 여부: {}", chat.getCustomerExitedYn());
 
             if (!chat.getCustomerId().getUserId().getUserId().equals(userId)) {
+                log.error("접근 거부 - User {} 는 채팅방 {}의 고객이 아님", userId, chatId);
                 throw UnauthorizedException.invalidAccess("해당 채팅방에 접근 권한이 없습니다.");
             }
 
@@ -125,9 +131,13 @@ public class ChatServiceImpl implements ChatService {
             }
 
         } else {
-            User user = User.builder().userId(userId).build();
+            log.info("미용사 접근 권한 확인:");
+            log.info("- 요청 User ID: {}", userId);
+            log.info("- Chat Groomer ID: {}", chat.getGroomerId().getUserId().getUserId());
+            log.info("- 퇴장 여부: {}", chat.getGroomerExitedYn());
 
             if (!chat.getGroomerId().getUserId().getUserId().equals(userId)) {
+                log.error("접근 거부 - User {} 는 채팅방 {}의 미용사가 아님", userId, chatId);
                 throw UnauthorizedException.invalidAccess("해당 채팅방에 접근 권한이 없습니다.");
             }
 
@@ -137,6 +147,9 @@ public class ChatServiceImpl implements ChatService {
             }
         }
     }
+
+
+
 
     /**
      * 채팅방 나가기
