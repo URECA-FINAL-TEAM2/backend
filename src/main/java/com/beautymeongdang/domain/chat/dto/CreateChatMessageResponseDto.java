@@ -21,6 +21,7 @@ public class CreateChatMessageResponseDto {
     private String content;
     private MessageType messageType;
     private Boolean customerYn;
+    private Boolean isRead;
     private String imageUrl;
     private LocalDateTime createdAt;
 

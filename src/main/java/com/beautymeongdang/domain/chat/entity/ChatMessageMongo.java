@@ -16,18 +16,19 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ChatMessageMongo {
-    
+
     @Id
     private String id;
-    
-    private Long messageId;        // MySQL의 메시지 ID 
+
+    private Long messageId;
     private Long chatId;
     private Long senderId;
     private String content;
     private Boolean customerYn;
+    private Boolean isRead = false;
 
     @Enumerated(EnumType.STRING)
-    private ChatMessage.MessageType messageType;     // ENTER, TALK, QUIT
+    private ChatMessage.MessageType messageType;
 
     private LocalDateTime createdAt;
 }

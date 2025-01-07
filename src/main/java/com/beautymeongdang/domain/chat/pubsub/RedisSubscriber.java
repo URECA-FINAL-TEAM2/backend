@@ -1,6 +1,7 @@
 package com.beautymeongdang.domain.chat.pubsub;
 
 import com.beautymeongdang.domain.chat.dto.CreateChatMessageResponseDto;
+import com.beautymeongdang.domain.chat.entity.ChatMessage;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
@@ -24,24 +25,28 @@ public class RedisSubscriber {
         objectMapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
     }
 
-
     public void onMessage(String message) {
         try {
-            log.info("Redis 메시지 수신됨 - raw message: {}", message);
-
-            // Redis에서 받은 메시지를 ChatMessage 객체로 변환
+            log.info("Redis 메시지 수신: {}", message);
             CreateChatMessageResponseDto chatMessage = objectMapper.readValue(message, CreateChatMessageResponseDto.class);
-            log.info("Redis 메시지 변환 완료 - chatId: {}, senderId: {}",
-                    chatMessage.getChatId(), chatMessage.getSenderId());
 
-            // 웹소켓을 통해 구독자들에게 메시지 전달
-            messagingTemplate.convertAndSend("/sub/chat/room/" + chatMessage.getChatId(), chatMessage);
 
-            log.info("Redis 메시지 WebSocket 전달 완료 - chatId: {}, messageType: {}",
-                    chatMessage.getChatId(), chatMessage.getMessageType());
+            if ("MESSAGE_READ".equals(chatMessage.getContent())) {
+                String readDestination = "/sub/chat/room/" + chatMessage.getChatId() + "/read";
+                messagingTemplate.convertAndSend(readDestination, chatMessage);
+                return;
+            }
+
+            if (ChatMessage.MessageType.ENTER.equals(chatMessage.getMessageType())) {
+                return;
+            }
+
+            if (chatMessage.getMessageType() == ChatMessage.MessageType.TALK) {
+                String destination = "/sub/chat/room/" + chatMessage.getChatId();
+                messagingTemplate.convertAndSend(destination, chatMessage);
+            }
         } catch (Exception e) {
-            log.error("Redis 메시지 처리 실패 - error: {}, raw message: {}",
-                    e.getMessage(), message, e);
+            log.error("Redis 메시지 처리 실패", e);
         }
     }
 }
