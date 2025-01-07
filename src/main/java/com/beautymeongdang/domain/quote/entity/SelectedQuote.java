@@ -9,7 +9,7 @@ import lombok.*;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
-@Builder
+@Builder(toBuilder = true)
 public class SelectedQuote extends DeletableBaseTimeEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
